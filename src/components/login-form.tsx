@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
+  // CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Link from "next/link";
 
 export function LoginForm({
   className,
@@ -19,9 +20,9 @@ export function LoginForm({
       <Card>
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
-          <CardDescription>
+          {/* <CardDescription>
             Enter your email below to login to your account
-          </CardDescription>
+          </CardDescription> */}
         </CardHeader>
         <CardContent>
           <form>
@@ -51,17 +52,21 @@ export function LoginForm({
                 <Button type="submit" className="w-full cursor-pointer">
                   Login
                 </Button>
+                <div className="mt-4 text-center text-sm">
+                  Don&apos;t have an account?{" "}
+                </div>
                 <Button
                   type="button"
                   variant="outline"
                   className="w-full cursor-pointer"
+                  asChild
                 >
-                  Continue as Guest
+                  <Link href="/dashboard">Continue as Guest</Link>
                 </Button>
               </div>
             </div>
             <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
+              {/* Don&apos;t have an account?{" "} */}
               <a href="#" className="underline underline-offset-4">
                 Sign up
               </a>

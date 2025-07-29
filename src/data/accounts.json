@@ -1,0 +1,31 @@
+{
+  "accounts": [
+    {
+      "id": "acc_001",
+      "userId": "1",
+      "name": "Everyday Account",
+      "balance": 1850.0,
+      "type": "checking",
+      "accountNumber": "****1234",
+      "isActive": true
+    },
+    {
+      "id": "acc_002",
+      "userId": "1",
+      "name": "Savings Account",
+      "balance": 600.0,
+      "type": "savings",
+      "accountNumber": "****5678",
+      "isActive": true
+    },
+    {
+      "id": "acc_003",
+      "userId": "1",
+      "name": "Emergency Fund",
+      "balance": 1200.0,
+      "type": "savings",
+      "accountNumber": "****9012",
+      "isActive": true
+    }
+  ]
+}

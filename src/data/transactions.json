@@ -1,0 +1,76 @@
+{
+  "transactions": [
+    {
+      "id": "txn_001",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-07-29",
+      "description": "Grocery Store",
+      "amount": -45.2,
+      "category": "Food & Dining",
+      "type": "expense",
+      "merchant": "Whole Foods",
+      "status": "completed"
+    },
+    {
+      "id": "txn_002",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-07-28",
+      "description": "Salary Payment",
+      "amount": 1600.0,
+      "category": "Income",
+      "type": "income",
+      "merchant": "Tech Corp Inc",
+      "status": "completed"
+    },
+    {
+      "id": "txn_003",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-07-27",
+      "description": "Gas Station",
+      "amount": -35.0,
+      "category": "Transportation",
+      "type": "expense",
+      "merchant": "Shell",
+      "status": "completed"
+    },
+    {
+      "id": "txn_004",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-07-26",
+      "description": "Netflix Subscription",
+      "amount": -15.99,
+      "category": "Entertainment",
+      "type": "expense",
+      "merchant": "Netflix",
+      "status": "completed"
+    },
+    {
+      "id": "txn_005",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-07-25",
+      "description": "Coffee Shop",
+      "amount": -4.5,
+      "category": "Food & Dining",
+      "type": "expense",
+      "merchant": "Starbucks",
+      "status": "completed"
+    },
+    {
+      "id": "txn_006",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-07-24",
+      "description": "Rent Payment",
+      "amount": -1200.0,
+      "category": "Housing",
+      "type": "expense",
+      "merchant": "Property Management",
+      "status": "completed"
+    }
+  ]
+}

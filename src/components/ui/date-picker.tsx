@@ -1,0 +1,66 @@
+"use client";
+
+import * as React from "react";
+import { CalendarIcon } from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
+interface DatePickerProps {
+  date?: Date;
+  onDateChange?: (date: Date | undefined) => void;
+  placeholder?: string;
+  className?: string;
+  id?: string;
+}
+
+export function DatePicker({
+  date,
+  onDateChange,
+  placeholder = "dd/mm/yyyy",
+  className,
+  id,
+}: DatePickerProps) {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          id={id}
+          className={cn(
+            "w-full justify-between font-normal !h-auto !px-4 !py-3 !border-gray-300 !rounded-lg !bg-white !text-gray-600 focus:!outline-none focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500",
+            !date && "text-muted-foreground",
+            className
+          )}
+        >
+          {date ? date.toLocaleDateString("en-GB") : placeholder}
+          <CalendarIcon className="h-4 w-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-auto overflow-hidden p-0"
+        align="start"
+        side="bottom"
+        sideOffset={4}
+      >
+        <Calendar
+          mode="single"
+          selected={date}
+          captionLayout="dropdown"
+          onSelect={(selectedDate) => {
+            onDateChange?.(selectedDate);
+            setOpen(false);
+          }}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
