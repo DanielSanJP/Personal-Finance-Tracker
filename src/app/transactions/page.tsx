@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -72,7 +73,13 @@ export default function TransactionsPage() {
     "All Categories",
     ...Array.from(new Set(transactions.map((t) => t.category))),
   ];
-  const periods = ["This Month", "Last Month", "Last 3 Months", "This Year"];
+  const periods = [
+    "This Month",
+    "Last Month",
+    "Last 3 Months",
+    "This Year",
+    "All Time",
+  ];
 
   // Helper function to check if date is within period
   const isDateInPeriod = (dateString: string, period: string): boolean => {
@@ -109,6 +116,8 @@ export default function TransactionsPage() {
         return transactionDate >= threeMonthsAgo;
       case "This Year":
         return date.getFullYear() === currentYear;
+      case "All Time":
+        return true;
       default:
         return true;
     }
@@ -316,6 +325,73 @@ export default function TransactionsPage() {
                   )}
                 </TableBody>
               </Table>
+
+              {/* Transaction Totals Summary */}
+              <div className="mt-6 border-t pt-6 pb-6">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div className="space-y-2">
+                    <div className="text-sm text-gray-600 font-medium">
+                      Total Income
+                    </div>
+                    <Badge
+                      variant="default"
+                      className="text-lg font-bold px-3 py-1 bg-green-600 hover:bg-green-700"
+                    >
+                      +
+                      {formatCurrency(
+                        filteredTransactions
+                          .filter((t) => t.type === "income")
+                          .reduce((sum, t) => sum + t.amount, 0)
+                      )}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-sm text-gray-600 font-medium">
+                      Total Expenses
+                    </div>
+                    <Badge
+                      variant="destructive"
+                      className="text-lg font-bold px-3 py-1"
+                    >
+                      {formatCurrency(
+                        filteredTransactions
+                          .filter((t) => t.type === "expense")
+                          .reduce((sum, t) => sum + Math.abs(t.amount), 0)
+                      )}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-sm text-gray-600 font-medium">
+                      Net Total
+                    </div>
+                    <Badge
+                      variant={
+                        filteredTransactions.reduce(
+                          (sum, t) => sum + t.amount,
+                          0
+                        ) >= 0
+                          ? "default"
+                          : "destructive"
+                      }
+                      className={`text-lg font-bold px-3 py-1 ${
+                        filteredTransactions.reduce(
+                          (sum, t) => sum + t.amount,
+                          0
+                        ) >= 0
+                          ? "bg-green-600 hover:bg-green-700"
+                          : ""
+                      }`}
+                    >
+                      {formatCurrency(
+                        filteredTransactions.reduce(
+                          (sum, t) => sum + t.amount,
+                          0
+                        )
+                      )}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Transaction Detail Modal */}

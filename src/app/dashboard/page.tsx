@@ -25,7 +25,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 gap-6 mb-8">
           <Card className=" flex flex-col justify-center gap-2">
             <CardHeader className="pb-1 px-4">
-              <CardTitle className="  text-center">Total Balance</CardTitle>
+              <CardTitle className="  text-center">Account Balance</CardTitle>
             </CardHeader>
             <CardContent className="px-4">
               <div className="text-lg sm:text-xl font-bold text-gray-900 text-center">
@@ -48,7 +48,7 @@ export default function Dashboard() {
           <Card className=" flex flex-col justify-center gap-2">
             <CardHeader className="pb-1 px-4">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 text-center">
-                Income
+                Income (July)
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4">
@@ -61,7 +61,7 @@ export default function Dashboard() {
           <Card className=" flex flex-col justify-center gap-2">
             <CardHeader className="pb-1 px-4">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 text-center">
-                Budget Remaining
+                Budget Remaining (July)
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4">

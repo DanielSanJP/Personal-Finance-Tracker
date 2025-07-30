@@ -89,8 +89,8 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
                     <DropdownMenuItem>Preferences</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>Help & Support</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600">
-                      Sign Out
+                    <DropdownMenuItem className="text-red-600" asChild>
+                      <Link href="/">Sign Out</Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
