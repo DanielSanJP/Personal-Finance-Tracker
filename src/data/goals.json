@@ -28,7 +28,7 @@
       "name": "Holiday Trip",
       "targetAmount": 1500.0,
       "currentAmount": 750.0,
-      "targetDate": "2025-03-01",
+      "targetDate": "2025-10-01",
       "category": "Travel",
       "priority": "high",
       "status": "active"
@@ -37,9 +37,9 @@
       "id": "goal_004",
       "userId": "1",
       "name": "New Laptop",
-      "targetAmount": 1200.0,
-      "currentAmount": 200.0,
-      "targetDate": "2025-08-01",
+      "targetAmount": 1000.0,
+      "currentAmount": 1000.0,
+      "targetDate": "2025-07-12",
       "category": "Technology",
       "priority": "low",
       "status": "active"
