@@ -5,8 +5,8 @@
       "userId": "1",
       "category": "Food & Dining",
       "budgetAmount": 500.0,
-      "spentAmount": 98.3,
-      "remainingAmount": 401.7,
+      "spentAmount": 499.7,
+      "remainingAmount": 0.3,
       "period": "monthly",
       "startDate": "2025-07-01",
       "endDate": "2025-07-31"
@@ -16,8 +16,8 @@
       "userId": "1",
       "category": "Transportation",
       "budgetAmount": 200.0,
-      "spentAmount": 45.2,
-      "remainingAmount": 154.8,
+      "spentAmount": 35.0,
+      "remainingAmount": 165.0,
       "period": "monthly",
       "startDate": "2025-07-01",
       "endDate": "2025-07-31"
@@ -49,8 +49,8 @@
       "userId": "1",
       "category": "Shopping",
       "budgetAmount": 250.0,
-      "spentAmount": 90.0,
-      "remainingAmount": 160.0,
+      "spentAmount": 300.0,
+      "remainingAmount": -50.0,
       "period": "monthly",
       "startDate": "2025-07-01",
       "endDate": "2025-07-31"
@@ -60,8 +60,8 @@
       "userId": "1",
       "category": "Bills & Utilities",
       "budgetAmount": 300.0,
-      "spentAmount": 320.0,
-      "remainingAmount": -20.0,
+      "spentAmount": 0.0,
+      "remainingAmount": 300.0,
       "period": "monthly",
       "startDate": "2025-07-01",
       "endDate": "2025-07-31"

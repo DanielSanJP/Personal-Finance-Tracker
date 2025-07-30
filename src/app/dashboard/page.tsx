@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Nav from "@/components/nav";
+import { SpendingChart } from "@/components/spending-chart";
 import Link from "next/link";
 import {
   getCurrentUserAccounts,
@@ -70,21 +71,7 @@ export default function Dashboard() {
 
         <div className="space-y-8">
           {/* Spending Overview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-gray-900">
-                Spending Overview
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-gray-400 mb-2">📊</div>
-                  <p className="text-gray-500">Monthly Spending Chart</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <SpendingChart />
 
           {/* Your Accounts */}
           <Card>

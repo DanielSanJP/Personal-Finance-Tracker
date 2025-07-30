@@ -71,6 +71,30 @@
       "type": "expense",
       "merchant": "Property Management",
       "status": "completed"
+    },
+    {
+      "id": "txn_007",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-07-30",
+      "description": "Electronics Store",
+      "amount": -300.0,
+      "category": "Shopping",
+      "type": "expense",
+      "merchant": "Best Buy",
+      "status": "completed"
+    },
+    {
+      "id": "txn_008",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-07-30",
+      "description": "Fine Dining",
+      "amount": -450.0,
+      "category": "Food & Dining",
+      "type": "expense",
+      "merchant": "The Capital Grille",
+      "status": "completed"
     }
   ]
 }
