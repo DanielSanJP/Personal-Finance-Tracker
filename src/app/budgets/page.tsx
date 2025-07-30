@@ -95,10 +95,10 @@ export default function BudgetsPage() {
     <div className="min-h-screen bg-gray-50">
       <Nav showDashboardTabs={true} />
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">
+            <CardTitle className="text-xl sm:text-2xl font-bold text-center">
               Monthly Budget Overview
             </CardTitle>
           </CardHeader>
@@ -133,11 +133,11 @@ export default function BudgetsPage() {
               return (
                 <div key={budget.id}>
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-base font-medium">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                      <span className="text-sm sm:text-base font-medium">
                         {budget.category}
                       </span>
-                      <span className="text-base text-gray-600">
+                      <span className="text-sm sm:text-base text-gray-600">
                         ${budget.spentAmount.toFixed(2)} / $
                         {budget.budgetAmount.toFixed(2)}
                       </span>
@@ -173,14 +173,14 @@ export default function BudgetsPage() {
             {/* Budget Summary */}
             <Separator className="mt-6" />
             <div className="pt-4 space-y-4">
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                 <div className="space-y-2">
                   <div className="text-sm text-gray-600 font-medium">
                     Total Budget
                   </div>
                   <Badge
                     variant="outline"
-                    className="text-lg font-bold px-3 py-1"
+                    className="text-base sm:text-lg font-bold px-3 py-1"
                   >
                     ${totalBudget.toFixed(0)}
                   </Badge>
@@ -193,7 +193,7 @@ export default function BudgetsPage() {
                     variant={
                       totalSpent > totalBudget ? "destructive" : "secondary"
                     }
-                    className="text-lg font-bold px-3 py-1"
+                    className="text-base sm:text-lg font-bold px-3 py-1"
                   >
                     ${totalSpent.toFixed(0)}
                   </Badge>
@@ -204,7 +204,7 @@ export default function BudgetsPage() {
                   </div>
                   <Badge
                     variant={totalRemaining < 0 ? "destructive" : "default"}
-                    className="text-lg font-bold px-3 py-1"
+                    className="text-base sm:text-lg font-bold px-3 py-1"
                   >
                     ${totalRemaining.toFixed(0)}
                   </Badge>
@@ -213,9 +213,11 @@ export default function BudgetsPage() {
 
               {/* Overall Progress Bar */}
               <div className="space-y-2">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="font-medium">Overall Budget Progress</span>
-                  <span className="text-gray-600">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                  <span className="text-sm font-medium">
+                    Overall Budget Progress
+                  </span>
+                  <span className="text-sm text-gray-600">
                     {((totalSpent / totalBudget) * 100).toFixed(1)}%
                   </span>
                 </div>

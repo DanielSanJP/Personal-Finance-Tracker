@@ -179,7 +179,7 @@ export default function TransactionsPage() {
 
           <CardContent className="space-y-6">
             {/* Filter Controls */}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <Select
                   value={selectedCategory}
@@ -328,14 +328,14 @@ export default function TransactionsPage() {
 
               {/* Transaction Totals Summary */}
               <div className="mt-6 border-t pt-6 pb-6">
-                <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                   <div className="space-y-2">
                     <div className="text-sm text-gray-600 font-medium">
                       Total Income
                     </div>
                     <Badge
                       variant="default"
-                      className="text-lg font-bold px-3 py-1 bg-green-600 hover:bg-green-700"
+                      className="text-base sm:text-lg font-bold px-3 py-1 bg-green-600 hover:bg-green-700"
                     >
                       +
                       {formatCurrency(
@@ -351,7 +351,7 @@ export default function TransactionsPage() {
                     </div>
                     <Badge
                       variant="destructive"
-                      className="text-lg font-bold px-3 py-1"
+                      className="text-base sm:text-lg font-bold px-3 py-1"
                     >
                       {formatCurrency(
                         filteredTransactions
@@ -373,7 +373,7 @@ export default function TransactionsPage() {
                           ? "default"
                           : "destructive"
                       }
-                      className={`text-lg font-bold px-3 py-1 ${
+                      className={`text-base sm:text-lg font-bold px-3 py-1 ${
                         filteredTransactions.reduce(
                           (sum, t) => sum + t.amount,
                           0

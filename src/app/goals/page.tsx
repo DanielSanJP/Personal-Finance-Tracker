@@ -57,10 +57,10 @@ export default function GoalsPage() {
     <div className="min-h-screen bg-gray-50">
       <Nav showDashboardTabs={true} />
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center">
+            <CardTitle className="text-xl sm:text-2xl font-bold text-center">
               Savings Goals
             </CardTitle>
           </CardHeader>
@@ -75,9 +75,11 @@ export default function GoalsPage() {
               return (
                 <div key={goal.id}>
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-base font-medium">{goal.name}</span>
-                      <span className="text-base text-gray-600">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                      <span className="text-sm sm:text-base font-medium">
+                        {goal.name}
+                      </span>
+                      <span className="text-sm sm:text-base text-gray-600">
                         {formatCurrency(goal.currentAmount)} /{" "}
                         {formatCurrency(goal.targetAmount)}
                       </span>
@@ -105,7 +107,7 @@ export default function GoalsPage() {
               <div className="flex flex-wrap gap-4 justify-center">
                 <Dialog open={addGoalOpen} onOpenChange={setAddGoalOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-40">Add New Goal</Button>
+                    <Button className="w-32 sm:w-40">Add New Goal</Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
@@ -177,7 +179,7 @@ export default function GoalsPage() {
 
                 <Dialog open={editGoalsOpen} onOpenChange={setEditGoalsOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="w-40">
+                    <Button variant="outline" className="w-32 sm:w-40">
                       Edit Goals
                     </Button>
                   </DialogTrigger>
@@ -259,7 +261,7 @@ export default function GoalsPage() {
                   onOpenChange={setContributionOpen}
                 >
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="w-40">
+                    <Button variant="outline" className="w-32 sm:w-40">
                       Make Contribution
                     </Button>
                   </DialogTrigger>
