@@ -39,11 +39,11 @@ const processChartData = () => {
     "December",
   ];
 
-  // Get last 6 months
+  // Get last 7 months to include January - July
   const now = new Date();
   const chartData = [];
 
-  for (let i = 5; i >= 0; i--) {
+  for (let i = 6; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const monthName = months[date.getMonth()];
     const year = date.getFullYear();
@@ -102,7 +102,7 @@ export function SpendingChart() {
     <Card>
       <CardHeader>
         <CardTitle>Monthly Spending</CardTitle>
-        <CardDescription>February - July 2025</CardDescription>
+        <CardDescription>January - July 2025</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -156,7 +156,7 @@ export function SpendingChart() {
           />
         </div>
         <div className="text-muted-foreground leading-none">
-          Showing monthly spending for the last 6 months
+          Showing monthly spending for the last 7 months
         </div>
       </CardFooter>
     </Card>

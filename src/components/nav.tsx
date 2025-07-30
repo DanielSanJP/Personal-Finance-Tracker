@@ -5,6 +5,14 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Menubar, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { getCurrentUser } from "@/lib/data";
 import Breadcrumbs from "@/components/breadcrumbs";
 
@@ -60,14 +68,32 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
             )}
             {showDashboardTabs && (
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-gray-600">
-                    {user.initials}
-                  </span>
-                </div>
-                <span className="text-sm text-gray-600">
-                  {user.displayName}
-                </span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors">
+                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-gray-600">
+                          {user.initials}
+                        </span>
+                      </div>
+                      <span className="text-sm text-gray-600">
+                        {user.displayName}
+                      </span>
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                    <DropdownMenuItem>Settings</DropdownMenuItem>
+                    <DropdownMenuItem>Preferences</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>Help & Support</DropdownMenuItem>
+                    <DropdownMenuItem className="text-red-600">
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             )}
           </div>

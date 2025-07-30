@@ -119,4 +119,13 @@
   body {
     @apply bg-background text-foreground;
   }
+  button {
+    @apply cursor-pointer;
+  }
+}
+
+/* Sonner toast styling */
+[data-sonner-toaster] [data-description] {
+  color: #64748b !important;
+  opacity: 1 !important;
 }

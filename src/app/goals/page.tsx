@@ -30,6 +30,7 @@ export default function GoalsPage() {
   const goals = getCurrentUserGoals();
   const [addGoalOpen, setAddGoalOpen] = useState(false);
   const [contributionOpen, setContributionOpen] = useState(false);
+  const [editGoalsOpen, setEditGoalsOpen] = useState(false);
 
   // Progress calculation function
   const getProgressWidth = (current: number, target: number) => {
@@ -56,8 +57,8 @@ export default function GoalsPage() {
     <div className="min-h-screen bg-gray-50">
       <Nav showDashboardTabs={true} />
 
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-md mx-auto">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
               Savings Goals
@@ -100,13 +101,11 @@ export default function GoalsPage() {
             })}
 
             {/* Action Buttons */}
-            <div className="pt-4 space-y-4">
-              <div className="flex gap-4">
+            <div className="pt-4 space-y-4 flex flex-col items-center">
+              <div className="flex flex-wrap gap-4 justify-center">
                 <Dialog open={addGoalOpen} onOpenChange={setAddGoalOpen}>
                   <DialogTrigger asChild>
-                    <Button className="flex-1 bg-black text-white hover:bg-gray-800 py-3 text-base font-semibold cursor-pointer">
-                      Add New Goal
-                    </Button>
+                    <Button className="w-40">Add New Goal</Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
@@ -171,12 +170,86 @@ export default function GoalsPage() {
                       </div>
                     </div>
                     <DialogFooter>
+                      <Button type="submit">Create Goal</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={editGoalsOpen} onOpenChange={setEditGoalsOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-40">
+                      Edit Goals
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[525px]">
+                    <DialogHeader>
+                      <DialogTitle>Edit Savings Goals</DialogTitle>
+                      <DialogDescription>
+                        Modify your existing savings goals and target amounts.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
+                      {goals.map((goal) => (
+                        <div
+                          key={goal.id}
+                          className="grid gap-3 p-4 border rounded-lg"
+                        >
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-medium">
+                              {goal.name}
+                            </Label>
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor={`goal-name-${goal.id}`}>
+                              Goal Name
+                            </Label>
+                            <Input
+                              id={`goal-name-${goal.id}`}
+                              defaultValue={goal.name}
+                              className="w-full"
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor={`target-${goal.id}`}>
+                              Target Amount
+                            </Label>
+                            <Input
+                              id={`target-${goal.id}`}
+                              type="number"
+                              defaultValue={goal.targetAmount}
+                              className="w-full"
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor={`current-${goal.id}`}>
+                              Current Amount
+                            </Label>
+                            <Input
+                              id={`current-${goal.id}`}
+                              type="number"
+                              defaultValue={goal.currentAmount}
+                              className="w-full"
+                            />
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Progress: {formatCurrency(goal.currentAmount)} of{" "}
+                            {formatCurrency(goal.targetAmount)} (
+                            {Math.round(
+                              (goal.currentAmount / goal.targetAmount) * 100
+                            )}
+                            %)
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <DialogFooter className="gap-2">
                       <Button
-                        type="submit"
-                        className="bg-black text-white hover:bg-gray-800"
+                        variant="outline"
+                        onClick={() => setEditGoalsOpen(false)}
                       >
-                        Create Goal
+                        Cancel
                       </Button>
+                      <Button type="submit">Save Changes</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
@@ -186,10 +259,7 @@ export default function GoalsPage() {
                   onOpenChange={setContributionOpen}
                 >
                   <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="flex-1 py-3 text-base font-semibold border-gray-300 bg-white text-black hover:bg-gray-50 cursor-pointer"
-                    >
+                    <Button variant="outline" className="w-40">
                       Make Contribution
                     </Button>
                   </DialogTrigger>
@@ -257,24 +327,10 @@ export default function GoalsPage() {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button
-                        type="submit"
-                        className="bg-black text-white hover:bg-gray-800"
-                      >
-                        Add Contribution
-                      </Button>
+                      <Button type="submit">Add Contribution</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
-              </div>
-
-              <div className="flex gap-4">
-                <Button
-                  variant="outline"
-                  className="flex-1 py-3 text-base font-semibold border-gray-300 cursor-pointer"
-                >
-                  Edit Goals
-                </Button>
               </div>
             </div>
           </CardContent>

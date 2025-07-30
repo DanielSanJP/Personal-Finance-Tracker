@@ -11,8 +11,35 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
+import { toast } from "sonner";
 import { getCurrentUserTransactions, formatCurrency } from "@/lib/data";
 import Nav from "@/components/nav";
 
@@ -36,6 +63,9 @@ export default function TransactionsPage() {
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [editTransactionsOpen, setEditTransactionsOpen] = useState(false);
+  const [editSingleTransactionOpen, setEditSingleTransactionOpen] =
+    useState(false);
 
   // Get unique categories for filter
   const categories = [
@@ -64,9 +94,19 @@ export default function TransactionsPage() {
           date.getFullYear() === lastMonthYear && date.getMonth() === lastMonth
         );
       case "Last 3 Months":
-        const threeMonthsAgo = new Date(now);
-        threeMonthsAgo.setMonth(currentMonth - 3);
-        return date >= threeMonthsAgo;
+        // Calculate 3 months ago from the first day of the current month
+        const currentDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        const threeMonthsAgo = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth() - 3,
+          1
+        );
+        const transactionDate = new Date(
+          date.getFullYear(),
+          date.getMonth(),
+          1
+        );
+        return transactionDate >= threeMonthsAgo;
       case "This Year":
         return date.getFullYear() === currentYear;
       default:
@@ -120,8 +160,8 @@ export default function TransactionsPage() {
     <div className="min-h-screen bg-gray-50">
       <Nav showDashboardTabs={true} />
 
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-2xl mx-auto">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
               Transaction History
@@ -132,68 +172,150 @@ export default function TransactionsPage() {
             {/* Filter Controls */}
             <div className="flex gap-4">
               <div className="flex-1">
-                <select
+                <Select
                   value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  aria-label="Filter by category"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onValueChange={setSelectedCategory}
                 >
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex-1">
-                <select
+                <Select
                   value={selectedPeriod}
-                  onChange={(e) => setSelectedPeriod(e.target.value)}
-                  aria-label="Filter by time period"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onValueChange={setSelectedPeriod}
                 >
-                  {periods.map((period) => (
-                    <option key={period} value={period}>
-                      {period}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Filter by time period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {periods.map((period) => (
+                      <SelectItem key={period} value={period}>
+                        {period}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
             {/* Transaction List */}
-            <div className="space-y-4">
-              {filteredTransactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between py-4 border-b border-gray-200 last:border-b-0 cursor-pointer hover:bg-gray-50 transition-colors rounded-lg px-2"
-                  onClick={() => handleTransactionClick(transaction)}
-                >
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-lg">
-                      {transaction.description}
-                    </h3>
-                    <p className="text-gray-500 text-sm">
-                      {transaction.category}
-                    </p>
-                  </div>
-
-                  <div className="text-right">
-                    <p
-                      className={`font-bold text-lg ${getAmountColor(
-                        transaction.type
-                      )}`}
-                    >
-                      {transaction.type === "income" ? "+" : "-"}
-                      {formatCurrency(Math.abs(transaction.amount))}
-                    </p>
-                    <p className="text-gray-500 text-sm">
-                      {formatDate(transaction.date)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredTransactions.length ? (
+                    filteredTransactions.map((transaction) => (
+                      <TableRow
+                        key={transaction.id}
+                        className="cursor-pointer hover:bg-gray-50"
+                        onClick={() => handleTransactionClick(transaction)}
+                      >
+                        <TableCell className="font-medium">
+                          <div>
+                            <div className="font-semibold text-gray-900">
+                              {transaction.description}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {transaction.merchant}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">{transaction.category}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {formatDate(transaction.date)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div
+                            className={`font-bold ${getAmountColor(
+                              transaction.type
+                            )}`}
+                          >
+                            {transaction.type === "income" ? "+" : "-"}
+                            {formatCurrency(Math.abs(transaction.amount))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleTransactionClick(transaction);
+                                }}
+                              >
+                                View details
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(transaction.id);
+                                }}
+                              >
+                                Copy transaction ID
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedTransaction(transaction);
+                                  setEditSingleTransactionOpen(true);
+                                }}
+                              >
+                                Edit transaction
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => e.stopPropagation()}
+                                className="text-red-600"
+                              >
+                                Delete transaction
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-24 text-center">
+                        No transactions found.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
             </div>
 
             {/* Transaction Detail Modal */}
@@ -299,25 +421,241 @@ export default function TransactionsPage() {
               </DialogContent>
             </Dialog>
 
-            {/* Action Buttons */}
-            <div className="pt-6 space-y-4">
-              <Button
-                asChild
-                className="w-full bg-black text-white hover:bg-gray-800 py-6 text-lg font-semibold"
-              >
-                <Link href="/transactions/add">Add Transaction</Link>
-              </Button>
+            {/* Edit Single Transaction Modal */}
+            <Dialog
+              open={editSingleTransactionOpen}
+              onOpenChange={setEditSingleTransactionOpen}
+            >
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Edit Transaction</DialogTitle>
+                  <DialogDescription>
+                    Update the details of this transaction.
+                  </DialogDescription>
+                </DialogHeader>
+                {selectedTransaction && (
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-description">Description</Label>
+                      <Input
+                        id="edit-description"
+                        defaultValue={selectedTransaction.description}
+                        className="w-full"
+                      />
+                    </div>
 
-              <div className="flex gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="edit-amount">Amount</Label>
+                        <Input
+                          id="edit-amount"
+                          type="number"
+                          defaultValue={Math.abs(selectedTransaction.amount)}
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="edit-type">Type</Label>
+                        <Select defaultValue={selectedTransaction.type}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="expense">Expense</SelectItem>
+                            <SelectItem value="income">Income</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="edit-category">Category</Label>
+                        <Input
+                          id="edit-category"
+                          defaultValue={selectedTransaction.category}
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="edit-status">Status</Label>
+                        <Select defaultValue={selectedTransaction.status}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="completed">Completed</SelectItem>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="failed">Failed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-merchant">Merchant</Label>
+                      <Input
+                        id="edit-merchant"
+                        defaultValue={selectedTransaction.merchant}
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-date">Date</Label>
+                      <Input
+                        id="edit-date"
+                        type="date"
+                        defaultValue={selectedTransaction.date}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                )}
+                <DialogFooter className="gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditSingleTransactionOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit">Save Changes</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* Action Buttons */}
+            <div className="pt-6 space-y-4 flex flex-col items-center">
+              <div className="flex flex-wrap gap-4 justify-center">
+                <Button asChild className="w-40">
+                  <Link href="/transactions/add">Add Transaction</Link>
+                </Button>
+
+                <Dialog
+                  open={editTransactionsOpen}
+                  onOpenChange={setEditTransactionsOpen}
+                >
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-40">
+                      Edit Transactions
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                      <DialogTitle>Edit All Transactions</DialogTitle>
+                      <DialogDescription>
+                        Modify your existing transactions and their details.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
+                      {filteredTransactions.map((transaction) => (
+                        <div
+                          key={transaction.id}
+                          className="grid gap-3 p-4 border rounded-lg"
+                        >
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-medium">
+                              {transaction.description}
+                            </Label>
+                            <div className="text-sm text-gray-500">
+                              {formatDate(transaction.date)}
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="grid gap-2">
+                              <Label htmlFor={`desc-${transaction.id}`}>
+                                Description
+                              </Label>
+                              <Input
+                                id={`desc-${transaction.id}`}
+                                defaultValue={transaction.description}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor={`amount-${transaction.id}`}>
+                                Amount
+                              </Label>
+                              <Input
+                                id={`amount-${transaction.id}`}
+                                type="number"
+                                defaultValue={Math.abs(transaction.amount)}
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="grid gap-2">
+                              <Label htmlFor={`category-${transaction.id}`}>
+                                Category
+                              </Label>
+                              <Input
+                                id={`category-${transaction.id}`}
+                                defaultValue={transaction.category}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor={`merchant-${transaction.id}`}>
+                                Merchant
+                              </Label>
+                              <Input
+                                id={`merchant-${transaction.id}`}
+                                defaultValue={transaction.merchant}
+                                className="w-full"
+                              />
+                            </div>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Type: {transaction.type} | Status:{" "}
+                            {transaction.status}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <DialogFooter className="gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setEditTransactionsOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit">Save Changes</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="flex flex-wrap gap-4 justify-center">
                 <Button
                   variant="outline"
-                  className="flex-1 py-4 text-base font-semibold border-gray-300"
+                  className="w-40"
+                  onClick={() =>
+                    toast("Export Data functionality not implemented yet", {
+                      description:
+                        "This feature will be available in a future update.",
+                      action: {
+                        label: "Dismiss",
+                        onClick: () => console.log("Dismissed"),
+                      },
+                    })
+                  }
                 >
                   Export Data
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex-1 py-4 text-base font-semibold border-gray-300"
+                  className="w-40"
+                  onClick={() =>
+                    toast("Advanced Search functionality not implemented yet", {
+                      description:
+                        "This feature will be available in a future update.",
+                      action: {
+                        label: "Dismiss",
+                        onClick: () => console.log("Dismissed"),
+                      },
+                    })
+                  }
                 >
                   Advanced Search
                 </Button>

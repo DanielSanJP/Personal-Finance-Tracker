@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
+import { toast } from "sonner";
 import Nav from "@/components/nav";
 
 export default function AddTransactionPage() {
@@ -39,26 +40,42 @@ export default function AddTransactionPage() {
   };
 
   const handleSave = () => {
-    // Non-functional for now - just show an alert
-    alert("Save functionality not implemented yet");
+    // Non-functional for now - just show a toast
+    toast.success("Transaction saved successfully!", {
+      description: "Your transaction has been recorded.",
+      action: {
+        label: "Close",
+        onClick: () => console.log("Closed"),
+      },
+    });
   };
 
   const handleVoiceInput = () => {
-    // Non-functional for now
-    alert("Voice Input functionality not implemented yet");
+    toast("Voice Input functionality not implemented yet", {
+      description: "This feature will be available in a future update.",
+      action: {
+        label: "Dismiss",
+        onClick: () => console.log("Dismissed"),
+      },
+    });
   };
 
   const handleScanReceipt = () => {
-    // Non-functional for now
-    alert("Scan Receipt functionality not implemented yet");
+    toast("Scan Receipt functionality not implemented yet", {
+      description: "This feature will be available in a future update.",
+      action: {
+        label: "Dismiss",
+        onClick: () => console.log("Dismissed"),
+      },
+    });
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Nav showDashboardTabs={true} />
 
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-md mx-auto">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
               Add New Transaction
@@ -186,35 +203,32 @@ export default function AddTransactionPage() {
             {/* Action Buttons */}
             <div className="pt-4 space-y-4">
               {/* Save and Cancel Buttons */}
-              <div className="flex gap-4">
+              <div className="flex gap-4 justify-center">
                 <Button
                   onClick={handleCancel}
                   variant="outline"
-                  className="flex-1 py-3 text-base font-semibold border-gray-300 bg-white text-black hover:bg-gray-50 cursor-pointer"
+                  className="w-40"
                 >
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleSave}
-                  className="flex-1 bg-black text-white hover:bg-gray-800 py-3 text-base font-semibold cursor-pointer"
-                >
+                <Button onClick={handleSave} className="w-40">
                   Save
                 </Button>
               </div>
 
               {/* Voice Input and Scan Receipt */}
-              <div className="flex gap-4">
+              <div className="flex gap-4 justify-center">
                 <Button
                   onClick={handleVoiceInput}
                   variant="outline"
-                  className="flex-1 py-3 text-base font-semibold border-gray-300 cursor-pointer"
+                  className="w-40"
                 >
                   Voice Input
                 </Button>
                 <Button
                   onClick={handleScanReceipt}
                   variant="outline"
-                  className="flex-1 py-3 text-base font-semibold border-gray-300 cursor-pointer"
+                  className="w-40"
                 >
                   Scan Receipt
                 </Button>

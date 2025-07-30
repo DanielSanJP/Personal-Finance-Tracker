@@ -1,7 +1,10 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Nav from "@/components/nav";
 import { SpendingChart } from "@/components/spending-chart";
+import { toast } from "sonner";
 import Link from "next/link";
 import {
   getCurrentUserAccounts,
@@ -100,23 +103,45 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="mt-8 flex flex-wrap gap-4 justify-center">
-          <Link href="/income/add">
-            <Button variant="outline" className="p-6 cursor-pointer">
-              Add Income
-            </Button>
-          </Link>
-          <Link href="/transactions/add">
-            <Button variant="outline" className="p-6 cursor-pointer">
-              Add Expense
-            </Button>
-          </Link>
-          <Button variant="outline" className="p-6 cursor-pointer">
-            Scan Receipt
-          </Button>
+          {/* Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-gray-900">
+                Quick Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <Link href="/income/add">
+                  <Button variant="outline" className="p-6 cursor-pointer">
+                    Add Income
+                  </Button>
+                </Link>
+                <Link href="/transactions/add">
+                  <Button variant="outline" className="p-6 cursor-pointer">
+                    Add Expense
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  className="p-6 cursor-pointer"
+                  onClick={() =>
+                    toast("Scan Receipt functionality not implemented yet", {
+                      description:
+                        "This feature will be available in a future update.",
+                      action: {
+                        label: "Dismiss",
+                        onClick: () => console.log("Dismissed"),
+                      },
+                    })
+                  }
+                >
+                  Scan Receipt
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

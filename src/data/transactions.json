@@ -95,6 +95,78 @@
       "type": "expense",
       "merchant": "The Capital Grille",
       "status": "completed"
+    },
+    {
+      "id": "txn_009",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-06-25",
+      "description": "Grocery Store",
+      "amount": -50.0,
+      "category": "Food & Dining",
+      "type": "expense",
+      "merchant": "Grocery Store",
+      "status": "completed"
+    },
+    {
+      "id": "txn_014",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-05-15",
+      "description": "Car Purchase",
+      "amount": -3500.0,
+      "category": "Transportation",
+      "type": "expense",
+      "merchant": "AutoMax Dealership",
+      "status": "completed"
+    },
+    {
+      "id": "txn_010",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-04-30",
+      "description": "Monthly Salary",
+      "amount": 4000.0,
+      "category": "Income",
+      "type": "income",
+      "merchant": "Tech Solutions LLC",
+      "status": "completed"
+    },
+    {
+      "id": "txn_011",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-04-25",
+      "description": "Freelance Web Development",
+      "amount": 1500.0,
+      "category": "Income",
+      "type": "income",
+      "merchant": "StartupXYZ",
+      "status": "completed"
+    },
+    {
+      "id": "txn_012",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-04-15",
+      "description": "Monthly Rent",
+      "amount": -300.0,
+      "category": "Bills & Utilities",
+      "type": "expense",
+      "merchant": "Downtown Apartments",
+      "status": "completed"
+    },
+    {
+      "id": "txn_013",
+      "userId": "1",
+      "accountId": "acc_001",
+      "date": "2025-04-10",
+      "description": "Electronics Purchase",
+      "amount": -200.0,
+      "category": "Shopping",
+      "type": "expense",
+      "merchant": "Best Buy",
+      "status": "completed"
     }
   ]
 }

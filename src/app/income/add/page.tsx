@@ -50,8 +50,8 @@ export default function AddIncomePage() {
     <div className="min-h-screen bg-gray-50">
       <Nav showDashboardTabs={true} />
 
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-md mx-auto">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
               Add New Income
@@ -155,19 +155,16 @@ export default function AddIncomePage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4 pt-4">
+              <div className="flex gap-4 pt-4 justify-center">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => router.back()}
-                  className="flex-1 py-3 text-base font-semibold"
+                  className="w-40"
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  className="flex-1 bg-black text-white hover:bg-gray-800 py-3 text-base font-semibold"
-                >
+                <Button type="submit" className="w-40">
                   Save
                 </Button>
               </div>

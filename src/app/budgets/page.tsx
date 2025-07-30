@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AlertTriangle, Pencil } from "lucide-react";
+import { toast } from "sonner";
 import budgetsData from "@/data/budgets.json";
 import { useState } from "react";
 
@@ -78,12 +80,23 @@ export default function BudgetsPage() {
     return percentage;
   };
 
+  // Calculate total budget and remaining amounts
+  const totalBudget = budgets.reduce(
+    (sum, budget) => sum + budget.budgetAmount,
+    0
+  );
+  const totalSpent = budgets.reduce(
+    (sum, budget) => sum + budget.spentAmount,
+    0
+  );
+  const totalRemaining = totalBudget - totalSpent;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Nav showDashboardTabs={true} />
 
-      <div className="container mx-auto px-4 py-8">
-        <Card className="max-w-md mx-auto">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold text-center">
               Monthly Budget Overview
@@ -157,14 +170,81 @@ export default function BudgetsPage() {
               );
             })}
 
-            {/* Action Buttons */}
+            {/* Budget Summary */}
+            <Separator className="mt-6" />
             <div className="pt-4 space-y-4">
-              <div className="flex gap-4">
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="space-y-2">
+                  <div className="text-sm text-gray-600 font-medium">
+                    Total Budget
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="text-lg font-bold px-3 py-1"
+                  >
+                    ${totalBudget.toFixed(0)}
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-gray-600 font-medium">
+                    Total Spent
+                  </div>
+                  <Badge
+                    variant={
+                      totalSpent > totalBudget ? "destructive" : "secondary"
+                    }
+                    className="text-lg font-bold px-3 py-1"
+                  >
+                    ${totalSpent.toFixed(0)}
+                  </Badge>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-gray-600 font-medium">
+                    Remaining
+                  </div>
+                  <Badge
+                    variant={totalRemaining < 0 ? "destructive" : "default"}
+                    className="text-lg font-bold px-3 py-1"
+                  >
+                    ${totalRemaining.toFixed(0)}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Overall Progress Bar */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="font-medium">Overall Budget Progress</span>
+                  <span className="text-gray-600">
+                    {((totalSpent / totalBudget) * 100).toFixed(1)}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                  <div
+                    className={`h-3 rounded-full transition-all ${
+                      totalSpent > totalBudget
+                        ? "bg-red-500"
+                        : (totalSpent / totalBudget) * 100 > 80
+                        ? "bg-orange-500"
+                        : "bg-gray-900"
+                    }`}
+                    style={{
+                      width: `${Math.min(
+                        (totalSpent / totalBudget) * 100,
+                        100
+                      )}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-4 space-y-4 flex flex-col items-center">
+              <div className="flex flex-wrap gap-4 justify-center">
                 <Dialog open={addBudgetOpen} onOpenChange={setAddBudgetOpen}>
                   <DialogTrigger asChild>
-                    <Button className="flex-1 bg-black text-white hover:bg-gray-800 py-3 text-base font-semibold cursor-pointer">
-                      Add Budget
-                    </Button>
+                    <Button className="w-40">Add Budget</Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
@@ -219,12 +299,7 @@ export default function BudgetsPage() {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button
-                        type="submit"
-                        className="bg-black text-white hover:bg-gray-800"
-                      >
-                        Create Budget
-                      </Button>
+                      <Button type="submit">Create Budget</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
@@ -234,10 +309,7 @@ export default function BudgetsPage() {
                   onOpenChange={setEditBudgetsOpen}
                 >
                   <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="flex-1 py-3 text-base font-semibold border-gray-300 bg-white text-black hover:bg-gray-50 cursor-pointer"
-                    >
+                    <Button variant="outline" className="w-40">
                       Edit Budgets
                     </Button>
                   </DialogTrigger>
@@ -290,38 +362,44 @@ export default function BudgetsPage() {
                       >
                         Cancel
                       </Button>
-                      <Button
-                        type="submit"
-                        className="bg-black text-white hover:bg-gray-800"
-                      >
-                        Save Changes
-                      </Button>
+                      <Button type="submit">Save Changes</Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-wrap gap-4 justify-center">
                 <Button
                   variant="outline"
-                  className="flex-1 py-3 text-base font-semibold border-gray-300 cursor-pointer"
+                  className="w-40"
+                  onClick={() =>
+                    toast("View Reports functionality not implemented yet", {
+                      description:
+                        "This feature will be available in a future update.",
+                      action: {
+                        label: "Dismiss",
+                        onClick: () => console.log("Dismissed"),
+                      },
+                    })
+                  }
                 >
                   View Reports
                 </Button>
                 <Button
                   variant="outline"
-                  className="flex-1 py-3 text-base font-semibold border-gray-300 cursor-pointer"
+                  className="w-40"
+                  onClick={() =>
+                    toast("Export Data functionality not implemented yet", {
+                      description:
+                        "This feature will be available in a future update.",
+                      action: {
+                        label: "Dismiss",
+                        onClick: () => console.log("Dismissed"),
+                      },
+                    })
+                  }
                 >
                   Export Data
-                </Button>
-              </div>
-
-              <div className="flex justify-center">
-                <Button
-                  variant="outline"
-                  className="flex-1 py-3 text-base font-semibold border-gray-300 cursor-pointer"
-                >
-                  Settings
                 </Button>
               </div>
             </div>
