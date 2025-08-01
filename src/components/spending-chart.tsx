@@ -17,7 +17,25 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { getCurrentUserTransactions } from "@/lib/data";
+import {
+  getCurrentUserTransactions,
+  formatCurrency,
+  getCurrentMonthName,
+} from "@/lib/data";
+
+// Generate dynamic date range description
+const getDateRangeDescription = () => {
+  const now = new Date();
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+
+  const startMonth = sixMonthsAgo.toLocaleDateString("en-US", {
+    month: "long",
+  });
+  const currentMonth = now.toLocaleDateString("en-US", { month: "long" });
+  const year = now.getFullYear();
+
+  return `${startMonth} - ${currentMonth} ${year}`;
+};
 
 export const description = "A spending line chart";
 
@@ -39,7 +57,7 @@ const processChartData = () => {
     "December",
   ];
 
-  // Get last 7 months to include January - July
+  // Get last 7 months dynamically
   const now = new Date();
   const chartData = [];
 
@@ -62,7 +80,7 @@ const processChartData = () => {
 
     chartData.push({
       month: monthName,
-      spending: Math.round(monthlyExpenses),
+      spending: monthlyExpenses,
     });
   }
 
@@ -81,6 +99,7 @@ const chartConfig = {
 export function SpendingChart() {
   // Calculate trend
   const currentMonth = chartData[chartData.length - 1]?.spending || 0;
+  const currentMonthName = getCurrentMonthName();
   const previousMonth = chartData[chartData.length - 2]?.spending || 0;
   const trendPercentage =
     previousMonth !== 0
@@ -101,8 +120,13 @@ export function SpendingChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Monthly Spending</CardTitle>
-        <CardDescription>January - July 2025</CardDescription>
+        <CardTitle className="flex items-center justify-between">
+          <span>Monthly Spending</span>
+          <span className="text-xs sm:text-base">
+            {formatCurrency(currentMonth)} ({currentMonthName})
+          </span>
+        </CardTitle>
+        <CardDescription>{getDateRangeDescription()}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
@@ -129,7 +153,7 @@ export function SpendingChart() {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => `$${Math.round(value)}`}
+              tickFormatter={(value) => `$${value.toFixed(2)}`}
             />
             <ChartTooltip
               cursor={false}

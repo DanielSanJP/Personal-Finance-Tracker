@@ -100,3 +100,8 @@ export const formatCurrency = (amount: number) => {
     currency: 'USD'
   }).format(amount);
 };
+
+// Get current month name
+export const getCurrentMonthName = () => {
+  return new Date().toLocaleDateString('en-US', { month: 'long' });
+};

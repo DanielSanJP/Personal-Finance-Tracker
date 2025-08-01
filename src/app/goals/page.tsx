@@ -39,6 +39,11 @@ export default function GoalsPage() {
     return percentage;
   };
 
+  // Check if goal is achieved
+  const isGoalAchieved = (current: number, target: number) => {
+    return current >= target;
+  };
+
   // Date states for the modals
   const [targetDate, setTargetDate] = useState<Date | undefined>(undefined);
   const [contributionDate, setContributionDate] = useState<Date | undefined>(
@@ -71,6 +76,10 @@ export default function GoalsPage() {
                 goal.currentAmount,
                 goal.targetAmount
               );
+              const goalAchieved = isGoalAchieved(
+                goal.currentAmount,
+                goal.targetAmount
+              );
 
               return (
                 <div key={goal.id}>
@@ -87,7 +96,9 @@ export default function GoalsPage() {
 
                     <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                       <div
-                        className="h-2 rounded-full transition-all bg-gray-900"
+                        className={`h-2 rounded-full transition-all ${
+                          goalAchieved ? "bg-green-600" : "bg-gray-900"
+                        }`}
                         style={{ width: `${progressWidth}%` }}
                       />
                     </div>
@@ -95,6 +106,12 @@ export default function GoalsPage() {
                     <div className="text-sm text-gray-600">
                       <span>Target: {formatDate(goal.targetDate)}</span>
                     </div>
+
+                    {goalAchieved && (
+                      <div className="text-sm font-medium text-green-600">
+                        🎉 Goal Achieved!
+                      </div>
+                    )}
                   </div>
 
                   {index < goals.length - 1 && <Separator className="mt-4" />}

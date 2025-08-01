@@ -10,11 +10,13 @@ import {
   getCurrentUserAccounts,
   getCurrentUserSummary,
   formatCurrency,
+  getCurrentMonthName,
 } from "@/lib/data";
 
 export default function Dashboard() {
   const accounts = getCurrentUserAccounts();
   const summary = getCurrentUserSummary();
+  const currentMonth = getCurrentMonthName();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -36,10 +38,17 @@ export default function Dashboard() {
 
           <Card className=" flex flex-col justify-center gap-2">
             <CardHeader className="pb-1 px-4">
-              <CardTitle className=" text-center">This Month</CardTitle>
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 text-center">
+                This Month ({currentMonth})
+              </CardTitle>
             </CardHeader>
             <CardContent className="px-4">
-              <div className="text-lg sm:text-xl font-bold text-red-600 text-center">
+              <div
+                className={`text-lg sm:text-xl font-bold text-center ${
+                  summary.monthlyChange >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {summary.monthlyChange >= 0 ? "+" : ""}
                 {formatCurrency(summary.monthlyChange)}
               </div>
             </CardContent>
@@ -48,7 +57,7 @@ export default function Dashboard() {
           <Card className=" flex flex-col justify-center gap-2">
             <CardHeader className="pb-1 px-4">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 text-center">
-                Income (July)
+                Income ({currentMonth})
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4">
@@ -61,7 +70,7 @@ export default function Dashboard() {
           <Card className=" flex flex-col justify-center gap-2">
             <CardHeader className="pb-1 px-4">
               <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 text-center">
-                Budget Remaining (July)
+                Budget Remaining ({currentMonth})
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4">
