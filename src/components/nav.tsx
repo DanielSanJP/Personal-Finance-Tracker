@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Menubar, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
 import {
@@ -13,16 +13,90 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getCurrentUser } from "@/lib/data";
 import Breadcrumbs from "@/components/breadcrumbs";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 interface NavProps {
   showDashboardTabs?: boolean;
 }
 
+interface UserData {
+  id: string;
+  displayName?: string;
+  display_name?: string;
+  initials?: string;
+  firstName?: string;
+  first_name?: string;
+  lastName?: string;
+  last_name?: string;
+}
+
 export default function Nav({ showDashboardTabs = false }: NavProps) {
-  const user = getCurrentUser();
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Get current user
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    getUser();
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (isGuest) {
+      // Use guest data
+      setUserData({
+        id: "guest",
+        displayName: "Guest User",
+        initials: "GU",
+        firstName: "Guest",
+        lastName: "User",
+      });
+    } else if (user) {
+      // Use authenticated user data
+      setUserData({
+        id: user.id,
+        displayName:
+          user.user_metadata?.display_name ||
+          `${user.user_metadata?.first_name || ""} ${
+            user.user_metadata?.last_name || ""
+          }`.trim() ||
+          user.email,
+        initials:
+          user.user_metadata?.initials ||
+          `${user.user_metadata?.first_name?.[0] || ""}${
+            user.user_metadata?.last_name?.[0] || ""
+          }` ||
+          user.email?.[0]?.toUpperCase(),
+        firstName: user.user_metadata?.first_name,
+        lastName: user.user_metadata?.last_name,
+      });
+    } else {
+      setUserData(null);
+    }
+  }, [user, isGuest]);
 
   // Function to determine if a tab is active
   const isActiveTab = (path: string) => pathname === path;
@@ -37,6 +111,15 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
     } else {
       return `${baseStyles} bg-transparent text-zinc-500 hover:bg-white hover:text-black data-[state=open]:bg-white data-[state=open]:text-black`;
     }
+  };
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    toast.success("Signed out successfully", {
+      description: "You've been logged out of your account.",
+    });
   };
 
   return (
@@ -66,31 +149,39 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
                 </Button>
               </div>
             )}
-            {showDashboardTabs && (
+            {showDashboardTabs && userData && (
               <div className="flex items-center gap-3">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors">
                       <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                         <span className="text-sm font-medium text-gray-600">
-                          {user.initials}
+                          {userData.initials}
                         </span>
                       </div>
                       <span className="text-sm text-gray-600">
-                        {user.displayName}
+                        {userData.displayName}
+                        {isGuest && " (Guest)"}
                       </span>
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Profile</DropdownMenuItem>
-                    <DropdownMenuItem>Settings</DropdownMenuItem>
-                    <DropdownMenuItem>Preferences</DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                    {!isGuest && (
+                      <>
+                        <DropdownMenuItem>Profile</DropdownMenuItem>
+                        <DropdownMenuItem>Settings</DropdownMenuItem>
+                        <DropdownMenuItem>Preferences</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
                     <DropdownMenuItem>Help & Support</DropdownMenuItem>
-                    <DropdownMenuItem className="text-red-600" asChild>
-                      <Link href="/">Sign Out</Link>
+                    <DropdownMenuItem
+                      className="text-red-600"
+                      onClick={handleSignOut}
+                    >
+                      {isGuest ? "Exit Guest Mode" : "Sign Out"}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

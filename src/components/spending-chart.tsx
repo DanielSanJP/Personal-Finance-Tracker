@@ -2,6 +2,7 @@
 
 import { TrendingUp } from "lucide-react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { useEffect, useState } from "react";
 
 import {
   Card,
@@ -37,11 +38,20 @@ const getDateRangeDescription = () => {
   return `${startMonth} - ${currentMonth} ${year}`;
 };
 
-export const description = "A spending line chart";
+interface Transaction {
+  id: string;
+  date: string;
+  amount: number;
+  type: string;
+}
+
+interface ChartDataPoint {
+  month: string;
+  spending: number;
+}
 
 // Group expenses by month for the last 6 months
-const processChartData = () => {
-  const transactions = getCurrentUserTransactions();
+const processChartData = (transactions: Transaction[]): ChartDataPoint[] => {
   const months = [
     "January",
     "February",
@@ -59,7 +69,7 @@ const processChartData = () => {
 
   // Get last 7 months dynamically
   const now = new Date();
-  const chartData = [];
+  const chartData: ChartDataPoint[] = [];
 
   for (let i = 6; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -87,8 +97,6 @@ const processChartData = () => {
   return chartData;
 };
 
-const chartData = processChartData();
-
 const chartConfig = {
   spending: {
     label: "Monthly Spending",
@@ -97,6 +105,67 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function SpendingChart() {
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const transactions = await getCurrentUserTransactions();
+
+        if (Array.isArray(transactions)) {
+          const processedData = processChartData(transactions);
+          setChartData(processedData);
+        } else {
+          setChartData([]);
+        }
+      } catch (err) {
+        console.error("Error loading chart data:", err);
+        setError("Failed to load chart data");
+        setChartData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Monthly Spending</CardTitle>
+          <CardDescription>Loading chart data...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Monthly Spending</CardTitle>
+          <CardDescription>Error loading data</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-64 text-red-500">
+            {error}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Calculate trend
   const currentMonth = chartData[chartData.length - 1]?.spending || 0;
   const currentMonthName = getCurrentMonthName();
@@ -114,7 +183,7 @@ export function SpendingChart() {
   const minValue = Math.min(...allValues);
   const maxValue = Math.max(...allValues);
   const padding = Math.abs(maxValue - minValue) * 0.1 || 50; // 10% padding or minimum 50
-  const yAxisMin = minValue - padding;
+  const yAxisMin = Math.max(0, minValue - padding); // Don't go below 0
   const yAxisMax = maxValue + padding;
 
   return (

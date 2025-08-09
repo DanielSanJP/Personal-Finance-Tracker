@@ -24,15 +24,47 @@ import {
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { getCurrentUserGoals, formatCurrency } from "@/lib/data";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+
+interface Goal {
+  id: string;
+  userId: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  targetDate: string | null;
+  category: string | null;
+  priority: string | null;
+  status: string;
+}
 
 export default function GoalsPage() {
-  const goals = getCurrentUserGoals();
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [loading, setLoading] = useState(true);
   const [addGoalOpen, setAddGoalOpen] = useState(false);
   const [contributionOpen, setContributionOpen] = useState(false);
   const [editGoalsOpen, setEditGoalsOpen] = useState(false);
 
-  // Progress calculation function
+  useEffect(() => {
+    const loadGoals = async () => {
+      try {
+        setLoading(true);
+        const data = await getCurrentUserGoals();
+        setGoals(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error loading goals:", error);
+        setGoals([]);
+        toast.error("Failed to load goals");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadGoals();
+  }, []);
+
+  // Helper function for calculating progress percentage
   const getProgressWidth = (current: number, target: number) => {
     if (current === 0 || target === 0) return 0;
     const percentage = Math.min((current / target) * 100, 100);
@@ -50,13 +82,27 @@ export default function GoalsPage() {
     new Date()
   );
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "No target date";
     const date = new Date(dateString);
     return date.toLocaleDateString("en-GB", {
       month: "short",
       year: "numeric",
     });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Nav showDashboardTabs={true} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-lg">Loading goals...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -118,6 +164,18 @@ export default function GoalsPage() {
                 </div>
               );
             })}
+
+            {goals.length === 0 && (
+              <div className="text-center py-12">
+                <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                  No goals yet
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  Create your first financial goal to start tracking your
+                  progress.
+                </p>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="pt-4 space-y-4 flex flex-col items-center">

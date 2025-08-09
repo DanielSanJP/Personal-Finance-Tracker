@@ -1,14 +1,11 @@
 import { LoginForm } from "@/components/login-form";
-import Nav from "@/components/nav";
+import { login } from "./actions";
 
-export default function Page() {
+export default function LoginPage() {
   return (
-    <div className="min-h-screen">
-      <Nav />
-      <div className="flex min-h-[calc(100vh-4rem)] w-full items-center justify-center p-6 md:p-10">
-        <div className="w-full max-w-sm">
-          <LoginForm />
-        </div>
+    <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
+      <div className="w-full max-w-sm md:max-w-3xl">
+        <LoginForm loginAction={login} />
       </div>
     </div>
   );

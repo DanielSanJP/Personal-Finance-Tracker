@@ -6,6 +6,7 @@ import Nav from "@/components/nav";
 import { SpendingChart } from "@/components/spending-chart";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   getCurrentUserAccounts,
   getCurrentUserSummary,
@@ -13,10 +14,65 @@ import {
   getCurrentMonthName,
 } from "@/lib/data";
 
+interface Summary {
+  totalBalance: number;
+  monthlyChange: number;
+  monthlyIncome: number;
+  monthlyExpenses: number;
+  budgetRemaining: number;
+  accountBreakdown: Record<string, unknown>;
+  categorySpending: Record<string, unknown>;
+}
+
+interface Account {
+  id: string;
+  name: string;
+  balance: number;
+  type: string;
+}
+
 export default function Dashboard() {
-  const accounts = getCurrentUserAccounts();
-  const summary = getCurrentUserSummary();
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [loading, setLoading] = useState(true);
   const currentMonth = getCurrentMonthName();
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [accountsData, summaryData] = await Promise.all([
+          getCurrentUserAccounts(),
+          getCurrentUserSummary(),
+        ]);
+
+        setAccounts(accountsData);
+        setSummary(summaryData);
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+        toast.error("Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Nav showDashboardTabs={true} />
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-2 text-gray-600">Loading dashboard...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -31,7 +87,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="px-4">
               <div className="text-lg sm:text-xl font-bold text-gray-900 text-center">
-                {formatCurrency(summary.totalBalance)}
+                {summary
+                  ? formatCurrency(summary.totalBalance || 0)
+                  : formatCurrency(0)}
               </div>
             </CardContent>
           </Card>
@@ -45,11 +103,15 @@ export default function Dashboard() {
             <CardContent className="px-4">
               <div
                 className={`text-lg sm:text-xl font-bold text-center ${
-                  summary.monthlyChange >= 0 ? "text-green-600" : "text-red-600"
+                  summary && (summary.monthlyChange || 0) >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
                 }`}
               >
-                {summary.monthlyChange >= 0 ? "+" : ""}
-                {formatCurrency(summary.monthlyChange)}
+                {summary && (summary.monthlyChange || 0) >= 0 ? "+" : ""}
+                {summary
+                  ? formatCurrency(summary.monthlyChange || 0)
+                  : formatCurrency(0)}
               </div>
             </CardContent>
           </Card>
@@ -62,7 +124,10 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="px-4">
               <div className="text-lg sm:text-xl font-bold text-green-600 text-center">
-                +{formatCurrency(summary.monthlyIncome)}
+                +
+                {summary
+                  ? formatCurrency(summary.monthlyIncome || 0)
+                  : formatCurrency(0)}
               </div>
             </CardContent>
           </Card>
@@ -75,7 +140,9 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="px-4">
               <div className="text-lg sm:text-xl font-bold text-gray-900 text-center">
-                {formatCurrency(summary.budgetRemaining)}
+                {summary
+                  ? formatCurrency(summary.budgetRemaining || 0)
+                  : formatCurrency(0)}
               </div>
             </CardContent>
           </Card>
