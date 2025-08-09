@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Nav from "@/components/nav";
 import { SpendingChart } from "@/components/spending-chart";
+import { EmptyAccounts } from "@/components/empty-states";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ import {
   formatCurrency,
   getCurrentMonthName,
 } from "@/lib/data";
+import { useGuestMode } from "@/hooks/useGuestMode";
 
 interface Summary {
   totalBalance: number;
@@ -35,20 +37,35 @@ export default function Dashboard() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
+  const isGuest = useGuestMode();
   const currentMonth = getCurrentMonthName();
 
   useEffect(() => {
+    // Don't load data until we know the guest mode status
+    if (isGuest === null) {
+      console.log("🔍 Dashboard: Waiting for guest mode detection...");
+      return;
+    }
+
     const loadData = async () => {
       try {
+        console.log(
+          "🔍 Dashboard: Starting to load data, guest mode:",
+          isGuest
+        );
+
         const [accountsData, summaryData] = await Promise.all([
           getCurrentUserAccounts(),
           getCurrentUserSummary(),
         ]);
 
+        console.log("🔍 Dashboard: Loaded accounts:", accountsData);
+        console.log("🔍 Dashboard: Loaded summary:", summaryData);
+
         setAccounts(accountsData);
         setSummary(summaryData);
       } catch (error) {
-        console.error("Error loading dashboard data:", error);
+        console.error("🔥 Error loading dashboard data:", error);
         toast.error("Failed to load dashboard data");
       } finally {
         setLoading(false);
@@ -56,7 +73,7 @@ export default function Dashboard() {
     };
 
     loadData();
-  }, []);
+  }, [isGuest]);
 
   if (loading) {
     return (
@@ -160,23 +177,27 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {accounts.map((account, index) => (
-                  <div
-                    key={account.id}
-                    className={`flex justify-between items-center py-3 ${
-                      index < accounts.length - 1
-                        ? "border-b border-gray-100"
-                        : ""
-                    }`}
-                  >
-                    <span className="text-gray-700">{account.name}</span>
-                    <span className="font-semibold text-gray-900">
-                      {formatCurrency(account.balance)}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              {accounts.length === 0 ? (
+                <EmptyAccounts />
+              ) : (
+                <div className="space-y-4">
+                  {accounts.map((account, index) => (
+                    <div
+                      key={account.id}
+                      className={`flex justify-between items-center py-3 ${
+                        index < accounts.length - 1
+                          ? "border-b border-gray-100"
+                          : ""
+                      }`}
+                    >
+                      <span className="text-gray-700">{account.name}</span>
+                      <span className="font-semibold text-gray-900">
+                        {formatCurrency(account.balance)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 

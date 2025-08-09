@@ -2,13 +2,19 @@
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { setGuestMode } from "@/lib/data";
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
   loginAction?: (formData: FormData) => Promise<void>;
@@ -19,43 +25,30 @@ export function LoginForm({
   loginAction,
   ...props
 }: LoginFormProps) {
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleGuestMode = () => {
-    localStorage.setItem("guestMode", "true");
+    console.log("🔍 handleGuestMode: Starting guest mode setup...");
+    setGuestMode();
+    console.log("🔍 handleGuestMode: Guest mode set, showing toast...");
     toast.success("Welcome, Guest!", {
       description: "You're now using the app with sample data.",
       duration: 3000,
     });
+    console.log("🔍 handleGuestMode: Navigating to dashboard...");
     router.push("/dashboard");
   };
-
-  const handleSubmit = async (formData: FormData) => {
-    if (!loginAction) return;
-
-    setLoading(true);
-    try {
-      await loginAction(formData);
-      toast.success("Welcome back!", {
-        description: "You've been successfully logged in.",
-      });
-    } catch (error) {
-      toast.error("Login failed", {
-        description: "Please check your credentials and try again.",
-      });
-      setLoading(false);
-    }
-  };
-
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
+          <CardDescription>
+            Enter your email below to login to your account
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={handleSubmit}>
+          <form action={loginAction}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-3">
                 <Label htmlFor="email">Email</Label>
@@ -80,22 +73,9 @@ export function LoginForm({
                 <Input id="password" name="password" type="password" required />
               </div>
               <div className="flex flex-col gap-3">
-                <Button
-                  type="submit"
-                  className="w-full cursor-pointer"
-                  disabled={loading}
-                >
-                  {loading ? "Signing in..." : "Login"}
+                <Button type="submit" className="w-full cursor-pointer">
+                  Login
                 </Button>
-                <div className="mt-4 text-center text-sm">
-                  Don&apos;t have an account?{" "}
-                  <Link
-                    href="/register"
-                    className="underline underline-offset-4"
-                  >
-                    Sign up
-                  </Link>
-                </div>
                 <Button
                   type="button"
                   variant="outline"
@@ -105,6 +85,12 @@ export function LoginForm({
                   Continue as Guest
                 </Button>
               </div>
+            </div>
+            <div className="mt-4 text-center text-sm">
+              Don&apos;t have an account?{" "}
+              <Link href="/register" className="underline underline-offset-4">
+                Sign up
+              </Link>
             </div>
           </form>
         </CardContent>

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { getCurrentUserGoals, formatCurrency } from "@/lib/data";
+import { EmptyGoals } from "@/components/empty-states";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -117,53 +118,57 @@ export default function GoalsPage() {
           </CardHeader>
 
           <CardContent className="space-y-4">
-            {goals.map((goal, index) => {
-              const progressWidth = getProgressWidth(
-                goal.currentAmount,
-                goal.targetAmount
-              );
-              const goalAchieved = isGoalAchieved(
-                goal.currentAmount,
-                goal.targetAmount
-              );
+            {goals.length === 0 ? (
+              <EmptyGoals />
+            ) : (
+              goals.map((goal, index) => {
+                const progressWidth = getProgressWidth(
+                  goal.currentAmount,
+                  goal.targetAmount
+                );
+                const goalAchieved = isGoalAchieved(
+                  goal.currentAmount,
+                  goal.targetAmount
+                );
 
-              return (
-                <div key={goal.id}>
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
-                      <span className="text-sm sm:text-base font-medium">
-                        {goal.name}
-                      </span>
-                      <span className="text-sm sm:text-base text-gray-600">
-                        {formatCurrency(goal.currentAmount)} /{" "}
-                        {formatCurrency(goal.targetAmount)}
-                      </span>
-                    </div>
-
-                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                      <div
-                        className={`h-2 rounded-full transition-all ${
-                          goalAchieved ? "bg-green-600" : "bg-gray-900"
-                        }`}
-                        style={{ width: `${progressWidth}%` }}
-                      />
-                    </div>
-
-                    <div className="text-sm text-gray-600">
-                      <span>Target: {formatDate(goal.targetDate)}</span>
-                    </div>
-
-                    {goalAchieved && (
-                      <div className="text-sm font-medium text-green-600">
-                        🎉 Goal Achieved!
+                return (
+                  <div key={goal.id}>
+                    <div className="space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                        <span className="text-sm sm:text-base font-medium">
+                          {goal.name}
+                        </span>
+                        <span className="text-sm sm:text-base text-gray-600">
+                          {formatCurrency(goal.currentAmount)} /{" "}
+                          {formatCurrency(goal.targetAmount)}
+                        </span>
                       </div>
-                    )}
-                  </div>
 
-                  {index < goals.length - 1 && <Separator className="mt-4" />}
-                </div>
-              );
-            })}
+                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div
+                          className={`h-2 rounded-full transition-all ${
+                            goalAchieved ? "bg-green-600" : "bg-gray-900"
+                          }`}
+                          style={{ width: `${progressWidth}%` }}
+                        />
+                      </div>
+
+                      <div className="text-sm text-gray-600">
+                        <span>Target: {formatDate(goal.targetDate)}</span>
+                      </div>
+
+                      {goalAchieved && (
+                        <div className="text-sm font-medium text-green-600">
+                          🎉 Goal Achieved!
+                        </div>
+                      )}
+                    </div>
+
+                    {index < goals.length - 1 && <Separator className="mt-4" />}
+                  </div>
+                );
+              })
+            )}
 
             {goals.length === 0 && (
               <div className="text-center py-12">
