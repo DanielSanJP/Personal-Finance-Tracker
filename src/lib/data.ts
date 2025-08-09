@@ -80,15 +80,6 @@ export const setGuestMode = () => {
 export const getCurrentUser = async (): Promise<User | null> => {
   console.log('🔍 getCurrentUser called');
   
-  // Check guest mode first before any Supabase calls
-  const guestModeActive = isGuestMode();
-  console.log('🔍 Guest mode active:', guestModeActive);
-  
-  if (guestModeActive) {
-    console.log('🔍 Returning guest user:', usersData.users[0]);
-    return usersData.users[0];
-  }
-  
   try {
     console.log('🔍 Creating Supabase client...');
     const supabase = createClient();
@@ -98,43 +89,53 @@ export const getCurrentUser = async (): Promise<User | null> => {
     
     console.log('🔍 Supabase auth result:', { user: user?.id, error: error?.message });
     
-    if (error || !user) {
-      console.log('🔍 No authenticated user found');
-      return null;
+    if (!error && user) {
+      // If we have a real authenticated user, clear guest mode
+      console.log('🔍 Authenticated user found, clearing guest mode if set');
+      clearGuestMode();
+
+      console.log('🔍 Getting user profile from database for user:', user.id);
+      // Get user profile from database
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      console.log('🔍 Profile query result:', { profile, error: profileError?.message });
+      
+      if (profileError || !profile) {
+        console.log('🔍 No profile found in database, returning basic user info');
+        // If no profile exists, return the auth user data
+        return {
+          id: user.id,
+          email: user.email || '',
+          first_name: user.user_metadata?.first_name || '',
+          last_name: user.user_metadata?.last_name || '',
+          display_name: user.user_metadata?.display_name || `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim() || user.email || '',
+          initials: `${user.user_metadata?.first_name?.[0] || ''}${user.user_metadata?.last_name?.[0] || ''}`.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'
+        };
+      }
+      
+      return profile;
     }
 
-    // If we have a real authenticated user, clear guest mode
-    console.log('🔍 Authenticated user found, clearing guest mode if set');
-    clearGuestMode();
-
-    console.log('🔍 Getting user profile from database for user:', user.id);
-    // Get user profile from database
-    const { data: profile, error: profileError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    console.log('🔍 Profile query result:', { profile, error: profileError?.message });
+    // No authenticated user found, check guest mode
+    console.log('🔍 No authenticated user found, checking guest mode');
+    const guestModeActive = isGuestMode();
+    console.log('🔍 Guest mode active:', guestModeActive);
     
-    if (profileError || !profile) {
-      console.log('🔍 No profile found in database, returning basic user info');
-      // If no profile exists, return the auth user data
-      return {
-        id: user.id,
-        email: user.email || '',
-        first_name: user.user_metadata?.first_name || '',
-        last_name: user.user_metadata?.last_name || '',
-        display_name: user.user_metadata?.display_name || `${user.user_metadata?.first_name || ''} ${user.user_metadata?.last_name || ''}`.trim() || user.email || '',
-        initials: `${user.user_metadata?.first_name?.[0] || ''}${user.user_metadata?.last_name?.[0] || ''}`.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'
-      };
+    if (guestModeActive) {
+      console.log('🔍 Returning guest user:', usersData.users[0]);
+      return usersData.users[0];
     }
-    
-    return profile;
+
+    console.log('🔍 No authenticated user and no guest mode, returning null');
+    return null;
   } catch (error) {
     console.error('🔥 Error getting current user:', error);
     
-    // Fallback to guest mode if there's an error
+    // Fallback to guest mode if there's an error and guest mode is active
     const guestModeActive = isGuestMode();
     console.log('🔍 Error occurred, guest mode active:', guestModeActive);
     
@@ -179,6 +180,7 @@ export const getCurrentUserAccounts = async (): Promise<Account[]> => {
     return [];
   }
   
+  // Check if we're in guest mode after getting the user
   const guestModeActive = isGuestMode();
   console.log('🔍 Guest mode for accounts:', guestModeActive);
   

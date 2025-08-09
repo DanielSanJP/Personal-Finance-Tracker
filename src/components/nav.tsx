@@ -18,6 +18,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
+import { useGuestMode } from "@/hooks/useGuestMode";
+import { clearGuestMode } from "@/lib/data";
 
 interface NavProps {
   showDashboardTabs?: boolean;
@@ -38,7 +40,7 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [isGuest, setIsGuest] = useState(false);
+  const isGuest = useGuestMode();
   const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
@@ -50,6 +52,12 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
+
+      // If we have an authenticated user, clear guest mode
+      if (user) {
+        console.log("🔍 Nav: Authenticated user found, clearing guest mode");
+        clearGuestMode();
+      }
     };
 
     getUser();
@@ -58,7 +66,14 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("🔍 Nav: Auth state change:", event, session?.user?.id);
       setUser(session?.user ?? null);
+
+      // Clear guest mode when user signs in
+      if (event === "SIGNED_IN" && session?.user) {
+        console.log("🔍 Nav: User signed in, clearing guest mode");
+        clearGuestMode();
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -116,6 +131,11 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
   const handleSignOut = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+
+    // Clear guest mode when signing out
+    console.log("🔍 Nav: Signing out, clearing guest mode");
+    clearGuestMode();
+
     router.push("/login");
     toast.success("Signed out successfully", {
       description: "You've been logged out of your account.",

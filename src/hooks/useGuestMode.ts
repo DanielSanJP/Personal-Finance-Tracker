@@ -16,6 +16,7 @@ export const useGuestMode = () => {
         setIsGuest(guestMode);
       } else {
         console.log('🔍 useGuestMode: Window not available (SSR)');
+        setIsGuest(false);
       }
     };
 
@@ -34,12 +35,20 @@ export const useGuestMode = () => {
       checkGuestMode();
     };
 
+    // Also listen for focus events to re-check when the window gains focus
+    const handleFocus = () => {
+      console.log('🔍 useGuestMode: Window focus detected, re-checking guest mode');
+      checkGuestMode();
+    };
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('guestModeChanged', handleGuestModeChange as EventListener);
+    window.addEventListener('focus', handleFocus);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('guestModeChanged', handleGuestModeChange as EventListener);
+      window.removeEventListener('focus', handleFocus);
     };
   }, []);
 

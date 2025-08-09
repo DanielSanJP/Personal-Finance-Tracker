@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Nav from "@/components/nav";
 import { Button } from "@/components/ui/button";
@@ -10,14 +10,38 @@ import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
 import { getCurrentUserAccounts } from "@/lib/data";
 
+interface Account {
+  id: string;
+  name: string;
+  balance: number;
+  type: string;
+}
+
 export default function AddIncomePage() {
   const router = useRouter();
-  const accounts = getCurrentUserAccounts();
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [incomeSource, setIncomeSource] = useState("");
   const [account, setAccount] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
+
+  useEffect(() => {
+    const loadAccounts = async () => {
+      try {
+        const accountsData = await getCurrentUserAccounts();
+        setAccounts(Array.isArray(accountsData) ? accountsData : []);
+      } catch (error) {
+        console.error("Error loading accounts:", error);
+        setAccounts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAccounts();
+  }, []);
 
   const incomeSourceOptions = [
     "Salary",
@@ -59,116 +83,125 @@ export default function AddIncomePage() {
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Amount */}
-              <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="!px-4 !py-3"
-                />
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  placeholder="Source of income..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="!px-4 !py-3"
-                />
-              </div>
-
-              {/* Income Source */}
-              <div className="space-y-2">
-                <Label htmlFor="incomeSource">Income Source</Label>
-                <select
-                  id="incomeSource"
-                  title="Select income source"
-                  value={incomeSource}
-                  onChange={(e) => setIncomeSource(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                >
-                  <option value="">Select income source...</option>
-                  {incomeSourceOptions.map((source) => (
-                    <option key={source} value={source}>
-                      {source}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Deposit to Account */}
-              <div className="space-y-2">
-                <Label htmlFor="account">Deposit to Account</Label>
-                <select
-                  id="account"
-                  title="Select account to deposit to"
-                  value={account}
-                  onChange={(e) => setAccount(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                >
-                  <option value="">Select account...</option>
-                  {accounts.map((acc) => (
-                    <option key={acc.id} value={acc.id}>
-                      {acc.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Date */}
-              <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
-                <DatePicker
-                  id="date"
-                  date={date}
-                  onDateChange={setDate}
-                  placeholder="dd/mm/yyyy"
-                />
-              </div>
-
-              {/* Quick Add */}
-              <div className="space-y-3">
-                <Label>Quick Add:</Label>
-                <div className="flex flex-wrap gap-2">
-                  {incomeSourceOptions.map((source) => (
-                    <Button
-                      key={source}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuickAdd(source)}
-                      className="text-xs px-3 py-1"
-                    >
-                      {source}
-                    </Button>
-                  ))}
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                  <p className="mt-2 text-gray-600">Loading accounts...</p>
                 </div>
               </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Amount */}
+                <div className="space-y-2">
+                  <Label htmlFor="amount">Amount</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="!px-4 !py-3"
+                  />
+                </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-4 pt-4 justify-center">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.back()}
-                  className="w-40"
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" className="w-40">
-                  Save
-                </Button>
-              </div>
-            </form>
+                {/* Description */}
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Input
+                    id="description"
+                    placeholder="Source of income..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="!px-4 !py-3"
+                  />
+                </div>
+
+                {/* Income Source */}
+                <div className="space-y-2">
+                  <Label htmlFor="incomeSource">Income Source</Label>
+                  <select
+                    id="incomeSource"
+                    title="Select income source"
+                    value={incomeSource}
+                    onChange={(e) => setIncomeSource(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                  >
+                    <option value="">Select income source...</option>
+                    {incomeSourceOptions.map((source) => (
+                      <option key={source} value={source}>
+                        {source}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Deposit to Account */}
+                <div className="space-y-2">
+                  <Label htmlFor="account">Deposit to Account</Label>
+                  <select
+                    id="account"
+                    title="Select account to deposit to"
+                    value={account}
+                    onChange={(e) => setAccount(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                  >
+                    <option value="">Select account...</option>
+                    {accounts.map((acc) => (
+                      <option key={acc.id} value={acc.id}>
+                        {acc.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Date */}
+                <div className="space-y-2">
+                  <Label htmlFor="date">Date</Label>
+                  <DatePicker
+                    id="date"
+                    date={date}
+                    onDateChange={setDate}
+                    placeholder="dd/mm/yyyy"
+                  />
+                </div>
+
+                {/* Quick Add */}
+                <div className="space-y-3">
+                  <Label>Quick Add:</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {incomeSourceOptions.map((source) => (
+                      <Button
+                        key={source}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleQuickAdd(source)}
+                        className="text-xs px-3 py-1"
+                      >
+                        {source}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-4 pt-4 justify-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => router.back()}
+                    className="w-40"
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="w-40">
+                    Save
+                  </Button>
+                </div>
+              </form>
+            )}
           </CardContent>
         </Card>
       </div>

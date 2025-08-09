@@ -170,251 +170,243 @@ export default function GoalsPage() {
               })
             )}
 
-            {goals.length === 0 && (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                  No goals yet
-                </h3>
-                <p className="text-gray-500 mb-4">
-                  Create your first financial goal to start tracking your
-                  progress.
-                </p>
+            {/* Action Buttons - Only show when there are goals */}
+            {goals.length > 0 && (
+              <div className="pt-4 space-y-4 flex flex-col items-center">
+                <div className="flex flex-wrap gap-4 justify-center">
+                  <Dialog open={addGoalOpen} onOpenChange={setAddGoalOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-32 sm:w-40">Add New Goal</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Add New Savings Goal</DialogTitle>
+                        <DialogDescription>
+                          Create a new savings goal with your target amount and
+                          timeline.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="goal-name">Goal Name</Label>
+                          <Input
+                            id="goal-name"
+                            placeholder="e.g., Emergency Fund, Vacation, New Car"
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="target-amount">Target Amount</Label>
+                          <Input
+                            id="target-amount"
+                            type="number"
+                            placeholder="Enter target amount"
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="current-amount">
+                            Current Amount (Optional)
+                          </Label>
+                          <Input
+                            id="current-amount"
+                            type="number"
+                            placeholder="Enter current savings amount"
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="target-date">Target Date</Label>
+                          <DatePicker
+                            id="target-date"
+                            date={targetDate}
+                            onDateChange={setTargetDate}
+                            placeholder="Select target date"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="priority">Priority Level</Label>
+                          <Select>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select priority" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="high">
+                                High Priority
+                              </SelectItem>
+                              <SelectItem value="medium">
+                                Medium Priority
+                              </SelectItem>
+                              <SelectItem value="low">Low Priority</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit">Create Goal</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
+                  <Dialog open={editGoalsOpen} onOpenChange={setEditGoalsOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-32 sm:w-40">
+                        Edit Goals
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[525px]">
+                      <DialogHeader>
+                        <DialogTitle>Edit Savings Goals</DialogTitle>
+                        <DialogDescription>
+                          Modify your existing savings goals and target amounts.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
+                        {goals.map((goal) => (
+                          <div
+                            key={goal.id}
+                            className="grid gap-3 p-4 border rounded-lg"
+                          >
+                            <div className="flex items-center justify-between">
+                              <Label className="text-base font-medium">
+                                {goal.name}
+                              </Label>
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor={`goal-name-${goal.id}`}>
+                                Goal Name
+                              </Label>
+                              <Input
+                                id={`goal-name-${goal.id}`}
+                                defaultValue={goal.name}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor={`target-${goal.id}`}>
+                                Target Amount
+                              </Label>
+                              <Input
+                                id={`target-${goal.id}`}
+                                type="number"
+                                defaultValue={goal.targetAmount}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="grid gap-2">
+                              <Label htmlFor={`current-${goal.id}`}>
+                                Current Amount
+                              </Label>
+                              <Input
+                                id={`current-${goal.id}`}
+                                type="number"
+                                defaultValue={goal.currentAmount}
+                                className="w-full"
+                              />
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              Progress: {formatCurrency(goal.currentAmount)} of{" "}
+                              {formatCurrency(goal.targetAmount)} (
+                              {Math.round(
+                                (goal.currentAmount / goal.targetAmount) * 100
+                              )}
+                              %)
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <DialogFooter className="gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setEditGoalsOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button type="submit">Save Changes</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
+                  <Dialog
+                    open={contributionOpen}
+                    onOpenChange={setContributionOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-32 sm:w-40">
+                        Make Contribution
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Make a Contribution</DialogTitle>
+                        <DialogDescription>
+                          Add money to one of your existing savings goals.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="goal-select">Select Goal</Label>
+                          <Select>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Choose a goal" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {goals.map((goal) => (
+                                <SelectItem
+                                  key={goal.id}
+                                  value={goal.id.toString()}
+                                >
+                                  <div className="flex flex-col">
+                                    <span>{goal.name}</span>
+                                    <span className="text-sm text-gray-500">
+                                      {formatCurrency(goal.currentAmount)} /{" "}
+                                      {formatCurrency(goal.targetAmount)}
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="contribution-amount">
+                            Contribution Amount
+                          </Label>
+                          <Input
+                            id="contribution-amount"
+                            type="number"
+                            placeholder="Enter amount to contribute"
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="contribution-date">
+                            Contribution Date
+                          </Label>
+                          <DatePicker
+                            id="contribution-date"
+                            date={contributionDate}
+                            onDateChange={setContributionDate}
+                            placeholder="Select contribution date"
+                          />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="notes">Notes (Optional)</Label>
+                          <Input
+                            id="notes"
+                            placeholder="Add a note about this contribution"
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button type="submit">Add Contribution</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </div>
             )}
-
-            {/* Action Buttons */}
-            <div className="pt-4 space-y-4 flex flex-col items-center">
-              <div className="flex flex-wrap gap-4 justify-center">
-                <Dialog open={addGoalOpen} onOpenChange={setAddGoalOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-32 sm:w-40">Add New Goal</Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Add New Savings Goal</DialogTitle>
-                      <DialogDescription>
-                        Create a new savings goal with your target amount and
-                        timeline.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="goal-name">Goal Name</Label>
-                        <Input
-                          id="goal-name"
-                          placeholder="e.g., Emergency Fund, Vacation, New Car"
-                          className="w-full"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="target-amount">Target Amount</Label>
-                        <Input
-                          id="target-amount"
-                          type="number"
-                          placeholder="Enter target amount"
-                          className="w-full"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="current-amount">
-                          Current Amount (Optional)
-                        </Label>
-                        <Input
-                          id="current-amount"
-                          type="number"
-                          placeholder="Enter current savings amount"
-                          className="w-full"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="target-date">Target Date</Label>
-                        <DatePicker
-                          id="target-date"
-                          date={targetDate}
-                          onDateChange={setTargetDate}
-                          placeholder="Select target date"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="priority">Priority Level</Label>
-                        <Select>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select priority" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="high">High Priority</SelectItem>
-                            <SelectItem value="medium">
-                              Medium Priority
-                            </SelectItem>
-                            <SelectItem value="low">Low Priority</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button type="submit">Create Goal</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog open={editGoalsOpen} onOpenChange={setEditGoalsOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-32 sm:w-40">
-                      Edit Goals
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[525px]">
-                    <DialogHeader>
-                      <DialogTitle>Edit Savings Goals</DialogTitle>
-                      <DialogDescription>
-                        Modify your existing savings goals and target amounts.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
-                      {goals.map((goal) => (
-                        <div
-                          key={goal.id}
-                          className="grid gap-3 p-4 border rounded-lg"
-                        >
-                          <div className="flex items-center justify-between">
-                            <Label className="text-base font-medium">
-                              {goal.name}
-                            </Label>
-                          </div>
-                          <div className="grid gap-2">
-                            <Label htmlFor={`goal-name-${goal.id}`}>
-                              Goal Name
-                            </Label>
-                            <Input
-                              id={`goal-name-${goal.id}`}
-                              defaultValue={goal.name}
-                              className="w-full"
-                            />
-                          </div>
-                          <div className="grid gap-2">
-                            <Label htmlFor={`target-${goal.id}`}>
-                              Target Amount
-                            </Label>
-                            <Input
-                              id={`target-${goal.id}`}
-                              type="number"
-                              defaultValue={goal.targetAmount}
-                              className="w-full"
-                            />
-                          </div>
-                          <div className="grid gap-2">
-                            <Label htmlFor={`current-${goal.id}`}>
-                              Current Amount
-                            </Label>
-                            <Input
-                              id={`current-${goal.id}`}
-                              type="number"
-                              defaultValue={goal.currentAmount}
-                              className="w-full"
-                            />
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            Progress: {formatCurrency(goal.currentAmount)} of{" "}
-                            {formatCurrency(goal.targetAmount)} (
-                            {Math.round(
-                              (goal.currentAmount / goal.targetAmount) * 100
-                            )}
-                            %)
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <DialogFooter className="gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setEditGoalsOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit">Save Changes</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog
-                  open={contributionOpen}
-                  onOpenChange={setContributionOpen}
-                >
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-32 sm:w-40">
-                      Make Contribution
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Make a Contribution</DialogTitle>
-                      <DialogDescription>
-                        Add money to one of your existing savings goals.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="goal-select">Select Goal</Label>
-                        <Select>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Choose a goal" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {goals.map((goal) => (
-                              <SelectItem
-                                key={goal.id}
-                                value={goal.id.toString()}
-                              >
-                                <div className="flex flex-col">
-                                  <span>{goal.name}</span>
-                                  <span className="text-sm text-gray-500">
-                                    {formatCurrency(goal.currentAmount)} /{" "}
-                                    {formatCurrency(goal.targetAmount)}
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="contribution-amount">
-                          Contribution Amount
-                        </Label>
-                        <Input
-                          id="contribution-amount"
-                          type="number"
-                          placeholder="Enter amount to contribute"
-                          className="w-full"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="contribution-date">
-                          Contribution Date
-                        </Label>
-                        <DatePicker
-                          id="contribution-date"
-                          date={contributionDate}
-                          onDateChange={setContributionDate}
-                          placeholder="Select contribution date"
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="notes">Notes (Optional)</Label>
-                        <Input
-                          id="notes"
-                          placeholder="Add a note about this contribution"
-                          className="w-full"
-                        />
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button type="submit">Add Contribution</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>

@@ -120,12 +120,14 @@ export default function Dashboard() {
             <CardContent className="px-4">
               <div
                 className={`text-lg sm:text-xl font-bold text-center ${
-                  summary && (summary.monthlyChange || 0) >= 0
+                  !summary || (summary.monthlyChange || 0) === 0
+                    ? "text-gray-900"
+                    : (summary.monthlyChange || 0) > 0
                     ? "text-green-600"
                     : "text-red-600"
                 }`}
               >
-                {summary && (summary.monthlyChange || 0) >= 0 ? "+" : ""}
+                {summary && (summary.monthlyChange || 0) > 0 ? "+" : ""}
                 {summary
                   ? formatCurrency(summary.monthlyChange || 0)
                   : formatCurrency(0)}
@@ -140,8 +142,14 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4">
-              <div className="text-lg sm:text-xl font-bold text-green-600 text-center">
-                +
+              <div
+                className={`text-lg sm:text-xl font-bold text-center ${
+                  !summary || (summary.monthlyIncome || 0) === 0
+                    ? "text-gray-900"
+                    : "text-green-600"
+                }`}
+              >
+                {summary && (summary.monthlyIncome || 0) > 0 ? "+" : ""}
                 {summary
                   ? formatCurrency(summary.monthlyIncome || 0)
                   : formatCurrency(0)}
