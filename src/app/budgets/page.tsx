@@ -44,7 +44,6 @@ interface Budget {
 
 export default function BudgetsPage() {
   const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [loading, setLoading] = useState(true);
   const [addBudgetOpen, setAddBudgetOpen] = useState(false);
   const [editBudgetsOpen, setEditBudgetsOpen] = useState(false);
 
@@ -56,8 +55,6 @@ export default function BudgetsPage() {
       } catch (error) {
         console.error("Error loading budgets:", error);
         toast.error("Failed to load budgets");
-      } finally {
-        setLoading(false);
       }
     };
 
