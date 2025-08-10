@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
     ];
     return config;
   },
+  // Turbopack configuration for development (now stable)
+  turbopack: {
+    rules: {
+      // Add any custom Turbopack rules here if needed
+    },
+    resolveAlias: {
+      // Add any resolve aliases here if needed
+    },
+  },
 };
 
 export default nextConfig;
