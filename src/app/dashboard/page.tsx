@@ -13,10 +13,10 @@ import {
   getDashboardData,
   formatCurrency,
   getCurrentMonthName,
-  clearUserCache,
 } from "@/lib/data";
+import { clearUserCache } from "@/lib/data/auth";
+import { dataCache } from "@/lib/data/cache";
 import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
 import type { DashboardData } from "@/lib/data";
 
 export default function Dashboard() {
@@ -24,59 +24,55 @@ export default function Dashboard() {
     null
   );
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
   const currentMonth = getCurrentMonthName();
 
-  // Get user auth state
+  // Handle auth state changes for cache clearing
   useEffect(() => {
     const supabase = createClient();
 
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-      setAuthLoading(false);
-    };
-
-    getUser();
-
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
-      setAuthLoading(false);
-
-      // Clear cache when user changes
-      if (event === "SIGNED_OUT" || !session?.user) {
+    } = supabase.auth.onAuthStateChange(async (event) => {
+      // Clear cache when user changes or signs out
+      if (event === "SIGNED_OUT" || event === "SIGNED_IN") {
+        dataCache.clearAll();
         clearUserCache();
+
+        // If signed out, don't try to load data
+        if (event === "SIGNED_OUT") {
+          setDashboardData(null);
+          setLoading(false);
+          return;
+        }
+
+        // If signed in, reload data after a brief delay to ensure auth state is settled
+        setTimeout(() => {
+          setLoading(true);
+          loadData();
+        }, 100);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  const loadData = async () => {
+    try {
+      const data = await getDashboardData();
+      setDashboardData(data);
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+      toast.error("Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // Don't load data until auth is ready
-    if (authLoading || !user) return;
-
-    const loadData = async () => {
-      try {
-        const data = await getDashboardData();
-        setDashboardData(data);
-      } catch (error) {
-        console.error("Error loading dashboard data:", error);
-        toast.error("Failed to load dashboard data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadData();
-  }, [authLoading, user]);
+  }, []);
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Nav showDashboardTabs={true} />
@@ -87,8 +83,7 @@ export default function Dashboard() {
     );
   }
 
-  // Redirect to login if no user (not guest mode)
-  if (!user || !dashboardData) {
+  if (!dashboardData) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Nav showDashboardTabs={true} />
@@ -96,11 +91,11 @@ export default function Dashboard() {
           <Card>
             <CardContent className="p-8 text-center">
               <p className="text-gray-600 mb-4">
-                Please sign in to view your dashboard
+                Failed to load dashboard data
               </p>
-              <Link href="/login">
-                <Button>Sign In</Button>
-              </Link>
+              <Button onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
             </CardContent>
           </Card>
         </div>

@@ -63,6 +63,12 @@ export const calculateCurrentUserSummary = async () => {
 
 export const getSummaryByUserId = async (userId: string) => {
   try {
+    // Validate userId parameter
+    if (!userId || typeof userId !== 'string') {
+      console.error('Error fetching summary by user ID: Invalid or missing userId:', userId);
+      return null;
+    }
+
     const supabase = createClient();
     const { data, error } = await supabase
       .from('summary')
@@ -71,6 +77,15 @@ export const getSummaryByUserId = async (userId: string) => {
       .single();
 
     if (error) {
+      // If no summary record exists, return default values instead of erroring
+      if (error.code === 'PGRST116') {
+        console.log('No summary record found for user, returning defaults');
+        return {
+          user_id: userId,
+          accountBreakdown: {},
+          categorySpending: {}
+        };
+      }
       console.error('Error fetching summary by user ID:', error);
       return null;
     }

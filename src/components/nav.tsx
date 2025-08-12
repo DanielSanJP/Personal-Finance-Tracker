@@ -16,6 +16,8 @@ import {
 import Breadcrumbs from "@/components/breadcrumbs";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { clearUserCache } from "@/lib/data/auth";
+import { dataCache } from "@/lib/data/cache";
 import { useState, useEffect } from "react";
 import type { User } from "@supabase/supabase-js";
 import { GUEST_USER_ID } from "@/lib/guest-protection";
@@ -96,12 +98,28 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
       : null;
 
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
-    toast.success("Signed out successfully", {
-      description: "You've been logged out of your account.",
-    });
+    try {
+      const supabase = createClient();
+
+      // Clear all cached data first
+      dataCache.clearAll();
+      clearUserCache();
+
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+
+      // Redirect to login
+      router.push("/login");
+
+      toast.success("Signed out successfully", {
+        description: "You've been logged out of your account.",
+      });
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast.error("Error signing out", {
+        description: "There was a problem signing you out. Please try again.",
+      });
+    }
   };
 
   return (
