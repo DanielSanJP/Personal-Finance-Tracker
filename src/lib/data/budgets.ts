@@ -1,6 +1,7 @@
 import { createClient } from '../supabase/client';
 import { getCurrentUser } from './auth';
 import { getCurrentUserTransactions } from './transactions';
+import type { Transaction } from './types';
 
 // Calculate spent amount for a budget based on transactions
 export const calculateBudgetSpentAmount = async (budget: {
@@ -31,6 +32,64 @@ export const calculateBudgetSpentAmount = async (budget: {
     }, 0);
   } catch (error) {
     console.error('Error calculating budget spent amount:', error);
+    return 0;
+  }
+};
+
+// Optimized version that accepts transactions parameter
+export const calculateBudgetSpentAmountFromTransactions = (
+  budget: {
+    category: string;
+    startDate: string;
+    endDate: string;
+  },
+  transactions: Transaction[]
+): number => {
+  try {
+    // Filter transactions by category and date range
+    const relevantTransactions = transactions.filter(transaction => {
+      const transactionDate = new Date(transaction.date);
+      const startDate = new Date(budget.startDate);
+      const endDate = new Date(budget.endDate);
+      
+      return (
+        transaction.category === budget.category &&
+        transaction.type === 'expense' &&
+        transactionDate >= startDate &&
+        transactionDate <= endDate
+      );
+    });
+    
+    // Sum up the amounts (take absolute value for expenses)
+    return relevantTransactions.reduce((total, transaction) => {
+      return total + Math.abs(transaction.amount);
+    }, 0);
+  } catch (error) {
+    console.error('Error calculating budget spent amount:', error);
+    return 0;
+  }
+};
+
+// Optimized budget remaining calculation with provided transactions
+export const calculateRealTimeBudgetRemainingFromTransactions = async (
+  userId: string,
+  transactions: Transaction[]
+): Promise<number> => {
+  try {
+    // Get budgets for the user
+    const budgets = await getBudgetsByUserId(userId);
+    
+    if (budgets.length === 0) return 0;
+    
+    // Calculate total budget amount and total remaining from all budgets
+    const totalRemaining = budgets.reduce((total, budget) => {
+      const spentAmount = calculateBudgetSpentAmountFromTransactions(budget, transactions);
+      return total + (budget.budgetAmount - spentAmount);
+    }, 0);
+
+    return Math.max(0, totalRemaining);
+  } catch (error) {
+    console.error('Error calculating real-time budget remaining:', error);
     return 0;
   }
 };

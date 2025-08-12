@@ -7,6 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "sonner";
 import { getCurrentUserAccounts, createIncomeTransaction } from "@/lib/data";
@@ -136,7 +143,7 @@ export default function AddIncomePage() {
             {loading ? (
               <FormSkeleton />
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Amount */}
                 <div className="space-y-2">
                   <Label htmlFor="amount">
@@ -149,7 +156,6 @@ export default function AddIncomePage() {
                     placeholder="0.00"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="!px-4 !py-3"
                   />
                 </div>
 
@@ -163,7 +169,6 @@ export default function AddIncomePage() {
                     placeholder="Source of income..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="!px-4 !py-3"
                   />
                 </div>
 
@@ -172,20 +177,18 @@ export default function AddIncomePage() {
                   <Label htmlFor="incomeSource">
                     Income Source <span className="text-red-500">*</span>
                   </Label>
-                  <select
-                    id="incomeSource"
-                    title="Select income source"
-                    value={incomeSource}
-                    onChange={(e) => setIncomeSource(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                  >
-                    <option value="">Select income source...</option>
-                    {incomeSourceOptions.map((source) => (
-                      <option key={source} value={source}>
-                        {source}
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={incomeSource} onValueChange={setIncomeSource}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select income source..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {incomeSourceOptions.map((source) => (
+                        <SelectItem key={source} value={source}>
+                          {source}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Deposit to Account */}
@@ -193,20 +196,18 @@ export default function AddIncomePage() {
                   <Label htmlFor="account">
                     Deposit to Account <span className="text-red-500">*</span>
                   </Label>
-                  <select
-                    id="account"
-                    title="Select account to deposit to"
-                    value={account}
-                    onChange={(e) => setAccount(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                  >
-                    <option value="">Select account...</option>
-                    {accounts.map((acc) => (
-                      <option key={acc.id} value={acc.id}>
-                        {acc.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={account} onValueChange={setAccount}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select account..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((acc) => (
+                        <SelectItem key={acc.id} value={acc.id}>
+                          {acc.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Date */}

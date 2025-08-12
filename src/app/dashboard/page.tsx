@@ -10,35 +10,19 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
-  getCurrentUserAccounts,
-  calculateCurrentUserSummary,
+  getDashboardData,
   formatCurrency,
   getCurrentMonthName,
+  clearUserCache,
 } from "@/lib/data";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
-
-interface Summary {
-  totalBalance: number;
-  monthlyChange: number;
-  monthlyIncome: number;
-  monthlyExpenses: number;
-  budgetRemaining: number;
-  accountBreakdown: Record<string, unknown>;
-  categorySpending: Record<string, unknown>;
-}
-
-interface Account {
-  id: string;
-  name: string;
-  balance: number;
-  type: string;
-}
+import type { DashboardData } from "@/lib/data";
 
 export default function Dashboard() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [summary, setSummary] = useState<Summary | null>(null);
-  const [calculatedTotalBalance, setCalculatedTotalBalance] = useState(0);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -63,6 +47,11 @@ export default function Dashboard() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
       setAuthLoading(false);
+
+      // Clear cache when user changes
+      if (event === "SIGNED_OUT" || !session?.user) {
+        clearUserCache();
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -74,20 +63,8 @@ export default function Dashboard() {
 
     const loadData = async () => {
       try {
-        const [accountsData, summaryData] = await Promise.all([
-          getCurrentUserAccounts(),
-          calculateCurrentUserSummary(),
-        ]);
-
-        setAccounts(accountsData);
-        setSummary(summaryData);
-
-        // Calculate total balance from accounts
-        const totalBalance = accountsData.reduce(
-          (total: number, account: Account) => total + account.balance,
-          0
-        );
-        setCalculatedTotalBalance(totalBalance);
+        const data = await getDashboardData();
+        setDashboardData(data);
       } catch (error) {
         console.error("Error loading dashboard data:", error);
         toast.error("Failed to load dashboard data");
@@ -111,7 +88,7 @@ export default function Dashboard() {
   }
 
   // Redirect to login if no user (not guest mode)
-  if (!user) {
+  if (!user || !dashboardData) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Nav showDashboardTabs={true} />
@@ -131,121 +108,115 @@ export default function Dashboard() {
     );
   }
 
+  const { accounts, transactions, summary } = dashboardData;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Nav showDashboardTabs={true} />
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto p-4 py-8">
         {/* Financial Summary Cards */}
-        <div className="grid grid-cols-2 gap-6 mb-8">
-          <Card className=" flex flex-col justify-center gap-2">
-            <CardHeader className="pb-1 px-4">
-              <CardTitle className="  text-center">Account Balance</CardTitle>
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-center text-sm">
+                Account Balance
+              </CardTitle>
             </CardHeader>
-            <CardContent className="px-4">
-              <div className="text-lg sm:text-xl font-bold text-gray-900 text-center">
-                {formatCurrency(calculatedTotalBalance)}
+            <CardContent>
+              <div className="text-center text-lg font-bold">
+                {formatCurrency(summary.totalBalance)}
               </div>
             </CardContent>
           </Card>
 
-          <Card className=" flex flex-col justify-center gap-2">
-            <CardHeader className="pb-1 px-4">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 text-center">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-center text-sm text-muted-foreground">
                 This Month ({currentMonth})
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-4">
+            <CardContent>
               <div
-                className={`text-lg sm:text-xl font-bold text-center ${
-                  !summary || (summary.monthlyChange || 0) === 0
-                    ? "text-gray-900"
+                className={`text-center text-lg font-bold ${
+                  (summary.monthlyChange || 0) === 0
+                    ? ""
                     : (summary.monthlyChange || 0) > 0
                     ? "text-green-600"
                     : "text-red-600"
                 }`}
               >
-                {summary && (summary.monthlyChange || 0) > 0 ? "+" : ""}
-                {summary
-                  ? formatCurrency(summary.monthlyChange || 0)
-                  : formatCurrency(0)}
+                {(summary.monthlyChange || 0) > 0 ? "+" : ""}
+                {formatCurrency(summary.monthlyChange || 0)}
               </div>
             </CardContent>
           </Card>
 
-          <Card className=" flex flex-col justify-center gap-2">
-            <CardHeader className="pb-1 px-4">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 text-center">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-center text-sm text-muted-foreground">
                 Income ({currentMonth})
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-4">
+            <CardContent>
               <div
-                className={`text-lg sm:text-xl font-bold text-center ${
-                  !summary || (summary.monthlyIncome || 0) === 0
-                    ? "text-gray-900"
-                    : "text-green-600"
+                className={`text-center text-lg font-bold ${
+                  (summary.monthlyIncome || 0) === 0 ? "" : "text-green-600"
                 }`}
               >
-                {summary && (summary.monthlyIncome || 0) > 0 ? "+" : ""}
-                {summary
-                  ? formatCurrency(summary.monthlyIncome || 0)
-                  : formatCurrency(0)}
+                {(summary.monthlyIncome || 0) > 0 ? "+" : ""}
+                {formatCurrency(summary.monthlyIncome || 0)}
               </div>
             </CardContent>
           </Card>
 
-          <Card className=" flex flex-col justify-center gap-2">
-            <CardHeader className="pb-1 px-4">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600 text-center">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-center text-sm text-muted-foreground">
                 Budget Remaining ({currentMonth})
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-4">
+            <CardContent>
               <div
-                className={`text-lg sm:text-xl font-bold text-center ${
-                  !summary || (summary.budgetRemaining || 0) === 0
-                    ? "text-gray-900"
+                className={`text-center text-lg font-bold ${
+                  (summary.budgetRemaining || 0) === 0
+                    ? ""
                     : (summary.budgetRemaining || 0) > 0
                     ? "text-green-600"
                     : "text-red-600"
                 }`}
               >
-                {summary
-                  ? formatCurrency(summary.budgetRemaining || 0)
-                  : formatCurrency(0)}
+                {formatCurrency(summary.budgetRemaining || 0)}
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-4">
           {/* Spending Overview */}
-          <SpendingChart />
+          <SpendingChart transactions={transactions} />
 
           {/* Your Accounts */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-gray-900">
-                Your Accounts
-              </CardTitle>
+              <CardTitle>Your Accounts</CardTitle>
             </CardHeader>
             <CardContent>
               {accounts.length === 0 ? (
                 <EmptyAccounts />
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-2">
                   {accounts.map((account, index) => (
                     <div
                       key={account.id}
-                      className={`flex justify-between items-center py-3 ${
-                        index < accounts.length - 1
-                          ? "border-b border-gray-100"
-                          : ""
+                      className={`flex justify-between items-center py-2 ${
+                        index < accounts.length - 1 ? "border-b" : ""
                       }`}
                     >
-                      <span className="text-gray-700">{account.name}</span>
-                      <span className="font-semibold text-gray-900">
+                      <span className="text-muted-foreground">
+                        {account.name}
+                      </span>
+                      <span className="font-semibold">
                         {formatCurrency(account.balance)}
                       </span>
                     </div>
@@ -258,25 +229,18 @@ export default function Dashboard() {
           {/* Quick Actions */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-gray-900">
-                Quick Actions
-              </CardTitle>
+              <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-4 justify-center">
+              <div className="flex flex-wrap gap-2 justify-center">
                 <Link href="/income/add">
-                  <Button variant="outline" className="p-6 cursor-pointer">
-                    Add Income
-                  </Button>
+                  <Button variant="outline">Add Income</Button>
                 </Link>
                 <Link href="/transactions/add">
-                  <Button variant="outline" className="p-6 cursor-pointer">
-                    Add Expense
-                  </Button>
+                  <Button variant="outline">Add Expense</Button>
                 </Link>
                 <Button
                   variant="outline"
-                  className="p-6 cursor-pointer"
                   onClick={() =>
                     toast("Scan Receipt functionality not implemented yet", {
                       description:

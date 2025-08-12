@@ -65,6 +65,8 @@ export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedPeriod, setSelectedPeriod] = useState("This Month");
+  const [selectedMerchant, setSelectedMerchant] = useState("All Merchants");
+  const [selectedType, setSelectedType] = useState("All Types");
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -101,6 +103,18 @@ export default function TransactionsPage() {
     "Last 3 Months",
     "This Year",
     "All Time",
+  ];
+
+  // Get unique merchants for filter
+  const merchants = [
+    "All Merchants",
+    ...Array.from(new Set(transactions.map((t) => t.merchant).filter(Boolean))),
+  ];
+
+  // Get unique transaction types for filter
+  const types = [
+    "All Types",
+    ...Array.from(new Set(transactions.map((t) => t.type))),
   ];
 
   // Helper function to check if date is within period
@@ -155,6 +169,19 @@ export default function TransactionsPage() {
       return false;
     }
 
+    // Merchant filter
+    if (
+      selectedMerchant !== "All Merchants" &&
+      transaction.merchant !== selectedMerchant
+    ) {
+      return false;
+    }
+
+    // Type filter
+    if (selectedType !== "All Types" && transaction.type !== selectedType) {
+      return false;
+    }
+
     // Period filter
     return isDateInPeriod(transaction.date, selectedPeriod);
   });
@@ -187,6 +214,10 @@ export default function TransactionsPage() {
     return "text-red-600";
   };
 
+  const formatTransactionType = (type: string) => {
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Nav showDashboardTabs={true} />
@@ -208,8 +239,8 @@ export default function TransactionsPage() {
               ) : (
                 <>
                   {/* Filter Controls */}
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <div className="flex-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
                       <Select
                         value={selectedCategory}
                         onValueChange={setSelectedCategory}
@@ -227,7 +258,7 @@ export default function TransactionsPage() {
                       </Select>
                     </div>
 
-                    <div className="flex-1">
+                    <div>
                       <Select
                         value={selectedPeriod}
                         onValueChange={setSelectedPeriod}
@@ -244,6 +275,60 @@ export default function TransactionsPage() {
                         </SelectContent>
                       </Select>
                     </div>
+
+                    <div>
+                      <Select
+                        value={selectedMerchant}
+                        onValueChange={setSelectedMerchant}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Filter by merchant" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {merchants.map((merchant) => (
+                            <SelectItem key={merchant} value={merchant}>
+                              {merchant}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Select
+                        value={selectedType}
+                        onValueChange={setSelectedType}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Filter by type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {types.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type === "All Types"
+                                ? type
+                                : formatTransactionType(type)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Clear Filters Button */}
+                  <div className="flex justify-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedCategory("All Categories");
+                        setSelectedPeriod("This Month");
+                        setSelectedMerchant("All Merchants");
+                        setSelectedType("All Types");
+                      }}
+                      className="w-auto"
+                    >
+                      Clear All Filters
+                    </Button>
                   </div>
 
                   {/* Transaction List */}
@@ -484,8 +569,10 @@ export default function TransactionsPage() {
                               <Label className="text-sm font-medium text-gray-600">
                                 Type
                               </Label>
-                              <p className="text-base capitalize">
-                                {selectedTransaction.type}
+                              <p className="text-base">
+                                {formatTransactionType(
+                                  selectedTransaction.type
+                                )}
                               </p>
                             </div>
                           </div>
@@ -770,8 +857,11 @@ export default function TransactionsPage() {
                                   </div>
                                 </div>
                                 <div className="text-sm text-gray-600">
-                                  Type: {transaction.type} | Status:{" "}
-                                  {transaction.status}
+                                  Type:{" "}
+                                  {formatTransactionType(transaction.type)} |
+                                  Status:{" "}
+                                  {transaction.status.charAt(0).toUpperCase() +
+                                    transaction.status.slice(1)}
                                 </div>
                               </div>
                             ))}

@@ -6,6 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "sonner";
 import Nav from "@/components/nav";
@@ -176,14 +183,14 @@ export default function AddTransactionPage() {
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="space-y-6">
+          <CardContent>
             {loadingAccounts ? (
               <FormSkeleton />
             ) : (
-              <>
+              <div className="space-y-4">
                 {/* Amount */}
                 <div className="space-y-2">
-                  <Label htmlFor="amount" className="text-base font-medium">
+                  <Label htmlFor="amount">
                     Amount <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -195,16 +202,12 @@ export default function AddTransactionPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, amount: e.target.value })
                     }
-                    className="!h-auto !px-4 !py-3 !border-gray-300 !rounded-lg !bg-white !text-gray-600 focus:!outline-none focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
                   />
                 </div>
 
                 {/* Description */}
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="description"
-                    className="text-base font-medium"
-                  >
+                  <Label htmlFor="description">
                     Description <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -215,38 +218,34 @@ export default function AddTransactionPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    className="!h-auto !px-4 !py-3 !border-gray-300 !rounded-lg !bg-white !text-gray-600 focus:!outline-none focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
                   />
                 </div>
 
                 {/* Category */}
                 <div className="space-y-2">
-                  <Label htmlFor="category" className="text-base font-medium">
-                    Category
-                  </Label>
-                  <select
-                    id="category"
+                  <Label htmlFor="category">Category</Label>
+                  <Select
                     value={formData.category}
-                    onChange={(e) =>
-                      setFormData({ ...formData, category: e.target.value })
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, category: value })
                     }
-                    aria-label="Select transaction category"
-                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
                   >
-                    <option value="">Select category...</option>
-                    {expenseCategories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select category..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {expenseCategories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Merchant (Optional) */}
                 <div className="space-y-2">
-                  <Label htmlFor="merchant" className="text-base font-medium">
-                    Merchant (Optional)
-                  </Label>
+                  <Label htmlFor="merchant">Merchant (Optional)</Label>
                   <Input
                     id="merchant"
                     type="text"
@@ -255,58 +254,60 @@ export default function AddTransactionPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, merchant: e.target.value })
                     }
-                    className="!h-auto !px-4 !py-3 !border-gray-300 !rounded-lg !bg-white !text-gray-600 focus:!outline-none focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
                   />
                 </div>
 
                 {/* Status */}
                 <div className="space-y-2">
-                  <Label htmlFor="status" className="text-base font-medium">
-                    Status
-                  </Label>
-                  <select
-                    id="status"
+                  <Label htmlFor="status">Status</Label>
+                  <Select
                     value={formData.status}
-                    onChange={(e) =>
-                      setFormData({ ...formData, status: e.target.value })
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, status: value })
                     }
-                    aria-label="Select transaction status"
-                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
                   >
-                    {transactionStatuses.map((status) => (
-                      <option key={status} value={status}>
-                        {status.charAt(0).toUpperCase() + status.slice(1)}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {transactionStatuses.map((status) => (
+                        <SelectItem key={status} value={status}>
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Account */}
                 <div className="space-y-2">
-                  <Label htmlFor="account" className="text-base font-medium">
+                  <Label htmlFor="account">
                     Account <span className="text-red-500">*</span>
                   </Label>
-                  <select
-                    id="account"
+                  <Select
                     value={formData.account}
-                    onChange={(e) =>
-                      setFormData({ ...formData, account: e.target.value })
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, account: value })
                     }
-                    aria-label="Select account"
-                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
                     disabled={loadingAccounts}
                   >
-                    <option value="">
-                      {loadingAccounts
-                        ? "Loading accounts..."
-                        : "Select account..."}
-                    </option>
-                    {accounts.map((account) => (
-                      <option key={account.id} value={account.id}>
-                        {account.name} ({account.type})
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue
+                        placeholder={
+                          loadingAccounts
+                            ? "Loading accounts..."
+                            : "Select account..."
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((account) => (
+                        <SelectItem key={account.id} value={account.id}>
+                          {account.name} ({account.type})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {accounts.length === 0 && !loadingAccounts && (
                     <p className="text-sm text-gray-500">
                       No accounts found.{" "}
@@ -323,7 +324,7 @@ export default function AddTransactionPage() {
 
                 {/* Date */}
                 <div className="space-y-2">
-                  <Label htmlFor="date" className="text-base font-medium">
+                  <Label htmlFor="date">
                     Date <span className="text-red-500">*</span>
                   </Label>
                   <DatePicker
@@ -335,7 +336,7 @@ export default function AddTransactionPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="pt-4 space-y-4">
+                <div className="pt-4 space-y-3">
                   {/* Save and Cancel Buttons */}
                   <div className="flex gap-4 justify-center">
                     <Button
@@ -368,7 +369,7 @@ export default function AddTransactionPage() {
                     </Button>
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </CardContent>
         </Card>

@@ -1,5 +1,6 @@
 import { createClient } from '../supabase/client';
 import { getCurrentUser } from './auth';
+import { formatDateForDatabase } from './utils';
 import type { Transaction } from './types';
 
 // Transaction functions
@@ -100,7 +101,7 @@ export const createTransaction = async (transactionData: {
         id: transactionId,
         user_id: user.id,
         account_id: transactionData.accountId,
-        date: transactionData.date.toISOString().split('T')[0], // Format as YYYY-MM-DD
+        date: formatDateForDatabase(transactionData.date), // Format as YYYY-MM-DD in local timezone
         description: transactionData.description,
         amount: transactionData.amount,
         category: transactionData.category || null,
@@ -162,7 +163,7 @@ export const createIncomeTransaction = async (incomeData: {
       p_description: incomeData.description,
       p_category: incomeData.source,
       p_merchant: incomeData.source,
-      p_date: incomeData.date.toISOString().split('T')[0]
+      p_date: formatDateForDatabase(incomeData.date)
     });
 
     if (transactionError) {
@@ -207,7 +208,7 @@ export const createExpenseTransaction = async (expenseData: {
       p_description: expenseData.description,
       p_category: expenseData.category || null,
       p_merchant: expenseData.merchant || null,
-      p_date: expenseData.date.toISOString().split('T')[0],
+      p_date: formatDateForDatabase(expenseData.date),
       p_status: expenseData.status || 'completed'
     });
 

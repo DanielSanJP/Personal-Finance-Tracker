@@ -1,7 +1,7 @@
 "use client";
 
 import { TrendingUp } from "lucide-react";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { useEffect, useState } from "react";
 
 import {
@@ -16,13 +16,13 @@ import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent,
 } from "@/components/ui/chart";
 import {
   getCurrentUserTransactions,
   formatCurrency,
   getCurrentMonthName,
 } from "@/lib/data";
+import type { Transaction } from "@/lib/data";
 
 // Generate dynamic date range description
 const getDateRangeDescription = () => {
@@ -33,16 +33,13 @@ const getDateRangeDescription = () => {
   return `January - ${currentMonth} ${year}`;
 };
 
-interface Transaction {
-  id: string;
-  date: string;
-  amount: number;
-  type: string;
-}
-
 interface ChartDataPoint {
   month: string;
   spending: number;
+}
+
+interface SpendingChartProps {
+  transactions?: Transaction[];
 }
 
 // Group expenses by month from January to current month
@@ -100,7 +97,9 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function SpendingChart() {
+export function SpendingChart({
+  transactions: propTransactions,
+}: SpendingChartProps = {}) {
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,7 +109,10 @@ export function SpendingChart() {
       try {
         setLoading(true);
         setError(null);
-        const transactions = await getCurrentUserTransactions();
+
+        // Use provided transactions or fetch them
+        const transactions =
+          propTransactions || (await getCurrentUserTransactions());
 
         if (Array.isArray(transactions)) {
           const processedData = processChartData(transactions);
@@ -128,7 +130,7 @@ export function SpendingChart() {
     };
 
     loadData();
-  }, []);
+  }, [propTransactions]);
 
   if (loading) {
     return (
@@ -190,35 +192,30 @@ export function SpendingChart() {
     isIncreasing = false;
   }
 
-  // Calculate Y-axis domain to ensure visibility
-  const allValues = chartData.map((d) => d.spending);
-  const minValue = Math.min(...allValues);
-  const maxValue = Math.max(...allValues);
-  const padding = Math.abs(maxValue - minValue) * 0.1 || 50; // 10% padding or minimum 50
-  const yAxisMin = Math.max(0, minValue - padding); // Don't go below 0
-  const yAxisMax = maxValue + padding;
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+    <Card className="w-full">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center justify-between text-base">
           <span>Monthly Spending</span>
-          <span className="text-xs sm:text-base">
+          <span className="text-xs">
             {formatCurrency(currentMonth)} ({currentMonthName})
           </span>
         </CardTitle>
-        <CardDescription>{getDateRangeDescription()}</CardDescription>
+        <CardDescription className="text-xs">
+          {getDateRangeDescription()}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <LineChart
+      <CardContent className="pt-0">
+        <ChartContainer config={chartConfig} className="h-[200px] w-full">
+          <BarChart
             accessibilityLayer
             data={chartData}
+            height={200}
             margin={{
               left: 12,
               right: 12,
-              top: 20,
-              bottom: 20,
+              top: 8,
+              bottom: 8,
             }}
           >
             <CartesianGrid vertical={false} />
@@ -226,36 +223,50 @@ export function SpendingChart() {
               dataKey="month"
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
+              tickMargin={4}
               tickFormatter={(value) => value.slice(0, 3)}
-            />
-            <YAxis
-              domain={[yAxisMin, yAxisMax]}
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={(value) => `$${value.toFixed(2)}`}
+              tick={{ fontSize: 11 }}
+              interval={0}
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent hideLabel />}
+              content={({ active, payload, label }) => {
+                if (active && payload && payload.length) {
+                  return (
+                    <div className="rounded-lg border bg-background p-2 shadow-md">
+                      <div className="flex flex-col gap-1">
+                        <p className="font-medium text-foreground text-sm">
+                          {label}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="h-2 w-2 rounded-full"
+                            style={{ backgroundColor: payload[0].color }}
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            Monthly Spending:
+                          </span>
+                          <span className="font-semibold text-foreground text-sm">
+                            {formatCurrency(payload[0].value as number)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              }}
             />
-            <Line
-              dataKey="spending"
-              type="natural"
-              stroke="var(--color-spending)"
-              strokeWidth={2}
-              dot={false}
-            />
-          </LineChart>
+            <Bar dataKey="spending" fill="var(--color-spending)" radius={4} />
+          </BarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
+      <CardFooter className="flex-col items-start gap-1 text-xs pt-2">
         <div className="flex gap-2 leading-none font-medium">
           {isIncreasing ? "Trending up" : "Trending down"} by {trendPercentage}%
           this month{" "}
           <TrendingUp
-            className={`h-4 w-4 ${
+            className={`h-3 w-3 ${
               isIncreasing ? "text-red-500" : "text-green-500 rotate-180"
             }`}
           />
