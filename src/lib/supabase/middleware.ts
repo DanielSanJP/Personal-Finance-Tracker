@@ -37,9 +37,10 @@ export async function updateSession(request: NextRequest) {
       data: { user: authUser },
     } = await supabase.auth.getUser()
     user = authUser
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Handle refresh token errors gracefully
-    if (error?.code === 'refresh_token_not_found' || error?.message?.includes('refresh_token_not_found')) {
+    const authError = error as { code?: string; message?: string }
+    if (authError?.code === 'refresh_token_not_found' || authError?.message?.includes('refresh_token_not_found')) {
       // Clear the session cookies and redirect to login
       const response = NextResponse.next({ request })
       response.cookies.delete('sb-access-token')
@@ -59,7 +60,7 @@ export async function updateSession(request: NextRequest) {
       return response
     }
     // For other errors, continue without user
-    console.error('Auth error in middleware:', error)
+    console.error('Auth error in middleware:', authError)
     user = null
   }
 
