@@ -14,104 +14,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Breadcrumbs from "@/components/breadcrumbs";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
-import { User } from "@supabase/supabase-js";
-import { useGuestMode } from "@/hooks/useGuestMode";
-import { clearGuestMode } from "@/lib/data";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface NavProps {
   showDashboardTabs?: boolean;
 }
 
-interface UserData {
-  id: string;
-  displayName?: string;
-  display_name?: string;
-  initials?: string;
-  firstName?: string;
-  first_name?: string;
-  lastName?: string;
-  last_name?: string;
-}
-
 export default function Nav({ showDashboardTabs = false }: NavProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const isGuest = useGuestMode();
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const { user, loading, signOut, isGuest } = useAuth();
 
-  useEffect(() => {
-    const supabase = createClient();
-
-    // Get current user
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-
-      // If we have an authenticated user, clear guest mode
-      if (user) {
-        console.log("🔍 Nav: Authenticated user found, clearing guest mode");
-        clearGuestMode();
-      }
-    };
-
-    getUser();
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("🔍 Nav: Auth state change:", event, session?.user?.id);
-      setUser(session?.user ?? null);
-
-      // Clear guest mode when user signs in
-      if (event === "SIGNED_IN" && session?.user) {
-        console.log("🔍 Nav: User signed in, clearing guest mode");
-        clearGuestMode();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (isGuest) {
-      // Use guest data
-      setUserData({
-        id: "guest",
-        displayName: "Guest User",
-        initials: "GU",
-        firstName: "Guest",
-        lastName: "User",
-      });
-    } else if (user) {
-      // Use authenticated user data
-      setUserData({
-        id: user.id,
-        displayName:
-          user.user_metadata?.display_name ||
-          `${user.user_metadata?.first_name || ""} ${
-            user.user_metadata?.last_name || ""
-          }`.trim() ||
-          user.email,
-        initials:
-          user.user_metadata?.initials ||
-          `${user.user_metadata?.first_name?.[0] || ""}${
-            user.user_metadata?.last_name?.[0] || ""
-          }` ||
-          user.email?.[0]?.toUpperCase(),
-        firstName: user.user_metadata?.first_name,
-        lastName: user.user_metadata?.last_name,
-      });
-    } else {
-      setUserData(null);
-    }
-  }, [user, isGuest]);
+  // Simplified logic for when to show different nav elements
+  const hasUser = !!user && !loading;
 
   // Function to determine if a tab is active
   const isActiveTab = (path: string) => pathname === path;
@@ -128,14 +44,18 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
     }
   };
 
+  // Create userData from user and isGuest
+  const userData =
+    hasUser && user
+      ? {
+          id: user.id,
+          displayName: user.display_name || user.email || "User",
+          initials: user.initials || "U",
+        }
+      : null;
+
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-
-    // Clear guest mode when signing out
-    console.log("🔍 Nav: Signing out, clearing guest mode");
-    clearGuestMode();
-
+    await signOut();
     router.push("/login");
     toast.success("Signed out successfully", {
       description: "You've been logged out of your account.",

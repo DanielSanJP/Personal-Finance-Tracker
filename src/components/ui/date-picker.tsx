@@ -18,6 +18,9 @@ interface DatePickerProps {
   placeholder?: string;
   className?: string;
   id?: string;
+  disabled?: (date: Date) => boolean;
+  fromDate?: Date;
+  toDate?: Date;
 }
 
 export function DatePicker({
@@ -26,6 +29,9 @@ export function DatePicker({
   placeholder = "dd/mm/yyyy",
   className,
   id,
+  disabled,
+  fromDate,
+  toDate,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -55,6 +61,9 @@ export function DatePicker({
           mode="single"
           selected={date}
           captionLayout="dropdown"
+          disabled={disabled}
+          fromDate={fromDate}
+          toDate={toDate}
           onSelect={(selectedDate) => {
             onDateChange?.(selectedDate);
             setOpen(false);

@@ -8,7 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { DatePicker } from "@/components/ui/date-picker";
-import { getCurrentUserAccounts } from "@/lib/data";
+import { toast } from "sonner";
+import { getCurrentUserAccounts, createIncomeTransaction } from "@/lib/data";
+import { FormSkeleton } from "@/components/loading-states";
 
 interface Account {
   id: string;
@@ -58,16 +60,59 @@ export default function AddIncomePage() {
     setDescription(source);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log({
-      amount,
-      description,
-      incomeSource,
-      account,
-      date,
-    });
+
+    // Validate required fields
+    if (!amount || !description || !incomeSource || !account || !date) {
+      toast.error("Please fill in all required fields", {
+        description: "All fields are required to add income.",
+      });
+      return;
+    }
+
+    if (isNaN(Number(amount)) || Number(amount) <= 0) {
+      toast.error("Invalid amount", {
+        description: "Please enter a valid positive amount.",
+      });
+      return;
+    }
+
+    try {
+      const result = await createIncomeTransaction({
+        amount: Number(amount),
+        description: description,
+        source: incomeSource,
+        accountId: account,
+        date: date,
+      });
+
+      if (result.success) {
+        toast.success("Income added successfully!", {
+          description: `${description} has been recorded.`,
+          action: {
+            label: "Close",
+            onClick: () => console.log("Closed"),
+          },
+        });
+
+        // Reset form
+        setAmount("");
+        setDescription("");
+        setIncomeSource("");
+        setAccount("");
+        setDate(new Date());
+
+        // Navigate back to income page after a short delay
+        setTimeout(() => {
+          router.push("/income");
+        }, 1500);
+      }
+    } catch {
+      toast.error("Error adding income", {
+        description: "Please try again later.",
+      });
+    }
   };
 
   return (
@@ -84,17 +129,14 @@ export default function AddIncomePage() {
 
           <CardContent>
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                  <p className="mt-2 text-gray-600">Loading accounts...</p>
-                </div>
-              </div>
+              <FormSkeleton />
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Amount */}
                 <div className="space-y-2">
-                  <Label htmlFor="amount">Amount</Label>
+                  <Label htmlFor="amount">
+                    Amount <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="amount"
                     type="number"
@@ -108,7 +150,9 @@ export default function AddIncomePage() {
 
                 {/* Description */}
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">
+                    Description <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="description"
                     placeholder="Source of income..."
@@ -120,7 +164,9 @@ export default function AddIncomePage() {
 
                 {/* Income Source */}
                 <div className="space-y-2">
-                  <Label htmlFor="incomeSource">Income Source</Label>
+                  <Label htmlFor="incomeSource">
+                    Income Source <span className="text-red-500">*</span>
+                  </Label>
                   <select
                     id="incomeSource"
                     title="Select income source"
@@ -139,7 +185,9 @@ export default function AddIncomePage() {
 
                 {/* Deposit to Account */}
                 <div className="space-y-2">
-                  <Label htmlFor="account">Deposit to Account</Label>
+                  <Label htmlFor="account">
+                    Deposit to Account <span className="text-red-500">*</span>
+                  </Label>
                   <select
                     id="account"
                     title="Select account to deposit to"
@@ -158,7 +206,9 @@ export default function AddIncomePage() {
 
                 {/* Date */}
                 <div className="space-y-2">
-                  <Label htmlFor="date">Date</Label>
+                  <Label htmlFor="date">
+                    Date <span className="text-red-500">*</span>
+                  </Label>
                   <DatePicker
                     id="date"
                     date={date}

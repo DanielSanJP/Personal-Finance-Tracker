@@ -5,16 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Nav from "@/components/nav";
 import { SpendingChart } from "@/components/spending-chart";
 import { EmptyAccounts } from "@/components/empty-states";
+import { DashboardSkeleton } from "@/components/loading-states";
 import { toast } from "sonner";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   getCurrentUserAccounts,
-  getCurrentUserSummary,
+  calculateCurrentUserSummary,
   formatCurrency,
   getCurrentMonthName,
 } from "@/lib/data";
-import { useGuestMode } from "@/hooks/useGuestMode";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Summary {
   totalBalance: number;
@@ -36,36 +37,33 @@ interface Account {
 export default function Dashboard() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [calculatedTotalBalance, setCalculatedTotalBalance] = useState(0);
   const [loading, setLoading] = useState(true);
-  const isGuest = useGuestMode();
+  const { user, loading: authLoading } = useAuth();
   const currentMonth = getCurrentMonthName();
 
   useEffect(() => {
-    // Don't load data until we know the guest mode status
-    if (isGuest === null) {
-      console.log("🔍 Dashboard: Waiting for guest mode detection...");
-      return;
-    }
+    // Don't load data until auth is ready
+    if (authLoading || !user) return;
 
     const loadData = async () => {
       try {
-        console.log(
-          "🔍 Dashboard: Starting to load data, guest mode:",
-          isGuest
-        );
-
         const [accountsData, summaryData] = await Promise.all([
           getCurrentUserAccounts(),
-          getCurrentUserSummary(),
+          calculateCurrentUserSummary(),
         ]);
-
-        console.log("🔍 Dashboard: Loaded accounts:", accountsData);
-        console.log("🔍 Dashboard: Loaded summary:", summaryData);
 
         setAccounts(accountsData);
         setSummary(summaryData);
+
+        // Calculate total balance from accounts
+        const totalBalance = accountsData.reduce(
+          (total: number, account: Account) => total + account.balance,
+          0
+        );
+        setCalculatedTotalBalance(totalBalance);
       } catch (error) {
-        console.error("🔥 Error loading dashboard data:", error);
+        console.error("Error loading dashboard data:", error);
         toast.error("Failed to load dashboard data");
       } finally {
         setLoading(false);
@@ -73,19 +71,35 @@ export default function Dashboard() {
     };
 
     loadData();
-  }, [isGuest]);
+  }, [authLoading, user]);
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Nav showDashboardTabs={true} />
         <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Loading dashboard...</p>
-            </div>
-          </div>
+          <DashboardSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to login if no user (not guest mode)
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Nav showDashboardTabs={true} />
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <Card>
+            <CardContent className="p-8 text-center">
+              <p className="text-gray-600 mb-4">
+                Please sign in to view your dashboard
+              </p>
+              <Link href="/login">
+                <Button>Sign In</Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -104,9 +118,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="px-4">
               <div className="text-lg sm:text-xl font-bold text-gray-900 text-center">
-                {summary
-                  ? formatCurrency(summary.totalBalance || 0)
-                  : formatCurrency(0)}
+                {formatCurrency(calculatedTotalBalance)}
               </div>
             </CardContent>
           </Card>
@@ -164,7 +176,15 @@ export default function Dashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4">
-              <div className="text-lg sm:text-xl font-bold text-gray-900 text-center">
+              <div
+                className={`text-lg sm:text-xl font-bold text-center ${
+                  !summary || (summary.budgetRemaining || 0) === 0
+                    ? "text-gray-900"
+                    : (summary.budgetRemaining || 0) > 0
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
                 {summary
                   ? formatCurrency(summary.budgetRemaining || 0)
                   : formatCurrency(0)}

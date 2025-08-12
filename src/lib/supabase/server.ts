@@ -17,13 +17,29 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options)
             })
-          } catch {
+          } catch (error) {
             // The `setAll` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.
+            console.warn('Cookie setting failed in server component:', error)
           }
         },
       },
     }
   )
+}
+
+export async function getUser() {
+  const supabase = await createClient()
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (error) {
+      console.warn('Auth error:', error)
+      return null
+    }
+    return user
+  } catch (error) {
+    console.warn('Failed to get user:', error)
+    return null
+  }
 }

@@ -31,9 +31,37 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser()
+    user = authUser
+  } catch (error: any) {
+    // Handle refresh token errors gracefully
+    if (error?.code === 'refresh_token_not_found' || error?.message?.includes('refresh_token_not_found')) {
+      // Clear the session cookies and redirect to login
+      const response = NextResponse.next({ request })
+      response.cookies.delete('sb-access-token')
+      response.cookies.delete('sb-refresh-token')
+      
+      // Only redirect to login if not already on auth pages
+      if (
+        !request.nextUrl.pathname.startsWith('/login') &&
+        !request.nextUrl.pathname.startsWith('/register') &&
+        !request.nextUrl.pathname.startsWith('/error')
+      ) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/login'
+        url.searchParams.set('message', 'Session expired. Please log in again.')
+        return NextResponse.redirect(url)
+      }
+      return response
+    }
+    // For other errors, continue without user
+    console.error('Auth error in middleware:', error)
+    user = null
+  }
 
   if (
     !user &&

@@ -27,15 +27,10 @@ import {
 // Generate dynamic date range description
 const getDateRangeDescription = () => {
   const now = new Date();
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
-
-  const startMonth = sixMonthsAgo.toLocaleDateString("en-US", {
-    month: "long",
-  });
   const currentMonth = now.toLocaleDateString("en-US", { month: "long" });
   const year = now.getFullYear();
 
-  return `${startMonth} - ${currentMonth} ${year}`;
+  return `January - ${currentMonth} ${year}`;
 };
 
 interface Transaction {
@@ -50,7 +45,7 @@ interface ChartDataPoint {
   spending: number;
 }
 
-// Group expenses by month for the last 6 months
+// Group expenses by month from January to current month
 const processChartData = (transactions: Transaction[]): ChartDataPoint[] => {
   const months = [
     "January",
@@ -67,22 +62,23 @@ const processChartData = (transactions: Transaction[]): ChartDataPoint[] => {
     "December",
   ];
 
-  // Get last 7 months dynamically
+  // Get current year and month
   const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth(); // 0-based (0 = January, 7 = August)
   const chartData: ChartDataPoint[] = [];
 
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const monthName = months[date.getMonth()];
-    const year = date.getFullYear();
+  // Loop from January (0) to current month (inclusive)
+  for (let monthIndex = 0; monthIndex <= currentMonth; monthIndex++) {
+    const monthName = months[monthIndex];
 
     // Calculate total expenses for this month
     const monthlyExpenses = transactions
       .filter((t) => {
         const transactionDate = new Date(t.date);
         return (
-          transactionDate.getFullYear() === year &&
-          transactionDate.getMonth() === date.getMonth() &&
+          transactionDate.getFullYear() === currentYear &&
+          transactionDate.getMonth() === monthIndex &&
           t.type === "expense"
         );
       })
@@ -249,7 +245,7 @@ export function SpendingChart() {
           />
         </div>
         <div className="text-muted-foreground leading-none">
-          Showing monthly spending for the last 7 months
+          Showing monthly spending from January to current month
         </div>
       </CardFooter>
     </Card>

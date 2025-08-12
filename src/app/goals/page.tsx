@@ -4,6 +4,7 @@ import Nav from "@/components/nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { GoalsListSkeleton } from "@/components/loading-states";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +24,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
-import { getCurrentUserGoals, formatCurrency } from "@/lib/data";
+import {
+  getCurrentUserGoals,
+  formatCurrency,
+  createGoal,
+  updateGoal,
+  deleteGoal,
+} from "@/lib/data";
 import { EmptyGoals } from "@/components/empty-states";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -47,23 +54,137 @@ export default function GoalsPage() {
   const [contributionOpen, setContributionOpen] = useState(false);
   const [editGoalsOpen, setEditGoalsOpen] = useState(false);
 
-  useEffect(() => {
-    const loadGoals = async () => {
-      try {
-        setLoading(true);
-        const data = await getCurrentUserGoals();
-        setGoals(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Error loading goals:", error);
-        setGoals([]);
-        toast.error("Failed to load goals");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Form states for adding goals
+  const [newGoal, setNewGoal] = useState({
+    name: "",
+    targetAmount: "",
+    currentAmount: "",
+    priority: "medium",
+  });
 
+  const loadGoals = async () => {
+    try {
+      setLoading(true);
+      const data = await getCurrentUserGoals();
+      setGoals(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error loading goals:", error);
+      setGoals([]);
+      toast.error("Failed to load goals");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadGoals();
   }, []);
+
+  // Handle creating a new goal
+  const handleCreateGoal = async () => {
+    try {
+      if (!newGoal.name.trim() || !newGoal.targetAmount) {
+        toast.error("Please fill in the goal name and target amount");
+        return;
+      }
+
+      // Validate target date is in the future
+      if (targetDate) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
+        const selectedDate = new Date(targetDate);
+        selectedDate.setHours(0, 0, 0, 0);
+
+        if (selectedDate <= today) {
+          toast.error("Target date must be in the future");
+          return;
+        }
+      }
+
+      await createGoal({
+        name: newGoal.name.trim(),
+        targetAmount: parseFloat(newGoal.targetAmount),
+        currentAmount: newGoal.currentAmount
+          ? parseFloat(newGoal.currentAmount)
+          : 0,
+        targetDate: targetDate
+          ? targetDate.toISOString().split("T")[0]
+          : undefined,
+        priority: newGoal.priority,
+        status: "active",
+      });
+
+      // Reset form
+      setNewGoal({
+        name: "",
+        targetAmount: "",
+        currentAmount: "",
+        priority: "medium",
+      });
+      setTargetDate(undefined);
+      setAddGoalOpen(false);
+
+      // Reload goals
+      await loadGoals();
+
+      toast.success("Goal created successfully!");
+    } catch (error) {
+      console.error("Error creating goal:", error);
+      toast.error("Failed to create goal");
+    }
+  };
+
+  // Handle updating a goal
+  const handleUpdateGoal = async (
+    goalId: string,
+    goalData: {
+      name?: string;
+      targetAmount?: number;
+      currentAmount?: number;
+      targetDate?: string | null;
+      category?: string | null;
+      priority?: string | null;
+      status?: string;
+    }
+  ) => {
+    try {
+      // Convert null values to undefined for the API
+      const apiData = {
+        name: goalData.name,
+        targetAmount: goalData.targetAmount,
+        currentAmount: goalData.currentAmount,
+        targetDate: goalData.targetDate || undefined,
+        category: goalData.category || undefined,
+        priority: goalData.priority || undefined,
+        status: goalData.status,
+      };
+
+      await updateGoal(goalId, apiData);
+
+      // Reload goals
+      await loadGoals();
+
+      toast.success("Goal updated successfully!");
+    } catch (error) {
+      console.error("Error updating goal:", error);
+      toast.error("Failed to update goal");
+    }
+  };
+
+  // Handle deleting a goal
+  const handleDeleteGoal = async (goalId: string) => {
+    try {
+      await deleteGoal(goalId);
+
+      // Reload goals
+      await loadGoals();
+
+      toast.success("Goal deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting goal:", error);
+      toast.error("Failed to delete goal");
+    }
+  };
 
   // Helper function for calculating progress percentage
   const getProgressWidth = (current: number, target: number) => {
@@ -97,9 +218,7 @@ export default function GoalsPage() {
       <div className="min-h-screen bg-gray-50">
         <Nav showDashboardTabs={true} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-lg">Loading goals...</div>
-          </div>
+          <GoalsListSkeleton />
         </div>
       </div>
     );
@@ -119,7 +238,7 @@ export default function GoalsPage() {
 
           <CardContent className="space-y-4">
             {goals.length === 0 ? (
-              <EmptyGoals />
+              <EmptyGoals onRefresh={loadGoals} />
             ) : (
               goals.map((goal, index) => {
                 const progressWidth = getProgressWidth(
@@ -193,6 +312,10 @@ export default function GoalsPage() {
                             id="goal-name"
                             placeholder="e.g., Emergency Fund, Vacation, New Car"
                             className="w-full"
+                            value={newGoal.name}
+                            onChange={(e) =>
+                              setNewGoal({ ...newGoal, name: e.target.value })
+                            }
                           />
                         </div>
                         <div className="grid gap-2">
@@ -202,6 +325,13 @@ export default function GoalsPage() {
                             type="number"
                             placeholder="Enter target amount"
                             className="w-full"
+                            value={newGoal.targetAmount}
+                            onChange={(e) =>
+                              setNewGoal({
+                                ...newGoal,
+                                targetAmount: e.target.value,
+                              })
+                            }
                           />
                         </div>
                         <div className="grid gap-2">
@@ -213,6 +343,13 @@ export default function GoalsPage() {
                             type="number"
                             placeholder="Enter current savings amount"
                             className="w-full"
+                            value={newGoal.currentAmount}
+                            onChange={(e) =>
+                              setNewGoal({
+                                ...newGoal,
+                                currentAmount: e.target.value,
+                              })
+                            }
                           />
                         </div>
                         <div className="grid gap-2">
@@ -222,11 +359,18 @@ export default function GoalsPage() {
                             date={targetDate}
                             onDateChange={setTargetDate}
                             placeholder="Select target date"
+                            fromDate={new Date()} // Only allow dates from today onwards
+                            disabled={(date) => date < new Date()} // Disable past dates
                           />
                         </div>
                         <div className="grid gap-2">
                           <Label htmlFor="priority">Priority Level</Label>
-                          <Select>
+                          <Select
+                            value={newGoal.priority}
+                            onValueChange={(value) =>
+                              setNewGoal({ ...newGoal, priority: value })
+                            }
+                          >
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Select priority" />
                             </SelectTrigger>
@@ -243,7 +387,9 @@ export default function GoalsPage() {
                         </div>
                       </div>
                       <DialogFooter>
-                        <Button type="submit">Create Goal</Button>
+                        <Button type="submit" onClick={handleCreateGoal}>
+                          Create Goal
+                        </Button>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
@@ -262,58 +408,104 @@ export default function GoalsPage() {
                         </DialogDescription>
                       </DialogHeader>
                       <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
-                        {goals.map((goal) => (
-                          <div
-                            key={goal.id}
-                            className="grid gap-3 p-4 border rounded-lg"
-                          >
-                            <div className="flex items-center justify-between">
-                              <Label className="text-base font-medium">
-                                {goal.name}
-                              </Label>
+                        {goals.map((goal) => {
+                          const handleSaveGoal = () => {
+                            const nameInput = document.getElementById(
+                              `goal-name-${goal.id}`
+                            ) as HTMLInputElement;
+                            const targetInput = document.getElementById(
+                              `target-${goal.id}`
+                            ) as HTMLInputElement;
+                            const currentInput = document.getElementById(
+                              `current-${goal.id}`
+                            ) as HTMLInputElement;
+
+                            if (nameInput && targetInput && currentInput) {
+                              handleUpdateGoal(goal.id, {
+                                name: nameInput.value,
+                                targetAmount:
+                                  parseFloat(targetInput.value) || 0,
+                                currentAmount:
+                                  parseFloat(currentInput.value) || 0,
+                              });
+                            }
+                          };
+
+                          const handleDeleteGoalClick = () => {
+                            if (
+                              window.confirm(
+                                `Are you sure you want to delete "${goal.name}"?`
+                              )
+                            ) {
+                              handleDeleteGoal(goal.id);
+                            }
+                          };
+
+                          return (
+                            <div
+                              key={goal.id}
+                              className="grid gap-3 p-4 border rounded-lg"
+                            >
+                              <div className="flex items-center justify-between">
+                                <Label className="text-base font-medium">
+                                  {goal.name}
+                                </Label>
+                                <div className="flex gap-2">
+                                  <Button size="sm" onClick={handleSaveGoal}>
+                                    Save
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={handleDeleteGoalClick}
+                                  >
+                                    Delete
+                                  </Button>
+                                </div>
+                              </div>
+                              <div className="grid gap-2">
+                                <Label htmlFor={`goal-name-${goal.id}`}>
+                                  Goal Name
+                                </Label>
+                                <Input
+                                  id={`goal-name-${goal.id}`}
+                                  defaultValue={goal.name}
+                                  className="w-full"
+                                />
+                              </div>
+                              <div className="grid gap-2">
+                                <Label htmlFor={`target-${goal.id}`}>
+                                  Target Amount
+                                </Label>
+                                <Input
+                                  id={`target-${goal.id}`}
+                                  type="number"
+                                  defaultValue={goal.targetAmount}
+                                  className="w-full"
+                                />
+                              </div>
+                              <div className="grid gap-2">
+                                <Label htmlFor={`current-${goal.id}`}>
+                                  Current Amount
+                                </Label>
+                                <Input
+                                  id={`current-${goal.id}`}
+                                  type="number"
+                                  defaultValue={goal.currentAmount}
+                                  className="w-full"
+                                />
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                Progress: {formatCurrency(goal.currentAmount)}{" "}
+                                of {formatCurrency(goal.targetAmount)} (
+                                {Math.round(
+                                  (goal.currentAmount / goal.targetAmount) * 100
+                                )}
+                                %)
+                              </div>
                             </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor={`goal-name-${goal.id}`}>
-                                Goal Name
-                              </Label>
-                              <Input
-                                id={`goal-name-${goal.id}`}
-                                defaultValue={goal.name}
-                                className="w-full"
-                              />
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor={`target-${goal.id}`}>
-                                Target Amount
-                              </Label>
-                              <Input
-                                id={`target-${goal.id}`}
-                                type="number"
-                                defaultValue={goal.targetAmount}
-                                className="w-full"
-                              />
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor={`current-${goal.id}`}>
-                                Current Amount
-                              </Label>
-                              <Input
-                                id={`current-${goal.id}`}
-                                type="number"
-                                defaultValue={goal.currentAmount}
-                                className="w-full"
-                              />
-                            </div>
-                            <div className="text-sm text-gray-600">
-                              Progress: {formatCurrency(goal.currentAmount)} of{" "}
-                              {formatCurrency(goal.targetAmount)} (
-                              {Math.round(
-                                (goal.currentAmount / goal.targetAmount) * 100
-                              )}
-                              %)
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                       <DialogFooter className="gap-2">
                         <Button

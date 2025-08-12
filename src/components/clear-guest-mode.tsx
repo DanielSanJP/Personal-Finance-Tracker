@@ -16,13 +16,10 @@ export default function ClearGuestMode() {
         } = await supabase.auth.getUser();
 
         if (!error && user) {
-          console.log(
-            "🔍 ClearGuestMode: Authenticated user found, clearing guest mode"
-          );
           clearGuestMode();
         }
       } catch (error) {
-        console.error("🔥 ClearGuestMode: Error checking auth state:", error);
+        console.error("ClearGuestMode: Error checking auth state:", error);
       }
     };
 
@@ -33,14 +30,7 @@ export default function ClearGuestMode() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log(
-        "🔍 ClearGuestMode: Auth state change:",
-        event,
-        session?.user?.id
-      );
-
       if (event === "SIGNED_IN" && session?.user) {
-        console.log("🔍 ClearGuestMode: User signed in, clearing guest mode");
         clearGuestMode();
       }
     });

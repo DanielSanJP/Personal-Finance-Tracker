@@ -43,6 +43,7 @@ import { MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { getCurrentUserTransactions, formatCurrency } from "@/lib/data";
 import { EmptyTransactions } from "@/components/empty-states";
+import { TransactionsListSkeleton } from "@/components/loading-states";
 import Nav from "@/components/nav";
 
 interface Transaction {
@@ -191,14 +192,7 @@ export default function TransactionsPage() {
 
       <div className="max-w-7xl mx-auto px-6 py-8">
         {loading ? (
-          <Card>
-            <CardContent className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-                <p className="mt-2 text-gray-600">Loading transactions...</p>
-              </div>
-            </CardContent>
-          </Card>
+          <TransactionsListSkeleton />
         ) : (
           <Card>
             <CardHeader>
