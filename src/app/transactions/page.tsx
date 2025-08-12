@@ -42,6 +42,7 @@ import {
 import { MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { getCurrentUserTransactions, formatCurrency } from "@/lib/data";
+import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { EmptyTransactions } from "@/components/empty-states";
 import { TransactionsListSkeleton } from "@/components/loading-states";
 import Nav from "@/components/nav";
@@ -333,8 +334,9 @@ export default function TransactionsPage() {
                                       Copy transaction ID
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
-                                      onClick={(e) => {
+                                      onClick={async (e) => {
                                         e.stopPropagation();
+                                        if (await checkGuestAndWarn()) return;
                                         setSelectedTransaction(transaction);
                                         setEditSingleTransactionOpen(true);
                                       }}
@@ -342,7 +344,14 @@ export default function TransactionsPage() {
                                       Edit transaction
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
-                                      onClick={(e) => e.stopPropagation()}
+                                      onClick={async (e) => {
+                                        e.stopPropagation();
+                                        if (await checkGuestAndWarn()) return;
+                                        // Delete transaction functionality will go here
+                                        toast.info(
+                                          "Delete functionality not implemented yet"
+                                        );
+                                      }}
                                       className="text-red-600"
                                     >
                                       Delete transaction
@@ -648,7 +657,19 @@ export default function TransactionsPage() {
                         >
                           Cancel
                         </Button>
-                        <Button type="submit">Save Changes</Button>
+                        <Button
+                          type="submit"
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            if (await checkGuestAndWarn()) return;
+                            // Save single transaction functionality will go here
+                            toast.info(
+                              "Save functionality not implemented yet"
+                            );
+                          }}
+                        >
+                          Save Changes
+                        </Button>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
@@ -665,7 +686,13 @@ export default function TransactionsPage() {
                         onOpenChange={setEditTransactionsOpen}
                       >
                         <DialogTrigger asChild>
-                          <Button variant="outline" className="w-40">
+                          <Button
+                            variant="outline"
+                            className="w-40"
+                            onClick={async () => {
+                              if (await checkGuestAndWarn()) return;
+                            }}
+                          >
                             Edit Transactions
                           </Button>
                         </DialogTrigger>
@@ -756,7 +783,19 @@ export default function TransactionsPage() {
                             >
                               Cancel
                             </Button>
-                            <Button type="submit">Save Changes</Button>
+                            <Button
+                              type="submit"
+                              onClick={async (e) => {
+                                e.preventDefault();
+                                if (await checkGuestAndWarn()) return;
+                                // Save bulk transactions functionality will go here
+                                toast.info(
+                                  "Bulk save functionality not implemented yet"
+                                );
+                              }}
+                            >
+                              Save Changes
+                            </Button>
                           </DialogFooter>
                         </DialogContent>
                       </Dialog>

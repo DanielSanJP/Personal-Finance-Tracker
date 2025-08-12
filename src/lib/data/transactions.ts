@@ -1,16 +1,11 @@
-import transactionsData from '@/data/transactions.json';
 import { createClient } from '../supabase/client';
-import { getCurrentUser, isGuestMode } from './auth';
+import { getCurrentUser } from './auth';
 import type { Transaction } from './types';
 
 // Transaction functions
 export const getCurrentUserTransactions = async (): Promise<Transaction[]> => {
   const user = await getCurrentUser();
   if (!user) return [];
-  
-  if (isGuestMode()) {
-    return transactionsData.transactions.filter(transaction => transaction.userId === user.id);
-  }
   
   try {
     const supabase = createClient();
@@ -44,10 +39,7 @@ export const getCurrentUserTransactions = async (): Promise<Transaction[]> => {
   }
 };
 
-export const getTransactionsByUserId = async (userId: string) => {
-  if (isGuestMode()) {
-    return transactionsData.transactions.filter(transaction => transaction.userId === userId);
-  }
+export const getTransactionsByUserId = async (userId: string): Promise<Transaction[]> => {
   
   try {
     const supabase = createClient();
@@ -94,27 +86,6 @@ export const createTransaction = async (transactionData: {
   const user = await getCurrentUser();
   if (!user) {
     throw new Error('User not authenticated');
-  }
-
-  if (isGuestMode()) {
-    // In guest mode, we can't actually create transactions in the database
-    // Just return a success message for demo purposes
-    return {
-      success: true,
-      message: 'Transaction created successfully (demo mode)',
-      transaction: {
-        id: `txn_${Date.now()}`,
-        userId: user.id,
-        accountId: transactionData.accountId,
-        date: transactionData.date.toISOString().split('T')[0],
-        description: transactionData.description,
-        amount: transactionData.amount,
-        category: transactionData.category || '',
-        type: transactionData.type,
-        merchant: transactionData.merchant || '',
-        status: transactionData.status || 'completed'
-      }
-    };
   }
 
   try {
@@ -175,16 +146,39 @@ export const createIncomeTransaction = async (incomeData: {
   accountId: string;
   date: Date;
 }) => {
-  return createTransaction({
-    type: 'income',
-    amount: Math.abs(incomeData.amount), // Ensure positive amount for income
-    description: incomeData.description,
-    category: incomeData.source, // Use source as category
-    merchant: incomeData.source, // Store source in merchant field too
-    accountId: incomeData.accountId,
-    status: 'completed',
-    date: incomeData.date,
-  });
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  try {
+    const supabase = createClient();
+    
+    // Use the database function to handle both transaction creation and balance update atomically
+    const { data: transaction, error: transactionError } = await supabase.rpc('create_income_transaction', {
+      p_user_id: user.id,
+      p_account_id: incomeData.accountId,
+      p_amount: Math.abs(incomeData.amount), // Ensure positive amount for income
+      p_description: incomeData.description,
+      p_category: incomeData.source,
+      p_merchant: incomeData.source,
+      p_date: incomeData.date.toISOString().split('T')[0]
+    });
+
+    if (transactionError) {
+      console.error('Error creating income transaction:', transactionError);
+      throw new Error('Failed to create income transaction');
+    }
+
+    return {
+      success: true,
+      message: 'Income added successfully and account balance updated',
+      transaction: transaction
+    };
+  } catch (error) {
+    console.error('Error in createIncomeTransaction:', error);
+    throw error;
+  }
 };
 
 // Expense-specific transaction creation function  
@@ -197,16 +191,40 @@ export const createExpenseTransaction = async (expenseData: {
   status?: string;
   date: Date;
 }) => {
-  return createTransaction({
-    type: 'expense',
-    amount: -Math.abs(expenseData.amount), // Ensure negative amount for expenses
-    description: expenseData.description,
-    category: expenseData.category,
-    merchant: expenseData.merchant,
-    accountId: expenseData.accountId,
-    status: expenseData.status || 'completed',
-    date: expenseData.date,
-  });
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  try {
+    const supabase = createClient();
+    
+    // Use the database function to handle both transaction creation and balance update atomically
+    const { data: transaction, error: transactionError } = await supabase.rpc('create_expense_transaction', {
+      p_user_id: user.id,
+      p_account_id: expenseData.accountId,
+      p_amount: Math.abs(expenseData.amount), // Ensure positive amount for calculation
+      p_description: expenseData.description,
+      p_category: expenseData.category || null,
+      p_merchant: expenseData.merchant || null,
+      p_date: expenseData.date.toISOString().split('T')[0],
+      p_status: expenseData.status || 'completed'
+    });
+
+    if (transactionError) {
+      console.error('Error creating expense transaction:', transactionError);
+      throw new Error('Failed to create expense transaction');
+    }
+
+    return {
+      success: true,
+      message: 'Expense added successfully and account balance updated',
+      transaction: transaction
+    };
+  } catch (error) {
+    console.error('Error in createExpenseTransaction:', error);
+    throw error;
+  }
 };
 
 // Transaction utility functions

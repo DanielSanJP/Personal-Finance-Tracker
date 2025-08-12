@@ -1,16 +1,93 @@
-import budgetsData from '@/data/budgets.json';
 import { createClient } from '../supabase/client';
-import { getCurrentUser, isGuestMode } from './auth';
-import { getCurrentMonthTransactions } from './transactions';
+import { getCurrentUser } from './auth';
+import { getCurrentUserTransactions } from './transactions';
+
+// Calculate spent amount for a budget based on transactions
+export const calculateBudgetSpentAmount = async (budget: {
+  category: string;
+  startDate: string;
+  endDate: string;
+}): Promise<number> => {
+  try {
+    const transactions = await getCurrentUserTransactions();
+    
+    // Filter transactions by category and date range
+    const relevantTransactions = transactions.filter(transaction => {
+      const transactionDate = new Date(transaction.date);
+      const startDate = new Date(budget.startDate);
+      const endDate = new Date(budget.endDate);
+      
+      return (
+        transaction.category === budget.category &&
+        transaction.type === 'expense' &&
+        transactionDate >= startDate &&
+        transactionDate <= endDate
+      );
+    });
+    
+    // Sum up the amounts (take absolute value for expenses)
+    return relevantTransactions.reduce((total, transaction) => {
+      return total + Math.abs(transaction.amount);
+    }, 0);
+  } catch (error) {
+    console.error('Error calculating budget spent amount:', error);
+    return 0;
+  }
+};
+
+// Enhanced function to get budgets with real-time spent amounts
+export const getCurrentUserBudgetsWithRealTimeSpending = async () => {
+  const user = await getCurrentUser();
+  if (!user) return [];
+  
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('budgets')
+      .select('*')
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error fetching budgets:', error);
+      return [];
+    }
+
+    // Calculate real-time spent amounts for each budget
+    const budgetsWithRealTimeSpending = await Promise.all(
+      (data || []).map(async (budget) => {
+        const realTimeSpentAmount = await calculateBudgetSpentAmount({
+          category: budget.category,
+          startDate: budget.start_date,
+          endDate: budget.end_date,
+        });
+
+        return {
+          id: budget.id,
+          userId: budget.user_id,
+          category: budget.category,
+          budgetAmount: Number(budget.budget_amount),
+          spentAmount: realTimeSpentAmount, // Use real-time calculated amount
+          remainingAmount: Number(budget.budget_amount) - realTimeSpentAmount,
+          period: budget.period,
+          startDate: budget.start_date,
+          endDate: budget.end_date,
+          createdAt: budget.created_at,
+          updatedAt: budget.updated_at
+        };
+      })
+    );
+
+    return budgetsWithRealTimeSpending;
+  } catch (error) {
+    console.error('Error in getCurrentUserBudgetsWithRealTimeSpending:', error);
+    return [];
+  }
+};
 
 // Budget functions
 export const getCurrentUserBudgets = async () => {
   const user = await getCurrentUser();
   if (!user) return [];
-  
-  if (isGuestMode()) {
-    return budgetsData.budgets.filter(budget => budget.userId === user.id);
-  }
   
   try {
     const supabase = createClient();
@@ -45,10 +122,6 @@ export const getCurrentUserBudgets = async () => {
 };
 
 export const getBudgetsByUserId = async (userId: string) => {
-  if (isGuestMode()) {
-    return budgetsData.budgets.filter(budget => budget.userId === userId);
-  }
-  
   try {
     const supabase = createClient();
     const { data, error } = await supabase
@@ -86,15 +159,17 @@ export const getMonthlyBudgetRemaining = async (): Promise<number> => {
   const user = await getCurrentUser();
   if (!user) return 0;
   
-  if (isGuestMode()) {
-    const userBudgets = budgetsData.budgets.filter(budget => budget.userId === user.id);
-    return userBudgets.reduce((total, budget) => total + (budget.remainingAmount || 0), 0);
-  }
-  
   try {
     const currentDate = new Date();
     const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    
+    // Helper function to format date without timezone issues
+    const formatDate = (date: Date): string => {
+      return date.getFullYear() + '-' + 
+             String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+             String(date.getDate()).padStart(2, '0');
+    };
     
     const supabase = createClient();
     const { data, error } = await supabase
@@ -102,8 +177,8 @@ export const getMonthlyBudgetRemaining = async (): Promise<number> => {
       .select('*')
       .eq('user_id', user.id)
       .eq('period', 'monthly')
-      .gte('start_date', firstDayOfMonth.toISOString().split('T')[0])
-      .lte('end_date', lastDayOfMonth.toISOString().split('T')[0]);
+      .gte('start_date', formatDate(firstDayOfMonth))
+      .lte('end_date', formatDate(lastDayOfMonth));
 
     if (error) {
       console.error('Error fetching monthly budgets:', error);
@@ -126,44 +201,18 @@ export const calculateRealTimeBudgetRemaining = async (): Promise<number> => {
   const user = await getCurrentUser();
   if (!user) return 0;
   
-  if (isGuestMode()) {
-    const userBudgets = budgetsData.budgets.filter(budget => budget.userId === user.id);
-    return userBudgets.reduce((total, budget) => total + (budget.remainingAmount || 0), 0);
-  }
-  
   try {
-    // Get current month transactions for expense calculation
-    const monthlyTransactions = await getCurrentMonthTransactions();
-    const monthlyExpenses = monthlyTransactions
-      .filter(transaction => transaction.type === 'expense')
-      .reduce((total, transaction) => total + Math.abs(transaction.amount), 0);
+    // Get all current user budgets with real-time spending calculations
+    const budgets = await getCurrentUserBudgetsWithRealTimeSpending();
     
-    // Get current month budgets
-    const currentDate = new Date();
-    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    if (budgets.length === 0) return 0;
     
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from('budgets')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('period', 'monthly')
-      .gte('start_date', firstDayOfMonth.toISOString().split('T')[0])
-      .lte('end_date', lastDayOfMonth.toISOString().split('T')[0]);
-
-    if (error) {
-      console.error('Error fetching monthly budgets for calculation:', error);
-      return 0;
-    }
-
-    // Calculate total budget amount
-    const totalBudget = (data || []).reduce((total, budget) => {
-      return total + Number(budget.budget_amount);
+    // Calculate total budget amount and total remaining from all budgets
+    const totalRemaining = budgets.reduce((total, budget) => {
+      return total + (budget.budgetAmount - budget.spentAmount);
     }, 0);
 
-    // Return remaining amount (budget - actual spending)
-    return Math.max(0, totalBudget - monthlyExpenses);
+    return Math.max(0, totalRemaining);
   } catch (error) {
     console.error('Error calculating real-time budget remaining:', error);
     return 0;
@@ -182,10 +231,6 @@ export const createBudget = async (budgetData: {
   const user = await getCurrentUser();
   if (!user) {
     throw new Error('User not authenticated');
-  }
-
-  if (isGuestMode()) {
-    throw new Error('Cannot create budgets in guest mode');
   }
 
   try {
@@ -248,10 +293,6 @@ export const updateBudget = async (budgetId: string, budgetData: {
   const user = await getCurrentUser();
   if (!user) {
     throw new Error('User not authenticated');
-  }
-
-  if (isGuestMode()) {
-    throw new Error('Cannot update budgets in guest mode');
   }
 
   try {
@@ -320,10 +361,6 @@ export const deleteBudget = async (budgetId: string) => {
   const user = await getCurrentUser();
   if (!user) {
     throw new Error('User not authenticated');
-  }
-
-  if (isGuestMode()) {
-    throw new Error('Cannot delete budgets in guest mode');
   }
 
   try {

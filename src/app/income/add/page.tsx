@@ -11,6 +11,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { toast } from "sonner";
 import { getCurrentUserAccounts, createIncomeTransaction } from "@/lib/data";
 import { FormSkeleton } from "@/components/loading-states";
+import { checkGuestAndWarn } from "@/lib/guest-protection";
 
 interface Account {
   id: string;
@@ -62,6 +63,10 @@ export default function AddIncomePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if user is guest first
+    const isGuest = await checkGuestAndWarn("add income");
+    if (isGuest) return;
 
     // Validate required fields
     if (!amount || !description || !incomeSource || !account || !date) {

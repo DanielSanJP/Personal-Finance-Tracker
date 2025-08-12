@@ -15,7 +15,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Breadcrumbs from "@/components/breadcrumbs";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+import { createClient } from "@/lib/supabase/client";
+import { useState, useEffect } from "react";
+import type { User } from "@supabase/supabase-js";
+import { GUEST_USER_ID } from "@/lib/guest-protection";
 
 interface NavProps {
   showDashboardTabs?: boolean;
@@ -24,10 +27,39 @@ interface NavProps {
 export default function Nav({ showDashboardTabs = false }: NavProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading, signOut, isGuest } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Get initial user
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+    };
+
+    getUser();
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Simplified logic for when to show different nav elements
   const hasUser = !!user && !loading;
+
+  // Check if current user is guest
+  const isGuestUser = user?.id === GUEST_USER_ID;
 
   // Function to determine if a tab is active
   const isActiveTab = (path: string) => pathname === path;
@@ -44,18 +76,28 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
     }
   };
 
-  // Create userData from user and isGuest
+  // Create userData from user
   const userData =
     hasUser && user
       ? {
           id: user.id,
-          displayName: user.display_name || user.email || "User",
-          initials: user.initials || "U",
+          displayName: isGuestUser
+            ? "Guest User (View Only)"
+            : user.user_metadata?.display_name || user.email || "User",
+          initials: isGuestUser
+            ? "G"
+            : user.user_metadata?.initials ||
+              `${user.user_metadata?.first_name?.[0] || ""}${
+                user.user_metadata?.last_name?.[0] || ""
+              }`.toUpperCase() ||
+              user.email?.[0]?.toUpperCase() ||
+              "U",
         }
       : null;
 
   const handleSignOut = async () => {
-    await signOut();
+    const supabase = createClient();
+    await supabase.auth.signOut();
     router.push("/login");
     toast.success("Signed out successfully", {
       description: "You've been logged out of your account.",
@@ -68,19 +110,32 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <Link
-                href="/"
-                className="flex items-center gap-2 text-xl font-bold text-foreground"
-              >
-                <Image
-                  src="/logo.svg"
-                  alt="Personal Finance Tracker Logo"
-                  width={64}
-                  height={64}
-                  className="h-12 w-12"
-                />
-                Personal Finance Tracker
-              </Link>
+              {hasUser ? (
+                <div className="flex items-center gap-2 text-xl font-bold text-foreground cursor-default">
+                  <Image
+                    src="/logo.svg"
+                    alt="Personal Finance Tracker Logo"
+                    width={64}
+                    height={64}
+                    className="h-12 w-12"
+                  />
+                  Personal Finance Tracker
+                </div>
+              ) : (
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 text-xl font-bold text-foreground"
+                >
+                  <Image
+                    src="/logo.svg"
+                    alt="Personal Finance Tracker Logo"
+                    width={64}
+                    height={64}
+                    className="h-12 w-12"
+                  />
+                  Personal Finance Tracker
+                </Link>
+              )}
             </div>
             {!showDashboardTabs && (
               <div className="flex flex-wrap items-center gap-2 md:flex-row">
@@ -101,27 +156,27 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
                       </div>
                       <span className="text-sm text-gray-600">
                         {userData.displayName}
-                        {isGuest && " (Guest)"}
                       </span>
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {!isGuest && (
-                      <>
-                        <DropdownMenuItem>Profile</DropdownMenuItem>
-                        <DropdownMenuItem>Settings</DropdownMenuItem>
-                        <DropdownMenuItem>Preferences</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                      </>
-                    )}
+                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/accounts" className="cursor-pointer">
+                        Bank Accounts
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>Settings</DropdownMenuItem>
+                    <DropdownMenuItem>Preferences</DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem>Help & Support</DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-red-600"
                       onClick={handleSignOut}
                     >
-                      {isGuest ? "Exit Guest Mode" : "Sign Out"}
+                      Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

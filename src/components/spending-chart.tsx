@@ -166,13 +166,29 @@ export function SpendingChart() {
   const currentMonth = chartData[chartData.length - 1]?.spending || 0;
   const currentMonthName = getCurrentMonthName();
   const previousMonth = chartData[chartData.length - 2]?.spending || 0;
-  const trendPercentage =
-    previousMonth !== 0
-      ? Math.abs(
-          ((currentMonth - previousMonth) / previousMonth) * 100
-        ).toFixed(1)
-      : "0";
-  const isIncreasing = currentMonth > previousMonth; // Higher spending = increasing
+
+  let trendPercentage = "0";
+  let isIncreasing = false;
+
+  if (previousMonth === 0 && currentMonth > 0) {
+    // If previous month was $0 and current month has spending, it's a 100% increase
+    trendPercentage = "100";
+    isIncreasing = true;
+  } else if (currentMonth === 0 && previousMonth > 0) {
+    // If current month is $0 and previous month had spending, it's a 100% decrease
+    trendPercentage = "100";
+    isIncreasing = false;
+  } else if (previousMonth > 0) {
+    // Normal calculation when previous month has value
+    const percentageChange =
+      ((currentMonth - previousMonth) / previousMonth) * 100;
+    trendPercentage = Math.abs(percentageChange).toFixed(1);
+    isIncreasing = percentageChange > 0;
+  } else if (currentMonth === 0 && previousMonth === 0) {
+    // Both months are $0, no change
+    trendPercentage = "0";
+    isIncreasing = false;
+  }
 
   // Calculate Y-axis domain to ensure visibility
   const allValues = chartData.map((d) => d.spending);

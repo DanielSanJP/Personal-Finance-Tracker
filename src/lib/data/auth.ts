@@ -1,8 +1,7 @@
-import usersData from '@/data/users.json';
 import { createClient } from '../supabase/client';
 import type { User } from './types';
 
-// Normalize user data to ensure consistent format (same as in AuthContext)
+// Normalize user data to ensure consistent format
 const normalizeUserData = (userData: {
   id: string;
   firstName?: string;
@@ -39,43 +38,13 @@ const normalizeUserData = (userData: {
   };
 };
 
-// Legacy functions for backward compatibility
-// These should be replaced with useAuth() hook in components
-
-// Check if user is in guest mode (legacy - prefer useAuth)
-export const isGuestMode = () => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('guestMode') === 'true';
-  }
-  return false;
-};
-
-// Clear guest mode (legacy - prefer useAuth)
-export const clearGuestMode = () => {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('guestMode');
-    window.dispatchEvent(new CustomEvent('guestModeChanged', { detail: false }));
-  }
-};
-
-// Set guest mode (legacy - prefer useAuth)
-export const setGuestMode = () => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('guestMode', 'true');
-    window.dispatchEvent(new CustomEvent('guestModeChanged', { detail: true }));
-  }
-};
-
-// User functions
+// Get current authenticated user
 export const getCurrentUser = async (): Promise<User | null> => {
   try {
     const supabase = createClient();
     const { data: { user }, error } = await supabase.auth.getUser();
     
     if (!error && user) {
-      // If we have a real authenticated user, clear guest mode
-      clearGuestMode();
-
       // Get user profile from database
       const { data: profile, error: profileError } = await supabase
         .from('users')
@@ -98,36 +67,14 @@ export const getCurrentUser = async (): Promise<User | null> => {
       return normalizeUserData(profile);
     }
 
-    // No authenticated user found, check guest mode
-    const guestModeActive = isGuestMode();
-    console.log('🔍 Guest mode active:', guestModeActive);
-    
-    if (guestModeActive) {
-      console.log('🔍 Returning guest user:', usersData.users[0]);
-      return normalizeUserData(usersData.users[0]);
-    }
-
     return null;
   } catch (error) {
-    console.error('Error in getCurrentUser:', error);
-    
-    // Fallback to guest mode if there's an error and guest mode is active
-    const guestModeActive = isGuestMode();
-    
-    if (guestModeActive) {
-      return normalizeUserData(usersData.users[0]);
-    }
-    
+    console.error('Error getting current user:', error);
     return null;
   }
 };
 
-export const getUserById = async (userId: string) => {
-  if (isGuestMode()) {
-    const user = usersData.users.find(user => user.id === userId);
-    return user ? normalizeUserData(user) : null;
-  }
-  
+export const getUserById = async (userId: string): Promise<User | null> => {
   try {
     const supabase = createClient();
     const { data } = await supabase
@@ -141,4 +88,12 @@ export const getUserById = async (userId: string) => {
     console.error('Error getting user by ID:', error);
     return null;
   }
+};
+
+// Guest account constant
+export const GUEST_USER_ID = '55e3b0e6-b683-4cab-aa5b-6a5b192bde7d';
+
+// Check if current user is guest
+export const isGuestUser = (user: User | null): boolean => {
+  return user?.id === GUEST_USER_ID;
 };

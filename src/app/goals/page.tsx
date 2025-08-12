@@ -30,10 +30,13 @@ import {
   createGoal,
   updateGoal,
   deleteGoal,
+  makeGoalContribution,
+  getCurrentUserAccounts,
 } from "@/lib/data";
 import { EmptyGoals } from "@/components/empty-states";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { checkGuestAndWarn } from "@/lib/guest-protection";
 
 interface Goal {
   id: string;
@@ -47,12 +50,28 @@ interface Goal {
   status: string;
 }
 
+interface Account {
+  id: string;
+  userId: string;
+  name: string;
+  balance: number;
+  type: string;
+  accountNumber: string;
+  isActive: boolean;
+}
+
 export default function GoalsPage() {
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [addGoalOpen, setAddGoalOpen] = useState(false);
   const [contributionOpen, setContributionOpen] = useState(false);
   const [editGoalsOpen, setEditGoalsOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState<Goal | null>(null);
+  const [editTargetDates, setEditTargetDates] = useState<
+    Record<string, Date | undefined>
+  >({});
 
   // Form states for adding goals
   const [newGoal, setNewGoal] = useState({
@@ -60,6 +79,14 @@ export default function GoalsPage() {
     targetAmount: "",
     currentAmount: "",
     priority: "medium",
+  });
+
+  // Form states for contributions
+  const [contribution, setContribution] = useState({
+    goalId: "",
+    accountId: "",
+    amount: "",
+    notes: "",
   });
 
   const loadGoals = async () => {
@@ -76,12 +103,27 @@ export default function GoalsPage() {
     }
   };
 
+  const loadAccounts = async () => {
+    try {
+      const data = await getCurrentUserAccounts();
+      setAccounts(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error loading accounts:", error);
+      setAccounts([]);
+    }
+  };
+
   useEffect(() => {
     loadGoals();
+    loadAccounts();
   }, []);
 
   // Handle creating a new goal
   const handleCreateGoal = async () => {
+    // Check if user is guest first
+    const isGuest = await checkGuestAndWarn("create goals");
+    if (isGuest) return;
+
     try {
       if (!newGoal.name.trim() || !newGoal.targetAmount) {
         toast.error("Please fill in the goal name and target amount");
@@ -145,8 +187,26 @@ export default function GoalsPage() {
       category?: string | null;
       priority?: string | null;
       status?: string;
-    }
+    },
+    closeModal: boolean = false
   ) => {
+    // Check if user is guest first
+    const isGuest = await checkGuestAndWarn("edit goals");
+    if (isGuest) return;
+
+    // Validate target date is in the future (if provided)
+    if (goalData.targetDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(goalData.targetDate);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate <= today) {
+        toast.error("Target date must be in the future");
+        return;
+      }
+    }
+
     try {
       // Convert null values to undefined for the API
       const apiData = {
@@ -164,6 +224,11 @@ export default function GoalsPage() {
       // Reload goals
       await loadGoals();
 
+      if (closeModal) {
+        setEditGoalsOpen(false);
+        setEditTargetDates({});
+      }
+
       toast.success("Goal updated successfully!");
     } catch (error) {
       console.error("Error updating goal:", error);
@@ -173,6 +238,10 @@ export default function GoalsPage() {
 
   // Handle deleting a goal
   const handleDeleteGoal = async (goalId: string) => {
+    // Check if user is guest first
+    const isGuest = await checkGuestAndWarn("delete goals");
+    if (isGuest) return;
+
     try {
       await deleteGoal(goalId);
 
@@ -183,6 +252,80 @@ export default function GoalsPage() {
     } catch (error) {
       console.error("Error deleting goal:", error);
       toast.error("Failed to delete goal");
+    }
+  };
+
+  // Handle confirmed delete
+  const handleConfirmDelete = async () => {
+    if (goalToDelete) {
+      await handleDeleteGoal(goalToDelete.id);
+      setDeleteConfirmOpen(false);
+      setGoalToDelete(null);
+    }
+  };
+
+  // Handle making a contribution
+  const handleMakeContribution = async () => {
+    // Check if user is guest first
+    const isGuest = await checkGuestAndWarn("make goal contributions");
+    if (isGuest) return;
+
+    try {
+      if (
+        !contribution.goalId ||
+        !contribution.accountId ||
+        !contribution.amount
+      ) {
+        toast.error("Please fill in all required fields");
+        return;
+      }
+
+      const amount = parseFloat(contribution.amount);
+      if (amount <= 0) {
+        toast.error("Contribution amount must be greater than 0");
+        return;
+      }
+
+      // Check if account has sufficient balance
+      const selectedAccount = accounts.find(
+        (acc) => acc.id === contribution.accountId
+      );
+      if (!selectedAccount) {
+        toast.error("Selected account not found");
+        return;
+      }
+
+      if (selectedAccount.balance < amount) {
+        toast.error("Insufficient account balance");
+        return;
+      }
+
+      await makeGoalContribution({
+        goalId: contribution.goalId,
+        accountId: contribution.accountId,
+        amount: amount,
+        date: contributionDate || new Date(),
+        notes: contribution.notes || undefined,
+      });
+
+      // Reset form
+      setContribution({
+        goalId: "",
+        accountId: "",
+        amount: "",
+        notes: "",
+      });
+      setContributionDate(new Date());
+      setContributionOpen(false);
+
+      // Reload goals and accounts
+      await loadGoals();
+      await loadAccounts();
+
+      toast.success("Contribution made successfully!");
+    } catch (error) {
+      console.error("Error making contribution:", error);
+      toast.error("Failed to make contribution");
     }
   };
 
@@ -297,7 +440,7 @@ export default function GoalsPage() {
                     <DialogTrigger asChild>
                       <Button className="w-32 sm:w-40">Add New Goal</Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
+                    <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden">
                       <DialogHeader>
                         <DialogTitle>Add New Savings Goal</DialogTitle>
                         <DialogDescription>
@@ -305,7 +448,7 @@ export default function GoalsPage() {
                           timeline.
                         </DialogDescription>
                       </DialogHeader>
-                      <div className="grid gap-4 py-4">
+                      <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
                         <div className="grid gap-2">
                           <Label htmlFor="goal-name">Goal Name</Label>
                           <Input
@@ -359,8 +502,6 @@ export default function GoalsPage() {
                             date={targetDate}
                             onDateChange={setTargetDate}
                             placeholder="Select target date"
-                            fromDate={new Date()} // Only allow dates from today onwards
-                            disabled={(date) => date < new Date()} // Disable past dates
                           />
                         </div>
                         <div className="grid gap-2">
@@ -387,6 +528,22 @@ export default function GoalsPage() {
                         </div>
                       </div>
                       <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setAddGoalOpen(false);
+                            // Reset form
+                            setNewGoal({
+                              name: "",
+                              targetAmount: "",
+                              currentAmount: "",
+                              priority: "medium",
+                            });
+                            setTargetDate(undefined);
+                          }}
+                        >
+                          Cancel
+                        </Button>
                         <Button type="submit" onClick={handleCreateGoal}>
                           Create Goal
                         </Button>
@@ -396,18 +553,32 @@ export default function GoalsPage() {
 
                   <Dialog open={editGoalsOpen} onOpenChange={setEditGoalsOpen}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" className="w-32 sm:w-40">
+                      <Button
+                        variant="outline"
+                        className="w-32 sm:w-40"
+                        onClick={() => {
+                          // Initialize edit target dates with current goal dates
+                          const initialDates: Record<string, Date | undefined> =
+                            {};
+                          goals.forEach((goal) => {
+                            if (goal.targetDate) {
+                              initialDates[goal.id] = new Date(goal.targetDate);
+                            }
+                          });
+                          setEditTargetDates(initialDates);
+                        }}
+                      >
                         Edit Goals
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[525px]">
+                    <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden">
                       <DialogHeader>
                         <DialogTitle>Edit Savings Goals</DialogTitle>
                         <DialogDescription>
                           Modify your existing savings goals and target amounts.
                         </DialogDescription>
                       </DialogHeader>
-                      <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
+                      <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
                         {goals.map((goal) => {
                           const handleSaveGoal = () => {
                             const nameInput = document.getElementById(
@@ -421,24 +592,27 @@ export default function GoalsPage() {
                             ) as HTMLInputElement;
 
                             if (nameInput && targetInput && currentInput) {
-                              handleUpdateGoal(goal.id, {
-                                name: nameInput.value,
-                                targetAmount:
-                                  parseFloat(targetInput.value) || 0,
-                                currentAmount:
-                                  parseFloat(currentInput.value) || 0,
-                              });
+                              const editDate = editTargetDates[goal.id];
+                              handleUpdateGoal(
+                                goal.id,
+                                {
+                                  name: nameInput.value,
+                                  targetAmount:
+                                    parseFloat(targetInput.value) || 0,
+                                  currentAmount:
+                                    parseFloat(currentInput.value) || 0,
+                                  targetDate: editDate
+                                    ? editDate.toISOString().split("T")[0]
+                                    : goal.targetDate,
+                                },
+                                true
+                              ); // Close modal after individual save
                             }
                           };
 
                           const handleDeleteGoalClick = () => {
-                            if (
-                              window.confirm(
-                                `Are you sure you want to delete "${goal.name}"?`
-                              )
-                            ) {
-                              handleDeleteGoal(goal.id);
-                            }
+                            setGoalToDelete(goal);
+                            setDeleteConfirmOpen(true);
                           };
 
                           return (
@@ -495,6 +669,27 @@ export default function GoalsPage() {
                                   className="w-full"
                                 />
                               </div>
+                              <div className="grid gap-2">
+                                <Label htmlFor={`target-date-${goal.id}`}>
+                                  Target Date
+                                </Label>
+                                <DatePicker
+                                  id={`target-date-${goal.id}`}
+                                  date={
+                                    editTargetDates[goal.id] ||
+                                    (goal.targetDate
+                                      ? new Date(goal.targetDate)
+                                      : undefined)
+                                  }
+                                  onDateChange={(date) => {
+                                    setEditTargetDates((prev) => ({
+                                      ...prev,
+                                      [goal.id]: date,
+                                    }));
+                                  }}
+                                  placeholder="Select target date"
+                                />
+                              </div>
                               <div className="text-sm text-gray-600">
                                 Progress: {formatCurrency(goal.currentAmount)}{" "}
                                 of {formatCurrency(goal.targetAmount)} (
@@ -510,11 +705,71 @@ export default function GoalsPage() {
                       <DialogFooter className="gap-2">
                         <Button
                           variant="outline"
-                          onClick={() => setEditGoalsOpen(false)}
+                          onClick={() => {
+                            setEditGoalsOpen(false);
+                            // Reset edit target dates
+                            setEditTargetDates({});
+                          }}
                         >
                           Cancel
                         </Button>
-                        <Button type="submit">Save Changes</Button>
+                        <Button
+                          type="submit"
+                          onClick={async () => {
+                            // Save all goals at once without individual reloads
+                            try {
+                              // Close modal immediately to prevent flickering
+                              setEditGoalsOpen(false);
+                              setEditTargetDates({});
+
+                              const savePromises = goals.map(async (goal) => {
+                                const nameInput = document.getElementById(
+                                  `goal-name-${goal.id}`
+                                ) as HTMLInputElement;
+                                const targetInput = document.getElementById(
+                                  `target-${goal.id}`
+                                ) as HTMLInputElement;
+                                const currentInput = document.getElementById(
+                                  `current-${goal.id}`
+                                ) as HTMLInputElement;
+
+                                if (nameInput && targetInput && currentInput) {
+                                  const editDate = editTargetDates[goal.id];
+
+                                  // Convert null values to undefined for the API
+                                  const apiData = {
+                                    name: nameInput.value,
+                                    targetAmount:
+                                      parseFloat(targetInput.value) || 0,
+                                    currentAmount:
+                                      parseFloat(currentInput.value) || 0,
+                                    targetDate: editDate
+                                      ? editDate.toISOString().split("T")[0]
+                                      : goal.targetDate || undefined,
+                                    category: goal.category || undefined,
+                                    priority: goal.priority || undefined,
+                                    status: goal.status,
+                                  };
+
+                                  // Call updateGoal directly without going through handleUpdateGoal
+                                  return updateGoal(goal.id, apiData);
+                                }
+                              });
+
+                              await Promise.all(savePromises.filter(Boolean));
+
+                              // Reload goals only once at the end
+                              await loadGoals();
+
+                              toast.success("All goals updated successfully!");
+                            } catch (error) {
+                              console.error("Error saving goals:", error);
+                              toast.error("Failed to save some changes");
+                            }
+                          }}
+                        >
+                          Save All Changes
+                        </Button>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
@@ -538,21 +793,54 @@ export default function GoalsPage() {
                       <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
                           <Label htmlFor="goal-select">Select Goal</Label>
-                          <Select>
+                          <Select
+                            value={contribution.goalId}
+                            onValueChange={(value) =>
+                              setContribution({
+                                ...contribution,
+                                goalId: value,
+                              })
+                            }
+                          >
                             <SelectTrigger className="w-full">
                               <SelectValue placeholder="Choose a goal" />
                             </SelectTrigger>
                             <SelectContent>
                               {goals.map((goal) => (
-                                <SelectItem
-                                  key={goal.id}
-                                  value={goal.id.toString()}
-                                >
+                                <SelectItem key={goal.id} value={goal.id}>
                                   <div className="flex flex-col">
                                     <span>{goal.name}</span>
                                     <span className="text-sm text-gray-500">
                                       {formatCurrency(goal.currentAmount)} /{" "}
                                       {formatCurrency(goal.targetAmount)}
+                                    </span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="account-select">Select Account</Label>
+                          <Select
+                            value={contribution.accountId}
+                            onValueChange={(value) =>
+                              setContribution({
+                                ...contribution,
+                                accountId: value,
+                              })
+                            }
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Choose an account" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {accounts.map((account) => (
+                                <SelectItem key={account.id} value={account.id}>
+                                  <div className="flex flex-col">
+                                    <span>{account.name}</span>
+                                    <span className="text-sm text-gray-500">
+                                      Balance: {formatCurrency(account.balance)}
                                     </span>
                                   </div>
                                 </SelectItem>
@@ -569,6 +857,13 @@ export default function GoalsPage() {
                             type="number"
                             placeholder="Enter amount to contribute"
                             className="w-full"
+                            value={contribution.amount}
+                            onChange={(e) =>
+                              setContribution({
+                                ...contribution,
+                                amount: e.target.value,
+                              })
+                            }
                           />
                         </div>
                         <div className="grid gap-2">
@@ -588,11 +883,36 @@ export default function GoalsPage() {
                             id="notes"
                             placeholder="Add a note about this contribution"
                             className="w-full"
+                            value={contribution.notes}
+                            onChange={(e) =>
+                              setContribution({
+                                ...contribution,
+                                notes: e.target.value,
+                              })
+                            }
                           />
                         </div>
                       </div>
                       <DialogFooter>
-                        <Button type="submit">Add Contribution</Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setContributionOpen(false);
+                            // Reset contribution form and date
+                            setContribution({
+                              goalId: "",
+                              accountId: "",
+                              amount: "",
+                              notes: "",
+                            });
+                            setContributionDate(new Date());
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button type="submit" onClick={handleMakeContribution}>
+                          Add Contribution
+                        </Button>
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
@@ -601,6 +921,33 @@ export default function GoalsPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Goal</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete &ldquo;{goalToDelete?.name}
+                &rdquo;? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                  setGoalToDelete(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleConfirmDelete}>
+                Delete Goal
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

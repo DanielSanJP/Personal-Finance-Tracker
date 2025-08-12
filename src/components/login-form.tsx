@@ -12,9 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { setGuestMode } from "@/lib/data";
+import { loginAsGuest } from "@/app/login/actions";
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
   loginAction?: (formData: FormData) => Promise<void>;
@@ -25,19 +23,6 @@ export function LoginForm({
   loginAction,
   ...props
 }: LoginFormProps) {
-  const router = useRouter();
-
-  const handleGuestMode = () => {
-    console.log("🔍 handleGuestMode: Starting guest mode setup...");
-    setGuestMode();
-    console.log("🔍 handleGuestMode: Guest mode set, showing toast...");
-    toast.success("Welcome, Guest!", {
-      description: "You're now using the app with sample data.",
-      duration: 3000,
-    });
-    console.log("🔍 handleGuestMode: Navigating to dashboard...");
-    router.push("/dashboard");
-  };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -48,51 +33,59 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={loginAction}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
-              </div>
-              <div className="grid gap-3">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
+          <div className="flex flex-col gap-6">
+            <form action={loginAction}>
+              <div className="flex flex-col gap-6">
+                <div className="grid gap-3">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="m@example.com"
+                    required
+                  />
                 </div>
-                <Input id="password" name="password" type="password" required />
-              </div>
-              <div className="flex flex-col gap-3">
+                <div className="grid gap-3">
+                  <div className="flex items-center">
+                    <Label htmlFor="password">Password</Label>
+                    <a
+                      href="#"
+                      className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                    >
+                      Forgot your password?
+                    </a>
+                  </div>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                  />
+                </div>
                 <Button type="submit" className="w-full cursor-pointer">
                   Login
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full cursor-pointer"
-                  onClick={handleGuestMode}
-                >
-                  Continue as Guest
-                </Button>
               </div>
-            </div>
-            <div className="mt-4 text-center text-sm">
+            </form>
+
+            <form action={loginAsGuest}>
+              <Button
+                type="submit"
+                variant="outline"
+                className="w-full cursor-pointer"
+              >
+                Continue as Guest
+              </Button>
+            </form>
+
+            <div className="text-center text-sm">
               Don&apos;t have an account?{" "}
               <Link href="/register" className="underline underline-offset-4">
                 Sign up
               </Link>
             </div>
-          </form>
+          </div>
         </CardContent>
       </Card>
     </div>

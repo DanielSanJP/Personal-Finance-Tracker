@@ -1,6 +1,5 @@
-import accountsData from '@/data/accounts.json';
 import { createClient } from '../supabase/client';
-import { getCurrentUser, isGuestMode } from './auth';
+import { getCurrentUser } from './auth';
 import type { Account } from './types';
 
 // Account functions
@@ -9,13 +8,6 @@ export const getCurrentUserAccounts = async (): Promise<Account[]> => {
   
   if (!user) {
     return [];
-  }
-  
-  // Use static data for guest user, Supabase for authenticated users
-  const guestModeActive = isGuestMode();
-  
-  if (guestModeActive) {
-    return accountsData.accounts.filter(account => account.userId === user.id);
   }
   
   try {
@@ -48,10 +40,6 @@ export const getCurrentUserAccounts = async (): Promise<Account[]> => {
 };
 
 export const getAccountsByUserId = async (userId: string) => {
-  if (isGuestMode()) {
-    return accountsData.accounts.filter(account => account.userId === userId);
-  }
-  
   try {
     const supabase = createClient();
     const { data, error } = await supabase
@@ -90,24 +78,6 @@ export const createAccount = async (accountData: {
   const user = await getCurrentUser();
   if (!user) {
     throw new Error('User not authenticated');
-  }
-
-  if (isGuestMode()) {
-    // In guest mode, we can't actually create accounts in the database
-    // Just return a success message for demo purposes
-    return {
-      success: true,
-      message: 'Account created successfully (demo mode)',
-      account: {
-        id: `acc_${Date.now()}`,
-        userId: user.id,
-        name: accountData.name,
-        balance: accountData.balance,
-        type: accountData.type,
-        accountNumber: accountData.accountNumber || '',
-        isActive: true
-      }
-    };
   }
 
   try {
@@ -150,6 +120,58 @@ export const createAccount = async (accountData: {
     };
   } catch (error) {
     console.error('Error in createAccount:', error);
+    throw error;
+  }
+};
+
+// Update an existing account
+export const updateAccount = async (accountId: string, accountData: {
+  name?: string;
+  balance?: number;
+  type?: string;
+  accountNumber?: string;
+  isActive?: boolean;
+}) => {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  try {
+    const supabase = createClient();
+    
+    // Prepare update data with only provided fields
+    const updateData: Record<string, unknown> = {};
+    if (accountData.name !== undefined) updateData.name = accountData.name;
+    if (accountData.balance !== undefined) updateData.balance = accountData.balance;
+    if (accountData.type !== undefined) updateData.type = accountData.type;
+    if (accountData.accountNumber !== undefined) updateData.account_number = accountData.accountNumber;
+    if (accountData.isActive !== undefined) updateData.is_active = accountData.isActive;
+
+    const { data, error } = await supabase
+      .from('accounts')
+      .update(updateData)
+      .eq('id', accountId)
+      .eq('user_id', user.id) // Ensure user can only update their own accounts
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating account:', error);
+      throw new Error('Failed to update account');
+    }
+
+    return {
+      id: data.id,
+      userId: data.user_id,
+      name: data.name,
+      balance: Number(data.balance),
+      type: data.type,
+      accountNumber: data.account_number || '',
+      isActive: data.is_active
+    };
+  } catch (error) {
+    console.error('Error in updateAccount:', error);
     throw error;
   }
 };

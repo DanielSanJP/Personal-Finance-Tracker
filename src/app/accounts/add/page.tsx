@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Nav from "@/components/nav";
 import { createAccount } from "@/lib/data";
+import { checkGuestAndWarn } from "@/lib/guest-protection";
 
 export default function AddAccountPage() {
   const router = useRouter();
@@ -26,6 +27,10 @@ export default function AddAccountPage() {
   };
 
   const handleSave = async () => {
+    // Check if user is guest first
+    const isGuest = await checkGuestAndWarn("create accounts");
+    if (isGuest) return;
+
     // Validate form data
     if (!formData.name || !formData.type || !formData.balance) {
       toast.error("Please fill in all required fields", {

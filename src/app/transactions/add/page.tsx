@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import Nav from "@/components/nav";
 import { getCurrentUserAccounts, createExpenseTransaction } from "@/lib/data";
 import { FormSkeleton } from "@/components/loading-states";
+import { checkGuestAndWarn } from "@/lib/guest-protection";
 
 interface Account {
   id: string;
@@ -76,6 +77,10 @@ export default function AddTransactionPage() {
   };
 
   const handleSave = async () => {
+    // Check if user is guest first
+    const isGuest = await checkGuestAndWarn("create transactions");
+    if (isGuest) return;
+
     // Validate required fields
     if (
       !formData.amount ||

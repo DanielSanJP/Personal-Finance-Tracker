@@ -1,6 +1,5 @@
-import summaryData from '@/data/summary.json';
 import { createClient } from '../supabase/client';
-import { getCurrentUser, isGuestMode } from './auth';
+import { getCurrentUser } from './auth';
 import { getMonthlyIncome, getMonthlyExpenses } from './transactions';
 import { calculateRealTimeBudgetRemaining } from './budgets';
 
@@ -8,14 +7,6 @@ import { calculateRealTimeBudgetRemaining } from './budgets';
 export const getCurrentUserSummary = async () => {
   const user = await getCurrentUser();
   if (!user) return null;
-  
-  if (isGuestMode()) {
-    // For guest mode, return the single summary if it matches the user
-    if (summaryData.summary.userId === user.id) {
-      return summaryData.summary;
-    }
-    return null;
-  }
   
   try {
     const supabase = createClient();
@@ -41,14 +32,6 @@ export const getCurrentUserSummary = async () => {
 export const calculateCurrentUserSummary = async () => {
   const user = await getCurrentUser();
   if (!user) return null;
-  
-  if (isGuestMode()) {
-    // For guest mode, return the static summary data
-    if (summaryData.summary.userId === user.id) {
-      return summaryData.summary;
-    }
-    return null;
-  }
   
   try {
     // Calculate real-time values from transactions and budgets
@@ -79,13 +62,6 @@ export const calculateCurrentUserSummary = async () => {
 };
 
 export const getSummaryByUserId = async (userId: string) => {
-  if (isGuestMode()) {
-    if (summaryData.summary.userId === userId) {
-      return summaryData.summary;
-    }
-    return null;
-  }
-  
   try {
     const supabase = createClient();
     const { data, error } = await supabase

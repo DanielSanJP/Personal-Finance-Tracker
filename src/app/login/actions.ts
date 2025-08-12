@@ -81,3 +81,38 @@ export async function logout() {
   revalidatePath('/', 'layout')
   redirect('/login')
 }
+
+export async function loginAsGuest() {
+  console.log('🔍 Guest login action called');
+  
+  const supabase = await createClient()
+  
+  try {
+    // Sign in with your actual guest account credentials
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: 'guest@demo.app', // Replace with your actual guest email
+      password: 'guest-password-123' // Replace with your actual guest password
+    })
+    
+    if (error) {
+      console.error('🔥 Guest login error:', error)
+      redirect(`/error?message=${encodeURIComponent('Guest mode temporarily unavailable')}`)
+    }
+    
+    // Verify this is the correct guest user
+    if (data.user?.id !== '55e3b0e6-b683-4cab-aa5b-6a5b192bde7d') {
+      console.error('🔥 Wrong user ID for guest account')
+      redirect(`/error?message=${encodeURIComponent('Guest account configuration error')}`)
+    }
+    
+    console.log('🔍 Guest login successful');
+    
+  } catch (error) {
+    console.error('🔥 Guest login failed:', error)
+    redirect(`/error?message=${encodeURIComponent('Guest mode unavailable')}`)
+  }
+  
+  // Success - redirect outside try/catch to avoid catching the redirect
+  revalidatePath('/', 'layout')
+  redirect('/dashboard')
+}

@@ -28,11 +28,13 @@ import {
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import {
-  getCurrentUserBudgets,
+  getCurrentUserBudgetsWithRealTimeSpending,
   createBudget,
   updateBudget,
   deleteBudget,
+  formatCurrency,
 } from "@/lib/data";
+import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { EmptyBudgets } from "@/components/empty-states";
 import { useState, useEffect } from "react";
 
@@ -49,10 +51,23 @@ interface Budget {
 }
 
 export default function BudgetsPage() {
+  // Helper function to format date as YYYY-MM-DD without timezone issues
+  const formatDateForSupabase = (date: Date): string => {
+    return (
+      date.getFullYear() +
+      "-" +
+      String(date.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(date.getDate()).padStart(2, "0")
+    );
+  };
+
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(true);
   const [addBudgetOpen, setAddBudgetOpen] = useState(false);
   const [editBudgetsOpen, setEditBudgetsOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [budgetToDelete, setBudgetToDelete] = useState<Budget | null>(null);
 
   // Form states for adding budgets
   const [newBudget, setNewBudget] = useState({
@@ -64,7 +79,7 @@ export default function BudgetsPage() {
   const loadBudgets = async () => {
     try {
       setLoading(true);
-      const data = await getCurrentUserBudgets();
+      const data = await getCurrentUserBudgetsWithRealTimeSpending();
       setBudgets(data || []);
     } catch (error) {
       console.error("Error loading budgets:", error);
@@ -80,6 +95,10 @@ export default function BudgetsPage() {
 
   // Handle creating a new budget
   const handleCreateBudget = async () => {
+    // Check if user is guest first
+    const isGuest = await checkGuestAndWarn("create budgets");
+    if (isGuest) return;
+
     try {
       if (!newBudget.category || !newBudget.budgetAmount) {
         toast.error("Please fill in the category and budget amount");
@@ -92,27 +111,26 @@ export default function BudgetsPage() {
       let endDate: string;
 
       if (newBudget.period === "monthly") {
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-          .toISOString()
-          .split("T")[0];
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-          .toISOString()
-          .split("T")[0];
+        // Start date: First day of current month
+        const startDateObj = new Date(now.getFullYear(), now.getMonth(), 1);
+        startDate = formatDateForSupabase(startDateObj);
+
+        // End date: Last day of current month
+        const endDateObj = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        endDate = formatDateForSupabase(endDateObj);
       } else if (newBudget.period === "weekly") {
         const startOfWeek = new Date(now);
         startOfWeek.setDate(now.getDate() - now.getDay());
         const endOfWeek = new Date(startOfWeek);
         endOfWeek.setDate(startOfWeek.getDate() + 6);
-        startDate = startOfWeek.toISOString().split("T")[0];
-        endDate = endOfWeek.toISOString().split("T")[0];
+        startDate = formatDateForSupabase(startOfWeek);
+        endDate = formatDateForSupabase(endOfWeek);
       } else {
         // yearly
-        startDate = new Date(now.getFullYear(), 0, 1)
-          .toISOString()
-          .split("T")[0];
-        endDate = new Date(now.getFullYear(), 11, 31)
-          .toISOString()
-          .split("T")[0];
+        const yearStart = new Date(now.getFullYear(), 0, 1);
+        const yearEnd = new Date(now.getFullYear(), 11, 31);
+        startDate = formatDateForSupabase(yearStart);
+        endDate = formatDateForSupabase(yearEnd);
       }
 
       await createBudget({
@@ -145,13 +163,22 @@ export default function BudgetsPage() {
   // Handle updating a budget
   const handleUpdateBudget = async (
     budgetId: string,
-    budgetData: Partial<Budget>
+    budgetData: Partial<Budget>,
+    closeModal: boolean = false
   ) => {
+    // Check if user is guest first
+    const isGuest = await checkGuestAndWarn("edit budgets");
+    if (isGuest) return;
+
     try {
       await updateBudget(budgetId, budgetData);
 
       // Reload budgets
       await loadBudgets();
+
+      if (closeModal) {
+        setEditBudgetsOpen(false);
+      }
 
       toast.success("Budget updated successfully!");
     } catch (error) {
@@ -162,6 +189,10 @@ export default function BudgetsPage() {
 
   // Handle deleting a budget
   const handleDeleteBudget = async (budgetId: string) => {
+    // Check if user is guest first
+    const isGuest = await checkGuestAndWarn("delete budgets");
+    if (isGuest) return;
+
     try {
       await deleteBudget(budgetId);
 
@@ -172,6 +203,15 @@ export default function BudgetsPage() {
     } catch (error) {
       console.error("Error deleting budget:", error);
       toast.error("Failed to delete budget");
+    }
+  };
+
+  // Handle confirmed delete
+  const handleConfirmDelete = async () => {
+    if (budgetToDelete) {
+      await handleDeleteBudget(budgetToDelete.id);
+      setDeleteConfirmOpen(false);
+      setBudgetToDelete(null);
     }
   };
 
@@ -286,8 +326,8 @@ export default function BudgetsPage() {
                               {budget.category}
                             </span>
                             <span className="text-sm sm:text-base text-gray-600">
-                              ${budget.spentAmount.toFixed(2)} / $
-                              {budget.budgetAmount.toFixed(2)}
+                              {formatCurrency(budget.spentAmount)} /{" "}
+                              {formatCurrency(budget.budgetAmount)}
                             </span>
                           </div>
 
@@ -307,10 +347,10 @@ export default function BudgetsPage() {
 
                           {overBudget && (
                             <div className="text-sm text-red-600 font-medium">
-                              Over budget by $
-                              {(
+                              Over budget by{" "}
+                              {formatCurrency(
                                 budget.spentAmount - budget.budgetAmount
-                              ).toFixed(0)}
+                              )}
                             </div>
                           )}
                         </div>
@@ -334,7 +374,7 @@ export default function BudgetsPage() {
                           variant="outline"
                           className="text-base sm:text-lg font-bold px-3 py-1"
                         >
-                          ${totalBudget.toFixed(0)}
+                          {formatCurrency(totalBudget)}
                         </Badge>
                       </div>
                       <div className="space-y-2">
@@ -349,7 +389,7 @@ export default function BudgetsPage() {
                           }
                           className="text-base sm:text-lg font-bold px-3 py-1"
                         >
-                          ${totalSpent.toFixed(0)}
+                          {formatCurrency(totalSpent)}
                         </Badge>
                       </div>
                       <div className="space-y-2">
@@ -362,7 +402,7 @@ export default function BudgetsPage() {
                           }
                           className="text-base sm:text-lg font-bold px-3 py-1"
                         >
-                          ${totalRemaining.toFixed(0)}
+                          {formatCurrency(totalRemaining)}
                         </Badge>
                       </div>
                     </div>
@@ -477,6 +517,20 @@ export default function BudgetsPage() {
                             </div>
                           </div>
                           <DialogFooter>
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setAddBudgetOpen(false);
+                                // Reset form
+                                setNewBudget({
+                                  category: "",
+                                  budgetAmount: "",
+                                  period: "monthly",
+                                });
+                              }}
+                            >
+                              Cancel
+                            </Button>
                             <Button type="submit" onClick={handleCreateBudget}>
                               Create Budget
                             </Button>
@@ -509,21 +563,20 @@ export default function BudgetsPage() {
                                 ) as HTMLInputElement;
 
                                 if (budgetInput) {
-                                  handleUpdateBudget(budget.id, {
-                                    budgetAmount:
-                                      parseFloat(budgetInput.value) || 0,
-                                  });
+                                  handleUpdateBudget(
+                                    budget.id,
+                                    {
+                                      budgetAmount:
+                                        parseFloat(budgetInput.value) || 0,
+                                    },
+                                    true
+                                  ); // Close modal after individual save
                                 }
                               };
 
                               const handleDeleteBudgetClick = () => {
-                                if (
-                                  window.confirm(
-                                    `Are you sure you want to delete the "${budget.category}" budget?`
-                                  )
-                                ) {
-                                  handleDeleteBudget(budget.id);
-                                }
+                                setBudgetToDelete(budget);
+                                setDeleteConfirmOpen(true);
                               };
 
                               return (
@@ -563,13 +616,66 @@ export default function BudgetsPage() {
                                     />
                                   </div>
                                   <div className="text-sm text-gray-600">
-                                    Current spending: $
-                                    {budget.spentAmount.toFixed(0)}
+                                    Current spending:{" "}
+                                    {formatCurrency(budget.spentAmount)}
                                   </div>
                                 </div>
                               );
                             })}
                           </div>
+                          <DialogFooter className="gap-2">
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setEditBudgetsOpen(false);
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              type="submit"
+                              onClick={async () => {
+                                // Save all budgets at once without individual reloads
+                                try {
+                                  // Close modal immediately to prevent flickering
+                                  setEditBudgetsOpen(false);
+
+                                  const savePromises = budgets.map(
+                                    async (budget) => {
+                                      const budgetInput =
+                                        document.getElementById(
+                                          `budget-${budget.id}`
+                                        ) as HTMLInputElement;
+
+                                      if (budgetInput) {
+                                        // Call updateBudget directly without going through handleUpdateBudget
+                                        return updateBudget(budget.id, {
+                                          budgetAmount:
+                                            parseFloat(budgetInput.value) || 0,
+                                        });
+                                      }
+                                    }
+                                  );
+
+                                  await Promise.all(
+                                    savePromises.filter(Boolean)
+                                  );
+
+                                  // Reload budgets only once at the end
+                                  await loadBudgets();
+
+                                  toast.success(
+                                    "All budgets updated successfully!"
+                                  );
+                                } catch (error) {
+                                  console.error("Error saving budgets:", error);
+                                  toast.error("Failed to save some changes");
+                                }
+                              }}
+                            >
+                              Save All Changes
+                            </Button>
+                          </DialogFooter>
                         </DialogContent>
                       </Dialog>
                     </div>
@@ -620,6 +726,34 @@ export default function BudgetsPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Budget</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete the &ldquo;
+                {budgetToDelete?.category}&rdquo; budget? This action cannot be
+                undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                  setBudgetToDelete(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleConfirmDelete}>
+                Delete Budget
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -15,7 +15,8 @@ import {
   formatCurrency,
   getCurrentMonthName,
 } from "@/lib/data";
-import { useAuth } from "@/contexts/AuthContext";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 interface Summary {
   totalBalance: number;
@@ -39,8 +40,33 @@ export default function Dashboard() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [calculatedTotalBalance, setCalculatedTotalBalance] = useState(0);
   const [loading, setLoading] = useState(true);
-  const { user, loading: authLoading } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const currentMonth = getCurrentMonthName();
+
+  // Get user auth state
+  useEffect(() => {
+    const supabase = createClient();
+
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+      setAuthLoading(false);
+    };
+
+    getUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null);
+      setAuthLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     // Don't load data until auth is ready

@@ -22,12 +22,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  createBudget,
-  createGoal,
-  isGuestMode,
-  getCurrentUser,
-} from "@/lib/data";
+import { createBudget, createGoal, getCurrentUser } from "@/lib/data";
 
 interface EmptyStateProps {
   title: string;
@@ -157,15 +152,6 @@ export function EmptyBudgets({ onRefresh }: { onRefresh?: () => void }) {
       // Debug authentication status
       const user = await getCurrentUser();
       console.log("Current user:", user);
-      console.log("Is guest mode:", isGuestMode());
-
-      // Check if user is in guest mode
-      if (isGuestMode()) {
-        toast.error(
-          "Cannot create budgets in guest mode. Please sign in to continue."
-        );
-        return;
-      }
 
       if (!user) {
         toast.error("Please sign in to create budgets");
@@ -376,14 +362,6 @@ export function EmptyGoals({ onRefresh }: { onRefresh?: () => void }) {
     try {
       if (!newGoal.name.trim() || !newGoal.targetAmount) {
         toast.error("Please fill in the goal name and target amount");
-        return;
-      }
-
-      // Check if user is in guest mode
-      if (isGuestMode()) {
-        toast.error(
-          "Cannot create goals in guest mode. Please sign in to continue."
-        );
         return;
       }
 
