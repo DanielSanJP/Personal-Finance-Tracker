@@ -26,18 +26,16 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import {
-  getCurrentUserBudgetsWithRealTimeSpending,
-  getHistoricalBudgetAnalysis,
+  getCurrentMonthSpendingByCategory,
+  getSpendingByCategoryForMonth,
   formatCurrency,
 } from "@/lib/data";
-import type { Budget } from "@/lib/data";
 import { EmptyState } from "@/components/empty-states";
 
-export const description =
-  "A simple pie chart showing budget spending by category";
+export const description = "A pie chart showing actual spending by category";
 
 interface PieChartProps {
-  budgets?: Budget[];
+  spendingData?: Array<{ category: string; spentAmount: number }>;
 }
 
 // Chart configuration with blue Tailwind colors
@@ -91,8 +89,10 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function PieChart({ budgets: propBudgets }: PieChartProps) {
-  const [budgets, setBudgets] = useState<Budget[]>([]);
+export function PieChart({ spendingData: propSpendingData }: PieChartProps) {
+  const [spendingData, setSpendingData] = useState<
+    Array<{ category: string; spentAmount: number }>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<{
     year: number;
@@ -151,36 +151,36 @@ export function PieChart({ budgets: propBudgets }: PieChartProps) {
   };
 
   useEffect(() => {
-    const loadBudgets = async () => {
-      if (propBudgets) {
-        setBudgets(propBudgets);
+    const loadSpendingData = async () => {
+      if (propSpendingData) {
+        setSpendingData(propSpendingData);
         setLoading(false);
         return;
       }
 
       try {
-        let data: Budget[];
+        let data: Array<{ category: string; spentAmount: number }>;
 
         if (isCurrentMonth) {
-          data = await getCurrentUserBudgetsWithRealTimeSpending();
+          data = await getCurrentMonthSpendingByCategory();
         } else {
-          data = await getHistoricalBudgetAnalysis(
+          data = await getSpendingByCategoryForMonth(
             selectedDate.year,
             selectedDate.month
           );
         }
 
-        setBudgets(data || []);
+        setSpendingData(data || []);
       } catch (error) {
-        console.error("Error loading budgets:", error);
-        setBudgets([]);
+        console.error("Error loading spending data:", error);
+        setSpendingData([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadBudgets();
-  }, [propBudgets, selectedDate, isCurrentMonth]);
+    loadSpendingData();
+  }, [propSpendingData, selectedDate, isCurrentMonth]);
 
   if (loading) {
     return (
@@ -196,34 +196,27 @@ export function PieChart({ budgets: propBudgets }: PieChartProps) {
     );
   }
 
-  // Process budget data for pie chart
-  const chartData = budgets
-    .filter((budget) => budget.spentAmount > 0) // Only show categories with spending
-    .map((budget) => {
-      const configItem =
-        chartConfig[budget.category as keyof typeof chartConfig];
+  // Process spending data for pie chart
+  const chartData = spendingData
+    .filter((item) => item.spentAmount > 0) // Only show categories with spending
+    .map((item) => {
+      const configItem = chartConfig[item.category as keyof typeof chartConfig];
       const color =
         configItem && "color" in configItem
           ? configItem.color
           : chartConfig.Other.color;
       return {
-        category: budget.category,
-        spentAmount: budget.spentAmount,
+        category: item.category,
+        spentAmount: item.spentAmount,
         fill: color,
       };
     });
 
   // Calculate insights
-  const totalSpent = budgets.reduce(
-    (sum, budget) => sum + budget.spentAmount,
+  const totalSpent = spendingData.reduce(
+    (sum, item) => sum + item.spentAmount,
     0
   );
-  const totalBudget = budgets.reduce(
-    (sum, budget) => sum + budget.budgetAmount,
-    0
-  );
-  const utilizationPercentage =
-    totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
 
   if (chartData.length === 0) {
     return (
@@ -273,8 +266,8 @@ export function PieChart({ budgets: propBudgets }: PieChartProps) {
               title="No spending data available"
               description={
                 isCurrentMonth
-                  ? "Start tracking your expenses to see budget analysis and category breakdown"
-                  : `No budget data found for ${new Date(
+                  ? "Start tracking your expenses to see spending analysis and category breakdown"
+                  : `No spending data found for ${new Date(
                       selectedDate.year,
                       selectedDate.month - 1
                     ).toLocaleDateString("en-US", {
@@ -304,7 +297,7 @@ export function PieChart({ budgets: propBudgets }: PieChartProps) {
         </CardContent>
         <CardFooter className="flex-col gap-2 text-sm">
           <div className="flex items-center gap-2 leading-none font-medium">
-            Budget utilization: 0%
+            Total spending: {formatCurrency(0)}
           </div>
           <div className="text-muted-foreground leading-none">
             No spending data available for the selected period
@@ -368,12 +361,19 @@ export function PieChart({ budgets: propBudgets }: PieChartProps) {
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
         <div className="flex items-center gap-2 leading-none font-medium">
-          Budget utilization: {utilizationPercentage.toFixed(1)}%
-          {utilizationPercentage > 80 && <TrendingUp className="h-4 w-4" />}
+          Total spending: {formatCurrency(totalSpent)}
+          {totalSpent > 0 && <TrendingUp className="h-4 w-4" />}
         </div>
         <div className="text-muted-foreground leading-none">
-          Total spent: {formatCurrency(totalSpent)} of{" "}
-          {formatCurrency(totalBudget)} budgeted
+          {isCurrentMonth
+            ? "Current month spending by category"
+            : `Spending for ${new Date(
+                selectedDate.year,
+                selectedDate.month - 1
+              ).toLocaleDateString("en-US", {
+                month: "long",
+                year: "numeric",
+              })}`}
         </div>
       </CardFooter>
     </Card>

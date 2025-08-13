@@ -1,7 +1,7 @@
 import { createClient } from '../supabase/client';
 import { getCurrentUser } from './auth';
 import { updateAccount } from './accounts';
-import { createExpenseTransaction } from './transactions';
+import { createTransferTransaction } from './transactions';
 
 // Goal functions
 export const getCurrentUserGoals = async () => {
@@ -281,7 +281,7 @@ export const makeGoalContribution = async (contributionData: {
     });
 
     // 6. Create a transaction record
-    await createExpenseTransaction({
+    await createTransferTransaction({
       amount: contributionData.amount,
       description: `Goal contribution: ${goalData.name}`,
       category: 'Savings',

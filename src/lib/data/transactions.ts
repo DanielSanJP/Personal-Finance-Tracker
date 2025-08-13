@@ -228,6 +228,71 @@ export const createExpenseTransaction = async (expenseData: {
   }
 };
 
+// Transfer-specific transaction creation function  
+export const createTransferTransaction = async (transferData: {
+  amount: number;
+  description: string;
+  category?: string;
+  merchant?: string;
+  accountId: string;
+  status?: string;
+  date: Date;
+}) => {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  try {
+    const supabase = createClient();
+    
+    // Generate a unique ID for the transaction
+    const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert({
+        id: transactionId,
+        user_id: user.id,
+        account_id: transferData.accountId,
+        date: formatDateForDatabase(transferData.date), // Format as YYYY-MM-DD in local timezone
+        description: transferData.description,
+        amount: -Math.abs(transferData.amount), // Negative amount to reduce account balance
+        category: transferData.category || null,
+        type: 'transfer',
+        merchant: transferData.merchant || null,
+        status: transferData.status || 'completed'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating transfer transaction:', error);
+      throw new Error('Failed to create transfer transaction');
+    }
+
+    return {
+      success: true,
+      message: 'Transfer transaction created successfully',
+      transaction: {
+        id: data.id,
+        userId: data.user_id,
+        accountId: data.account_id,
+        date: data.date,
+        description: data.description,
+        amount: Number(data.amount),
+        category: data.category || '',
+        type: data.type,
+        merchant: data.merchant || '',
+        status: data.status
+      }
+    };
+  } catch (error) {
+    console.error('Error in createTransferTransaction:', error);
+    throw error;
+  }
+};
+
 // Transaction utility functions
 export const getCurrentMonthTransactions = async () => {
   const transactions = await getCurrentUserTransactions();
@@ -291,4 +356,54 @@ export const getCurrentMonthExpenses = async (): Promise<number> => {
   return monthlyTransactions
     .filter((transaction: Transaction) => transaction.type === 'expense')
     .reduce((total, transaction) => total + Math.abs(transaction.amount), 0);
+};
+
+// Get spending by category for current month
+export const getCurrentMonthSpendingByCategory = async (): Promise<Array<{category: string, spentAmount: number}>> => {
+  const monthlyTransactions = await getCurrentMonthTransactions();
+  
+  const expenseTransactions = monthlyTransactions.filter((transaction: Transaction) => transaction.type === 'expense');
+  
+  // Group by category and sum amounts
+  const categorySpending: Record<string, number> = {};
+  
+  expenseTransactions.forEach(transaction => {
+    const category = transaction.category || 'Uncategorized';
+    categorySpending[category] = (categorySpending[category] || 0) + Math.abs(transaction.amount);
+  });
+  
+  // Convert to array format
+  return Object.entries(categorySpending).map(([category, spentAmount]) => ({
+    category,
+    spentAmount
+  }));
+};
+
+// Get spending by category for a specific month
+export const getSpendingByCategoryForMonth = async (year: number, month: number): Promise<Array<{category: string, spentAmount: number}>> => {
+  const allTransactions = await getCurrentUserTransactions();
+  
+  // Filter transactions for the specified month/year
+  const monthlyTransactions = allTransactions.filter(transaction => {
+    const transactionDate = new Date(transaction.date);
+    return (
+      transactionDate.getFullYear() === year &&
+      transactionDate.getMonth() === month - 1 && // month is 1-based, getMonth() is 0-based
+      transaction.type === 'expense'
+    );
+  });
+  
+  // Group by category and sum amounts
+  const categorySpending: Record<string, number> = {};
+  
+  monthlyTransactions.forEach(transaction => {
+    const category = transaction.category || 'Uncategorized';
+    categorySpending[category] = (categorySpending[category] || 0) + Math.abs(transaction.amount);
+  });
+  
+  // Convert to array format
+  return Object.entries(categorySpending).map(([category, spentAmount]) => ({
+    category,
+    spentAmount
+  }));
 };
