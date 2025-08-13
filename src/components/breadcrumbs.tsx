@@ -32,6 +32,9 @@ export default function Breadcrumbs({ className }: BreadcrumbsProps) {
     transactions: "Transactions",
     budgets: "Budgets",
     goals: "Goals",
+    reports: "Reports",
+    "budget-report": "Budget Report",
+    "spending-report": "Spending Report",
     add: "Add Transaction",
   };
 
@@ -49,36 +52,47 @@ export default function Breadcrumbs({ className }: BreadcrumbsProps) {
 
   // Add segments if not already on dashboard
   if (pathname !== "/dashboard") {
-    let currentPath = "";
-    pathSegments.forEach((segment, index) => {
-      currentPath += `/${segment}`;
-      const isLast = index === pathSegments.length - 1;
-      const label =
-        segmentLabels[segment] ||
-        segment.charAt(0).toUpperCase() + segment.slice(1);
+    // Special handling for reports page to show Dashboard > Reports
+    if (pathname === "/reports") {
+      breadcrumbItems.push(<BreadcrumbSeparator key="sep-reports" />);
+      breadcrumbItems.push(
+        <BreadcrumbItem key="reports">
+          <BreadcrumbPage>Reports</BreadcrumbPage>
+        </BreadcrumbItem>
+      );
+    } else {
+      // Default breadcrumb logic for other pages
+      let currentPath = "";
+      pathSegments.forEach((segment, index) => {
+        currentPath += `/${segment}`;
+        const isLast = index === pathSegments.length - 1;
+        const label =
+          segmentLabels[segment] ||
+          segment.charAt(0).toUpperCase() + segment.slice(1);
 
-      // Skip dashboard since we already added it
-      if (segment === "dashboard") return;
+        // Skip dashboard since we already added it
+        if (segment === "dashboard") return;
 
-      breadcrumbItems.push(<BreadcrumbSeparator key={`sep-${index}`} />);
+        breadcrumbItems.push(<BreadcrumbSeparator key={`sep-${index}`} />);
 
-      if (isLast) {
-        // Last item is not a link
-        breadcrumbItems.push(
-          <BreadcrumbItem key={segment}>
-            <BreadcrumbPage>{label}</BreadcrumbPage>
-          </BreadcrumbItem>
-        );
-      } else {
-        breadcrumbItems.push(
-          <BreadcrumbItem key={segment}>
-            <BreadcrumbLink asChild>
-              <Link href={currentPath}>{label}</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        );
-      }
-    });
+        if (isLast) {
+          // Last item is not a link
+          breadcrumbItems.push(
+            <BreadcrumbItem key={segment}>
+              <BreadcrumbPage>{label}</BreadcrumbPage>
+            </BreadcrumbItem>
+          );
+        } else {
+          breadcrumbItems.push(
+            <BreadcrumbItem key={segment}>
+              <BreadcrumbLink asChild>
+                <Link href={currentPath}>{label}</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+          );
+        }
+      });
+    }
   }
 
   return (

@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select";
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+
 import {
   getCurrentUserBudgetsWithRealTimeSpending,
   createBudget,
@@ -681,25 +682,6 @@ export default function BudgetsPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-4 justify-center">
-                      <Button
-                        variant="outline"
-                        className="w-40"
-                        onClick={() =>
-                          toast(
-                            "View Reports functionality not implemented yet",
-                            {
-                              description:
-                                "This feature will be available in a future update.",
-                              action: {
-                                label: "Dismiss",
-                                onClick: () => console.log("Dismissed"),
-                              },
-                            }
-                          )
-                        }
-                      >
-                        View Reports
-                      </Button>
                       <Button
                         variant="outline"
                         className="w-40"

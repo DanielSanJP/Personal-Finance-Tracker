@@ -227,28 +227,36 @@ export default function Dashboard() {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-2 justify-center">
-                <Link href="/income/add">
-                  <Button variant="outline">Add Income</Button>
-                </Link>
-                <Link href="/transactions/add">
-                  <Button variant="outline">Add Expense</Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    toast("Scan Receipt functionality not implemented yet", {
-                      description:
-                        "This feature will be available in a future update.",
-                      action: {
-                        label: "Dismiss",
-                        onClick: () => console.log("Dismissed"),
-                      },
-                    })
-                  }
-                >
-                  Scan Receipt
-                </Button>
+              <div className="space-y-4 flex flex-col items-center">
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <Link href="/income/add">
+                    <Button>Add Income</Button>
+                  </Link>
+                  <Link href="/transactions/add">
+                    <Button>Add Expense</Button>
+                  </Link>
+                </div>
+
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      toast("Scan Receipt functionality not implemented yet", {
+                        description:
+                          "This feature will be available in a future update.",
+                        action: {
+                          label: "Dismiss",
+                          onClick: () => console.log("Dismissed"),
+                        },
+                      })
+                    }
+                  >
+                    Scan Receipt
+                  </Button>
+                  <Link href="/reports">
+                    <Button variant="outline">View Reports</Button>
+                  </Link>
+                </div>
               </div>
             </CardContent>
           </Card>

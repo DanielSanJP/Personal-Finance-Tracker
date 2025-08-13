@@ -911,25 +911,6 @@ export default function TransactionsPage() {
                       >
                         Export Data
                       </Button>
-                      <Button
-                        variant="outline"
-                        className="w-40"
-                        onClick={() =>
-                          toast(
-                            "Advanced Search functionality not implemented yet",
-                            {
-                              description:
-                                "This feature will be available in a future update.",
-                              action: {
-                                label: "Dismiss",
-                                onClick: () => console.log("Dismissed"),
-                              },
-                            }
-                          )
-                        }
-                      >
-                        Advanced Search
-                      </Button>
                     </div>
                   </div>
                 </>

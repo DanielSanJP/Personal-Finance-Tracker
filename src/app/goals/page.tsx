@@ -773,7 +773,9 @@ export default function GoalsPage() {
                       </DialogFooter>
                     </DialogContent>
                   </Dialog>
+                </div>
 
+                <div className="flex flex-wrap gap-4 justify-center">
                   <Dialog
                     open={contributionOpen}
                     onOpenChange={setContributionOpen}
