@@ -103,12 +103,12 @@ export function BarChart() {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="flex flex-col">
         <CardHeader>
           <div className="h-8 w-64 bg-muted rounded animate-pulse" />
           <div className="h-6 w-48 bg-muted rounded animate-pulse mt-2" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 pb-0">
           <div className="h-[400px] bg-muted rounded animate-pulse" />
         </CardContent>
       </Card>
@@ -136,16 +136,18 @@ export function BarChart() {
         };
 
     return (
-      <Card>
+      <Card className="flex flex-col">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div>
-              <CardTitle>Yearly Spending Chart</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-lg sm:text-xl">
+                Yearly Spending Chart
+              </CardTitle>
+              <CardDescription className="text-sm">
                 Monthly spending analysis - {selectedYear}
               </CardDescription>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:gap-4 sm:space-y-0">
               {/* Year Selector */}
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">Year:</span>
@@ -153,7 +155,7 @@ export function BarChart() {
                   value={selectedYear.toString()}
                   onValueChange={handleYearChange}
                 >
-                  <SelectTrigger className="w-38">
+                  <SelectTrigger className="w-32 sm:w-38">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -175,7 +177,7 @@ export function BarChart() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex items-center justify-center min-h-[400px]">
+        <CardContent className="flex-1 pb-0 flex items-center justify-center px-4 sm:px-6">
           <EmptyState
             title={emptyStateConfig.title}
             description={emptyStateConfig.description}
@@ -191,7 +193,7 @@ export function BarChart() {
             }
             icon={
               <svg
-                className="w-full h-full"
+                className="w-12 h-12 sm:w-16 sm:h-16"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -206,6 +208,14 @@ export function BarChart() {
             }
           />
         </CardContent>
+        <CardFooter className="flex-col gap-2 text-sm px-4 sm:px-6">
+          <div className="flex items-center gap-2 leading-none font-medium">
+            Budget utilization: 0%
+          </div>
+          <div className="text-muted-foreground leading-none text-xs sm:text-sm">
+            No spending data available for the selected period
+          </div>
+        </CardFooter>
       </Card>
     );
   }
@@ -241,16 +251,18 @@ export function BarChart() {
     }
   };
   return (
-    <Card>
+    <Card className="flex flex-col">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div>
-            <CardTitle>Yearly Spending Chart</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-lg sm:text-xl">
+              Yearly Spending Chart
+            </CardTitle>
+            <CardDescription className="text-sm">
               Monthly spending analysis - {selectedYear}
             </CardDescription>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:gap-4 sm:space-y-0">
             {/* Year Selector */}
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Year:</span>
@@ -279,7 +291,7 @@ export function BarChart() {
             </div>
 
             {/* Max Budget Display */}
-            <div className="text-right">
+            <div className="text-center sm:text-right">
               <div className="text-sm text-muted-foreground">Max Budget</div>
               <div className="text-lg font-semibold">
                 $
@@ -291,7 +303,7 @@ export function BarChart() {
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 pb-0 px-2 sm:px-6">
         <ChartContainer config={chartConfig}>
           <RechartsBarChart accessibilityLayer data={data}>
             <CartesianGrid vertical={false} />
@@ -301,12 +313,17 @@ export function BarChart() {
               tickMargin={10}
               axisLine={false}
               tickFormatter={(value) => value.slice(0, 3)}
+              fontSize={12}
+              className="text-xs sm:text-sm"
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => `$${value.toLocaleString()}`}
+              fontSize={12}
+              className="text-xs sm:text-sm"
+              width={60}
             />
             <ChartTooltip content={<ChartTooltipContent />} cursor={false} />
             {/* Budget line */}
@@ -314,7 +331,12 @@ export function BarChart() {
               y={maxBudget}
               stroke="hsl(var(--muted-foreground))"
               strokeDasharray="5 5"
-              label={{ value: "Max Budget", position: "insideTopRight" }}
+              label={{
+                value: "Max Budget",
+                position: "insideTopRight",
+                fontSize: 12,
+                className: "text-xs sm:text-sm",
+              }}
             />
             <Bar dataKey="spending" fill="hsl(var(--chart-1))" radius={8}>
               {data.map((entry, index) => (
@@ -324,32 +346,34 @@ export function BarChart() {
           </RechartsBarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start text-sm">
-        <div className="flex justify-between items-center w-full">
-          <div className="flex gap-2 leading-none font-medium">
-            {isOverBudget ? (
-              <>
-                Over budget by {Math.abs(percentageDiff).toFixed(1)}%{" "}
-                <TrendingUp className="h-4 w-4 text-destructive" />
-              </>
-            ) : (
-              <>
-                Under budget by {Math.abs(percentageDiff).toFixed(1)}%{" "}
-                <TrendingDown className="h-4 w-4 text-green-600" />
-              </>
-            )}
+      <CardFooter className="flex-col items-start text-sm px-4 sm:px-6">
+        {/* Total Spending and Budget status on same line */}
+        <div className="flex flex-col space-y-4 w-full sm:flex-row sm:justify-between sm:items-start sm:space-y-0 mb-3">
+          <div className="flex flex-col space-y-2">
+            <div className="flex gap-2 leading-none font-medium">
+              {isOverBudget ? (
+                <>
+                  Over budget by {Math.abs(percentageDiff).toFixed(1)}%{" "}
+                  <TrendingUp className="h-4 w-4 text-destructive" />
+                </>
+              ) : (
+                <>
+                  Under budget by {Math.abs(percentageDiff).toFixed(1)}%{" "}
+                  <TrendingDown className="h-4 w-4 text-green-600" />
+                </>
+              )}
+            </div>
+            <div className="text-muted-foreground leading-none text-xs sm:text-sm">
+              {monthsUnderBudget} months under budget, {monthsOverBudget} months
+              over budget
+            </div>
           </div>
-          <div className="text-right">
+
+          <div className="text-center sm:text-right mt-2 sm:mt-0">
             <div className="text-sm text-muted-foreground">Total Spending</div>
-          </div>
-        </div>
-        <div className="flex justify-between items-center w-full">
-          <div className="text-muted-foreground leading-none">
-            {monthsUnderBudget} months under budget, {monthsOverBudget} months
-            over budget
-          </div>
-          <div className="text-lg font-semibold">
-            ${totalSpending.toLocaleString()}
+            <div className="text-lg font-semibold">
+              ${totalSpending.toLocaleString()}
+            </div>
           </div>
         </div>
       </CardFooter>
