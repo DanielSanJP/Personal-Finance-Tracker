@@ -45,6 +45,7 @@ import { getCurrentUserTransactions, formatCurrency } from "@/lib/data";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { EmptyTransactions } from "@/components/empty-states";
 import { TransactionsListSkeleton } from "@/components/loading-states";
+import { ExportButtons } from "@/components/export-buttons";
 import Nav from "@/components/nav";
 
 interface Transaction {
@@ -891,27 +892,10 @@ export default function TransactionsPage() {
                       </Dialog>
                     </div>
 
-                    <div className="flex flex-wrap gap-4 justify-center">
-                      <Button
-                        variant="outline"
-                        className="w-40"
-                        onClick={() =>
-                          toast(
-                            "Export Data functionality not implemented yet",
-                            {
-                              description:
-                                "This feature will be available in a future update.",
-                              action: {
-                                label: "Dismiss",
-                                onClick: () => console.log("Dismissed"),
-                              },
-                            }
-                          )
-                        }
-                      >
-                        Export Data
-                      </Button>
-                    </div>
+                    <ExportButtons
+                      data={filteredTransactions}
+                      type="transactions"
+                    />
                   </div>
                 </>
               )}
