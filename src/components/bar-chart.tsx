@@ -35,6 +35,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { getYearlyBudgetAnalysis } from "@/lib/data";
+import { EmptyState } from "@/components/empty-states";
 
 interface MonthlyBudgetData {
   month: string;
@@ -109,6 +110,101 @@ export function BarChart() {
         </CardHeader>
         <CardContent>
           <div className="h-[400px] bg-muted rounded animate-pulse" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Handle empty data state - check if data exists and has meaningful spending values
+  if (data.length === 0 || data.every((item) => item.spending === 0)) {
+    const now = new Date();
+    const isCurrentYear = selectedYear === now.getFullYear();
+
+    const emptyStateConfig = isCurrentYear
+      ? {
+          title: "No spending data available",
+          description:
+            "Start tracking your expenses to see yearly spending analysis and trends",
+          showAction: true,
+          actionText: "Add Transaction",
+          actionHref: "/transactions/add",
+        }
+      : {
+          title: "No spending data available",
+          description: `No budget data found for ${selectedYear}. This year has no recorded transactions.`,
+          showAction: false,
+        };
+
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Yearly Spending Chart</CardTitle>
+              <CardDescription>
+                Monthly spending analysis - {selectedYear}
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-4">
+              {/* Year Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Year:</span>
+                <Select
+                  value={selectedYear.toString()}
+                  onValueChange={handleYearChange}
+                >
+                  <SelectTrigger className="w-38">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {yearOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <div className="flex items-center gap-2">
+                          <span>{option.label}</span>
+                          {option.isCurrent && (
+                            <Badge variant="default" className="text-xs">
+                              Current
+                            </Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center min-h-[400px]">
+          <EmptyState
+            title={emptyStateConfig.title}
+            description={emptyStateConfig.description}
+            actionText={
+              emptyStateConfig.showAction
+                ? emptyStateConfig.actionText
+                : undefined
+            }
+            actionHref={
+              emptyStateConfig.showAction
+                ? emptyStateConfig.actionHref
+                : undefined
+            }
+            icon={
+              <svg
+                className="w-full h-full"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+            }
+          />
         </CardContent>
       </Card>
     );

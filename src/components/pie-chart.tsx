@@ -31,6 +31,7 @@ import {
   formatCurrency,
 } from "@/lib/data";
 import type { Budget } from "@/lib/data";
+import { EmptyState } from "@/components/empty-states";
 
 export const description =
   "A simple pie chart showing budget spending by category";
@@ -266,14 +267,49 @@ export function PieChart({ budgets: propBudgets }: PieChartProps) {
             )}
           </div>
         </CardHeader>
-        <CardContent className="flex-1 pb-0 flex items-center justify-center">
-          <div className="text-center text-muted-foreground">
-            <p>No budget spending data available</p>
-            <p className="text-sm mt-1">
-              Start tracking your expenses to see budget analysis
-            </p>
+        <CardContent className="flex-1 pb-0">
+          <div className="mx-auto aspect-square max-h-[500px] flex items-center justify-center">
+            <EmptyState
+              title="No spending data available"
+              description={
+                isCurrentMonth
+                  ? "Start tracking your expenses to see budget analysis and category breakdown"
+                  : `No budget data found for ${new Date(
+                      selectedDate.year,
+                      selectedDate.month - 1
+                    ).toLocaleDateString("en-US", {
+                      month: "long",
+                      year: "numeric",
+                    })}`
+              }
+              actionText={isCurrentMonth ? "Add Transaction" : undefined}
+              actionHref={isCurrentMonth ? "/transactions/add" : undefined}
+              icon={
+                <svg
+                  className="w-full h-full"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+              }
+            />
           </div>
         </CardContent>
+        <CardFooter className="flex-col gap-2 text-sm">
+          <div className="flex items-center gap-2 leading-none font-medium">
+            Budget utilization: 0%
+          </div>
+          <div className="text-muted-foreground leading-none">
+            No spending data available for the selected period
+          </div>
+        </CardFooter>
       </Card>
     );
   }
