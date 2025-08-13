@@ -228,23 +228,33 @@ export function BarChart() {
           </RechartsBarChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter className="flex-col items-start gap-2 text-sm">
-        <div className="flex gap-2 leading-none font-medium">
-          {isOverBudget ? (
-            <>
-              Over budget by {Math.abs(percentageDiff).toFixed(1)}%{" "}
-              <TrendingUp className="h-4 w-4 text-destructive" />
-            </>
-          ) : (
-            <>
-              Under budget by {Math.abs(percentageDiff).toFixed(1)}%{" "}
-              <TrendingDown className="h-4 w-4 text-green-600" />
-            </>
-          )}
+      <CardFooter className="flex-col items-start text-sm">
+        <div className="flex justify-between items-center w-full">
+          <div className="flex gap-2 leading-none font-medium">
+            {isOverBudget ? (
+              <>
+                Over budget by {Math.abs(percentageDiff).toFixed(1)}%{" "}
+                <TrendingUp className="h-4 w-4 text-destructive" />
+              </>
+            ) : (
+              <>
+                Under budget by {Math.abs(percentageDiff).toFixed(1)}%{" "}
+                <TrendingDown className="h-4 w-4 text-green-600" />
+              </>
+            )}
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-muted-foreground">Total Spending</div>
+          </div>
         </div>
-        <div className="text-muted-foreground leading-none">
-          {monthsUnderBudget} months under budget, {monthsOverBudget} months
-          over budget
+        <div className="flex justify-between items-center w-full">
+          <div className="text-muted-foreground leading-none">
+            {monthsUnderBudget} months under budget, {monthsOverBudget} months
+            over budget
+          </div>
+          <div className="text-lg font-semibold">
+            ${totalSpending.toLocaleString()}
+          </div>
         </div>
       </CardFooter>
     </Card>

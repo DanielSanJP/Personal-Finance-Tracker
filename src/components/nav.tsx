@@ -186,6 +186,11 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
                         Bank Accounts
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/reports" className="cursor-pointer">
+                        View Reports
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem>Settings</DropdownMenuItem>
                     <DropdownMenuItem>Preferences</DropdownMenuItem>
                     <DropdownMenuSeparator />
