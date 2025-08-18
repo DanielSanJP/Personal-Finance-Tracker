@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CategorySelect } from "@/components/category-select";
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -216,18 +217,7 @@ export default function BudgetsPage() {
     }
   };
 
-  const categories = [
-    "Food & Dining",
-    "Transportation",
-    "Shopping",
-    "Entertainment",
-    "Bills & Utilities",
-    "Health & Fitness",
-    "Travel",
-    "Education",
-    "Personal Care",
-    "Other",
-  ];
+  // Using standardized categories from constants
 
   const getBudgetStatus = (spent: number, budget: number) => {
     const percentage = (spent / budget) * 100;
@@ -457,29 +447,18 @@ export default function BudgetsPage() {
                             </DialogDescription>
                           </DialogHeader>
                           <div className="grid gap-4 py-4">
-                            <div className="grid gap-2">
-                              <Label htmlFor="category">Category</Label>
-                              <Select
-                                value={newBudget.category}
-                                onValueChange={(value) =>
-                                  setNewBudget({
-                                    ...newBudget,
-                                    category: value,
-                                  })
-                                }
-                              >
-                                <SelectTrigger className="w-full">
-                                  <SelectValue placeholder="Select a category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {categories.map((category) => (
-                                    <SelectItem key={category} value={category}>
-                                      {category}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
+                            <CategorySelect
+                              value={newBudget.category}
+                              onValueChange={(value) =>
+                                setNewBudget({
+                                  ...newBudget,
+                                  category: value,
+                                })
+                              }
+                              type="expense"
+                              required
+                              className="w-full"
+                            />
                             <div className="grid gap-2">
                               <Label htmlFor="amount">Budget Amount</Label>
                               <Input

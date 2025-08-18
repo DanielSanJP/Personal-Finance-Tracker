@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
+import { CategorySelect } from "@/components/category-select";
 import { toast } from "sonner";
 import Nav from "@/components/nav";
 import { getCurrentUserAccounts, createExpenseTransaction } from "@/lib/data";
@@ -63,21 +64,8 @@ export default function AddTransactionPage() {
   }, []);
 
   const transactionStatuses = ["pending", "completed", "cancelled", "failed"];
-  const expenseCategories = [
-    "Food & Dining",
-    "Transportation",
-    "Entertainment",
-    "Housing",
-    "Shopping",
-    "Healthcare",
-    "Utilities",
-    "Education",
-    "Personal Care",
-    "Travel",
-    "Insurance",
-    "Investment",
-    "Other",
-  ];
+
+  // Using standardized categories from constants
 
   const handleCancel = () => {
     router.push("/transactions");
@@ -222,26 +210,15 @@ export default function AddTransactionPage() {
                 </div>
 
                 {/* Category */}
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, category: value })
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select category..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {expenseCategories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <CategorySelect
+                  value={formData.category}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, category: value })
+                  }
+                  type="expense"
+                  required
+                  className="w-full"
+                />
 
                 {/* Merchant (Optional) */}
                 <div className="space-y-2">

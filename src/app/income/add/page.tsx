@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
+import { CategorySelect } from "@/components/category-select";
+import { getIncomeCategoryNames } from "@/constants/categories";
 import { toast } from "sonner";
 import { getCurrentUserAccounts, createIncomeTransaction } from "@/lib/data";
 import { FormSkeleton } from "@/components/loading-states";
@@ -53,15 +55,7 @@ export default function AddIncomePage() {
     loadAccounts();
   }, []);
 
-  const incomeSourceOptions = [
-    "Salary",
-    "Freelance",
-    "Bonus",
-    "Investment",
-    "Side Business",
-    "Gift",
-    "Refund",
-  ];
+  // Using standardized income categories from constants
 
   const handleQuickAdd = (source: string) => {
     setIncomeSource(source);
@@ -173,23 +167,14 @@ export default function AddIncomePage() {
                 </div>
 
                 {/* Income Source */}
-                <div className="space-y-2">
-                  <Label htmlFor="incomeSource">
-                    Income Source <span className="text-red-500">*</span>
-                  </Label>
-                  <Select value={incomeSource} onValueChange={setIncomeSource}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select income source..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {incomeSourceOptions.map((source) => (
-                        <SelectItem key={source} value={source}>
-                          {source}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <CategorySelect
+                  value={incomeSource}
+                  onValueChange={setIncomeSource}
+                  type="income"
+                  label="Income Source"
+                  required
+                  className="w-full"
+                />
 
                 {/* Deposit to Account */}
                 <div className="space-y-2">
@@ -227,7 +212,7 @@ export default function AddIncomePage() {
                 <div className="space-y-3">
                   <Label>Quick Add:</Label>
                   <div className="flex flex-wrap gap-2">
-                    {incomeSourceOptions.map((source) => (
+                    {getIncomeCategoryNames().map((source) => (
                       <Button
                         key={source}
                         type="button"
