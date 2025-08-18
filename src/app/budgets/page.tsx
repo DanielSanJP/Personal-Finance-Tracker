@@ -135,7 +135,7 @@ export default function BudgetsPage() {
         endDate = formatDateForSupabase(yearEnd);
       }
 
-      await createBudget({
+      const result = await createBudget({
         category: newBudget.category,
         budgetAmount: parseFloat(newBudget.budgetAmount),
         period: newBudget.period,
@@ -144,21 +144,64 @@ export default function BudgetsPage() {
         spentAmount: 0,
       });
 
-      // Reset form
-      setNewBudget({
-        category: "",
-        budgetAmount: "",
-        period: "monthly",
-      });
-      setAddBudgetOpen(false);
+      if (result.success) {
+        // Reset form
+        setNewBudget({
+          category: "",
+          budgetAmount: "",
+          period: "monthly",
+        });
+        setAddBudgetOpen(false);
 
-      // Reload budgets
-      await loadBudgets();
+        // Reload budgets
+        await loadBudgets();
 
-      toast.success("Budget created successfully!");
+        toast.success("Budget created successfully!");
+      } else {
+        // Handle specific budget exists error
+        if (result.errorType === "BUDGET_EXISTS") {
+          toast.error(result.error || "Budget already exists", {
+            duration: 5000,
+            action: {
+              label: "View Existing",
+              onClick: () => {
+                // Scroll to existing budget or highlight it
+                const existingBudget = budgets.find(
+                  (b) => b.category === newBudget.category
+                );
+                if (existingBudget) {
+                  const budgetElement = document.querySelector(
+                    `[data-budget-id="${existingBudget.id}"]`
+                  );
+                  if (budgetElement) {
+                    budgetElement.scrollIntoView({
+                      behavior: "smooth",
+                      block: "center",
+                    });
+                    budgetElement.classList.add(
+                      "ring-2",
+                      "ring-blue-500",
+                      "ring-opacity-75"
+                    );
+                    setTimeout(() => {
+                      budgetElement.classList.remove(
+                        "ring-2",
+                        "ring-blue-500",
+                        "ring-opacity-75"
+                      );
+                    }, 3000);
+                  }
+                }
+              },
+            },
+          });
+        } else {
+          toast.error(result.error || "Failed to create budget");
+        }
+      }
     } catch (error) {
       console.error("Error creating budget:", error);
-      toast.error("Failed to create budget");
+      toast.error("An unexpected error occurred");
     }
   };
 
@@ -310,7 +353,7 @@ export default function BudgetsPage() {
                     );
 
                     return (
-                      <div key={budget.id}>
+                      <div key={budget.id} data-budget-id={budget.id}>
                         <div className="space-y-3">
                           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
                             <span className="text-sm sm:text-base font-medium">

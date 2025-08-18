@@ -278,6 +278,46 @@ export const calculateRealTimeBudgetRemaining = async (): Promise<number> => {
   }
 };
 
+// Check if budget already exists for user and category
+export const checkBudgetExists = async (category: string): Promise<boolean> => {
+  const user = await getCurrentUser();
+  if (!user) return false;
+
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('budgets')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('category', category)
+      .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      console.error('Error checking budget existence:', error);
+      return false;
+    }
+
+    return !!data;
+  } catch (error) {
+    console.error('Error in checkBudgetExists:', error);
+    return false;
+  }
+};
+
+interface BudgetResult {
+  id: string;
+  userId: string;
+  category: string;
+  budgetAmount: number;
+  spentAmount: number;
+  remainingAmount: number;
+  period: string;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Create a new budget
 export const createBudget = async (budgetData: {
   category: string;
@@ -286,13 +326,27 @@ export const createBudget = async (budgetData: {
   startDate: string;
   endDate: string;
   spentAmount?: number;
-}) => {
+}): Promise<{ success: boolean; data?: BudgetResult; error?: string; errorType?: string }> => {
   const user = await getCurrentUser();
   if (!user) {
-    throw new Error('User not authenticated');
+    return { 
+      success: false, 
+      error: 'User not authenticated',
+      errorType: 'AUTH_ERROR'
+    };
   }
 
   try {
+    // Check if budget already exists for this category
+    const exists = await checkBudgetExists(budgetData.category);
+    if (exists) {
+      return {
+        success: false,
+        error: `A budget for "${budgetData.category}" already exists. You can only have one budget per category.`,
+        errorType: 'BUDGET_EXISTS'
+      };
+    }
+
     const supabase = createClient();
     const spentAmount = budgetData.spentAmount || 0;
     const remainingAmount = budgetData.budgetAmount - spentAmount;
@@ -317,26 +371,45 @@ export const createBudget = async (budgetData: {
       .single();
 
     if (error) {
+      // Handle database constraint violation (23505 = unique_violation)
+      if (error.code === '23505' && error.message.includes('budgets_user_category_unique')) {
+        return {
+          success: false,
+          error: `A budget for "${budgetData.category}" already exists. You can only have one budget per category.`,
+          errorType: 'BUDGET_EXISTS'
+        };
+      }
       console.error('Error creating budget:', error);
-      throw new Error('Failed to create budget');
+      return {
+        success: false,
+        error: 'Failed to create budget',
+        errorType: 'DATABASE_ERROR'
+      };
     }
 
     return {
-      id: data.id,
-      userId: data.user_id,
-      category: data.category,
-      budgetAmount: Number(data.budget_amount),
-      spentAmount: Number(data.spent_amount),
-      remainingAmount: Number(data.remaining_amount),
-      period: data.period,
-      startDate: data.start_date,
-      endDate: data.end_date,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at
+      success: true,
+      data: {
+        id: data.id,
+        userId: data.user_id,
+        category: data.category,
+        budgetAmount: Number(data.budget_amount),
+        spentAmount: Number(data.spent_amount),
+        remainingAmount: Number(data.remaining_amount),
+        period: data.period,
+        startDate: data.start_date,
+        endDate: data.end_date,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at
+      }
     };
   } catch (error) {
     console.error('Error in createBudget:', error);
-    throw error;
+    return {
+      success: false,
+      error: 'An unexpected error occurred',
+      errorType: 'UNKNOWN_ERROR'
+    };
   }
 };
 
