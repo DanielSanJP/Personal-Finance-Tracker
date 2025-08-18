@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getCurrentUserAccounts } from "@/lib/data";
 import { AccountsListSkeleton } from "@/components/loading-states";
+import { EditAccountModal } from "@/components/edit-account-modal";
 import Nav from "@/components/nav";
+import { Edit } from "lucide-react";
 
 interface Account {
   id: string;
@@ -23,6 +25,8 @@ export default function AccountsPage() {
   const router = useRouter();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -63,6 +67,26 @@ export default function AccountsPage() {
 
   const handleAddAccount = () => {
     router.push("/accounts/add");
+  };
+
+  const handleEditAccount = (account: Account) => {
+    setEditingAccount(account);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingAccount(null);
+  };
+
+  const handleAccountUpdated = async () => {
+    // Refresh the accounts list
+    try {
+      const userAccounts = await getCurrentUserAccounts();
+      setAccounts(userAccounts);
+    } catch (error) {
+      console.error("Error refreshing accounts:", error);
+    }
   };
 
   if (loading) {
@@ -138,6 +162,15 @@ export default function AccountsPage() {
                       >
                         {account.isActive ? "Active" : "Inactive"}
                       </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditAccount(account)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span className="sr-only">Edit account</span>
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -145,6 +178,14 @@ export default function AccountsPage() {
             ))}
           </div>
         )}
+
+        {/* Edit Account Modal */}
+        <EditAccountModal
+          account={editingAccount}
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          onAccountUpdated={handleAccountUpdated}
+        />
       </div>
     </div>
   );
