@@ -173,15 +173,15 @@ export default function AddAccountPage() {
 
             {/* Action Buttons */}
             <div className="pt-4">
-              <div className="flex gap-4 justify-center">
+              <div className="flex flex-wrap gap-4 justify-center">
                 <Button
                   onClick={handleCancel}
                   variant="outline"
-                  className="w-40"
+                  className="w-40 min-w-32"
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleSave} className="w-40">
+                <Button onClick={handleSave} className="w-40 min-w-32">
                   Create Account
                 </Button>
               </div>

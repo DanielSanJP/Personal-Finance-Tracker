@@ -127,52 +127,59 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
       <nav className="bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0 flex-1">
               {hasUser ? (
-                <div className="flex items-center gap-2 text-xl font-bold text-foreground cursor-default">
-                  <Image
-                    src="/logo.svg"
-                    alt="Personal Finance Tracker Logo"
-                    width={64}
-                    height={64}
-                    className="h-12 w-12"
-                  />
-                  Personal Finance Tracker
-                </div>
-              ) : (
                 <Link
-                  href="/"
-                  className="flex items-center gap-2 text-xl font-bold text-foreground"
+                  href="/dashboard"
+                  className="flex items-center gap-2 text-sm sm:text-xl font-bold text-foreground hover:opacity-80 transition-opacity min-w-0"
                 >
                   <Image
                     src="/logo.svg"
                     alt="Personal Finance Tracker Logo"
                     width={64}
                     height={64}
-                    className="h-12 w-12"
+                    className="h-12 w-12 sm:h-12 sm:w-12 flex-shrink-0"
                   />
-                  Personal Finance Tracker
+                  <span className="hidden sm:inline truncate">
+                    Personal Finance Tracker
+                  </span>
+                </Link>
+              ) : (
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 text-sm sm:text-xl font-bold text-foreground min-w-0"
+                >
+                  <Image
+                    src="/logo.svg"
+                    alt="Personal Finance Tracker Logo"
+                    width={64}
+                    height={64}
+                    className="h-12 w-12 sm:h-12 sm:w-12 flex-shrink-0"
+                  />
+                  <span className="hidden sm:inline truncate">
+                    Personal Finance Tracker
+                  </span>
                 </Link>
               )}
             </div>
             {!showDashboardTabs && (
-              <div className="flex flex-wrap items-center gap-2 md:flex-row">
+              <div className="flex flex-wrap items-center gap-2 md:flex-row flex-shrink-0">
                 <Button asChild>
                   <Link href="/login">Login</Link>
                 </Button>
               </div>
             )}
             {showDashboardTabs && userData && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 rounded-lg p-2 transition-colors">
-                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                    <div className="flex items-center gap-1 sm:gap-3 cursor-pointer hover:bg-gray-100 rounded-lg p-1 sm:p-2 transition-colors">
+                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-sm font-medium text-gray-600">
                           {userData.initials}
                         </span>
                       </div>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-xs sm:text-sm text-gray-600 truncate">
                         {userData.displayName}
                       </span>
                     </div>
@@ -180,7 +187,11 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" className="cursor-pointer">
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link href="/accounts" className="cursor-pointer">
                         Bank Accounts
@@ -191,10 +202,22 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
                         View Reports
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>Settings</DropdownMenuItem>
-                    <DropdownMenuItem>Preferences</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="cursor-pointer">
+                        Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/preferences" className="cursor-pointer">
+                        Preferences
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Help & Support</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/help" className="cursor-pointer">
+                        Help & Support
+                      </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="text-red-600"
                       onClick={handleSignOut}

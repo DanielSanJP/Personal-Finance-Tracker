@@ -13,6 +13,7 @@ export * from './transactions';
 export * from './budgets';
 export * from './goals';
 export * from './summary';
+export * from './profile';
 
 // Dashboard optimization
 export * from './dashboard';

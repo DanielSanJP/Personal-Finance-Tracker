@@ -315,32 +315,32 @@ export default function AddTransactionPage() {
                 {/* Action Buttons */}
                 <div className="pt-4 space-y-3">
                   {/* Save and Cancel Buttons */}
-                  <div className="flex gap-4 justify-center">
+                  <div className="flex flex-wrap gap-4 justify-center">
                     <Button
                       onClick={handleCancel}
                       variant="outline"
-                      className="w-40"
+                      className="w-40 min-w-32"
                     >
                       Cancel
                     </Button>
-                    <Button onClick={handleSave} className="w-40">
+                    <Button onClick={handleSave} className="w-40 min-w-32">
                       Save
                     </Button>
                   </div>
 
                   {/* Voice Input and Scan Receipt */}
-                  <div className="flex gap-4 justify-center">
+                  <div className="flex flex-wrap gap-4 justify-center">
                     <Button
                       onClick={handleVoiceInput}
                       variant="outline"
-                      className="w-40"
+                      className="w-40 min-w-32"
                     >
                       Voice Input
                     </Button>
                     <Button
                       onClick={handleScanReceipt}
                       variant="outline"
-                      className="w-40"
+                      className="w-40 min-w-32"
                     >
                       Scan Receipt
                     </Button>

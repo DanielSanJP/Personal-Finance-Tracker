@@ -228,16 +228,16 @@ export default function AddIncomePage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-4 pt-4 justify-center">
+                <div className="flex flex-wrap gap-4 pt-4 justify-center">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => router.back()}
-                    className="w-40"
+                    className="w-40 min-w-32"
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" className="w-40">
+                  <Button type="submit" className="w-40 min-w-32">
                     Save
                   </Button>
                 </div>
