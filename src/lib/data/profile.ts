@@ -47,13 +47,13 @@ export async function getUserProfile(): Promise<UserProfile | null> {
       return null;
     }
 
-    // Merge auth metadata with database data, preferring auth metadata for updated values
+    // Merge auth data with database data (email and display_name come from auth only)
     const profile: UserProfile = {
       id: user.id,
       first_name: user.user_metadata?.first_name || dbProfile.first_name || "",
       last_name: user.user_metadata?.last_name || dbProfile.last_name || "",
-      email: user.email || dbProfile.email || "",
-      display_name: user.user_metadata?.display_name || dbProfile.display_name,
+      email: user.email || "", // Always from auth table
+      display_name: user.user_metadata?.display_name || null, // Always from auth metadata
       initials: user.user_metadata?.initials || dbProfile.initials,
       avatar: user.user_metadata?.avatar || dbProfile.avatar,
       created_at: dbProfile.created_at,
@@ -111,11 +111,10 @@ export async function updateUserProfile(
       };
     }
 
-    // Also update the custom users table to keep it in sync
+    // Also update the users table to keep it in sync (only first_name, last_name, initials)
     const updateData = {
       first_name: profileData.first_name.trim(),
       last_name: profileData.last_name.trim(),
-      display_name: display_name.trim(),
       initials,
     };
 

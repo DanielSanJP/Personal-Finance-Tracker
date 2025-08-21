@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { User } from "lucide-react";
 import { toast } from "sonner";
 import Nav from "@/components/nav";
 import {
@@ -134,7 +135,8 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto px-6 py-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">
+            <CardTitle className="text-2xl font-bold flex items-center gap-2">
+              <User className="h-6 w-6" />
               Profile Settings
             </CardTitle>
             <p className="text-muted-foreground">
