@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,9 @@ import Nav from "@/components/nav";
 import { getCurrentUserAccounts, createExpenseTransaction } from "@/lib/data";
 import { FormSkeleton } from "@/components/loading-states";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
+import { VoiceInputButton } from "@/components/voice-input-button";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { parseExpenseFromSpeech } from "@/lib/speechParsing";
 
 interface Account {
   id: string;
@@ -139,14 +142,41 @@ export default function AddTransactionPage() {
     }
   };
 
+  // Voice input functionality
+  const handleVoiceResult = useCallback(
+    (parsedData: {
+      amount?: string;
+      description?: string;
+      category?: string;
+      account?: string;
+      date?: Date;
+    }) => {
+      setFormData((prev) => ({
+        ...prev,
+        ...(parsedData.amount && { amount: parsedData.amount }),
+        ...(parsedData.description && { description: parsedData.description }),
+        ...(parsedData.category && { category: parsedData.category }),
+        ...(parsedData.account && { account: parsedData.account }),
+        ...(parsedData.date && { date: parsedData.date }),
+      }));
+    },
+    []
+  );
+
+  const parseFunction = useCallback(
+    (transcript: string) => {
+      return parseExpenseFromSpeech(transcript, accounts);
+    },
+    [accounts]
+  );
+
+  const { isListening, isSupported, startListening } = useVoiceInput({
+    onResult: handleVoiceResult,
+    parseFunction,
+  });
+
   const handleVoiceInput = () => {
-    toast("Voice Input functionality not implemented yet", {
-      description: "This feature will be available in a future update.",
-      action: {
-        label: "Dismiss",
-        onClick: () => console.log("Dismissed"),
-      },
-    });
+    startListening();
   };
 
   const handleScanReceipt = () => {
@@ -330,13 +360,11 @@ export default function AddTransactionPage() {
 
                   {/* Voice Input and Scan Receipt */}
                   <div className="flex flex-wrap gap-4 justify-center">
-                    <Button
-                      onClick={handleVoiceInput}
-                      variant="outline"
-                      className="w-40 min-w-32"
-                    >
-                      Voice Input
-                    </Button>
+                    <VoiceInputButton
+                      isListening={isListening}
+                      isSupported={isSupported}
+                      onStartListening={handleVoiceInput}
+                    />
                     <Button
                       onClick={handleScanReceipt}
                       variant="outline"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Nav from "@/components/nav";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,9 @@ import { toast } from "sonner";
 import { getCurrentUserAccounts, createIncomeTransaction } from "@/lib/data";
 import { FormSkeleton } from "@/components/loading-states";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
+import { VoiceInputButton } from "@/components/voice-input-button";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { parseIncomeFromSpeech } from "@/lib/speechParsing";
 
 interface Account {
   id: string;
@@ -57,9 +60,43 @@ export default function AddIncomePage() {
 
   // Using standardized income categories from constants
 
+  // Voice input functionality
+  const handleVoiceResult = useCallback(
+    (parsedData: {
+      amount?: string;
+      description?: string;
+      incomeSource?: string;
+      account?: string;
+      date?: Date;
+    }) => {
+      if (parsedData.amount) setAmount(parsedData.amount);
+      if (parsedData.description) setDescription(parsedData.description);
+      if (parsedData.incomeSource) setIncomeSource(parsedData.incomeSource);
+      if (parsedData.account) setAccount(parsedData.account);
+      if (parsedData.date) setDate(parsedData.date);
+    },
+    []
+  );
+
+  const parseFunction = useCallback(
+    (transcript: string) => {
+      return parseIncomeFromSpeech(transcript, accounts);
+    },
+    [accounts]
+  );
+
+  const { isListening, isSupported, startListening } = useVoiceInput({
+    onResult: handleVoiceResult,
+    parseFunction,
+  });
+
   const handleQuickAdd = (source: string) => {
     setIncomeSource(source);
     setDescription(source);
+  };
+
+  const handleVoiceInput = () => {
+    startListening();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -240,6 +277,11 @@ export default function AddIncomePage() {
                   <Button type="submit" className="w-40 min-w-32">
                     Save
                   </Button>
+                  <VoiceInputButton
+                    isListening={isListening}
+                    isSupported={isSupported}
+                    onStartListening={handleVoiceInput}
+                  />
                 </div>
               </form>
             )}

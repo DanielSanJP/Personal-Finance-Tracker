@@ -12,10 +12,8 @@ import Nav from "@/components/nav";
 import { createClient } from "@/lib/supabase/client";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { Eye, EyeOff, Mail, Lock, Shield } from "lucide-react";
-import type { User } from "@supabase/supabase-js";
 
 export default function SettingsPage() {
-  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [emailLoading, setEmailLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -57,7 +55,6 @@ export default function SettingsPage() {
         }
 
         if (user) {
-          setUser(user);
           setEmailForm({
             currentEmail: user.email || "",
             newEmail: "",
@@ -78,7 +75,6 @@ export default function SettingsPage() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        setUser(session.user);
         setEmailForm({
           currentEmail: session.user.email || "",
           newEmail: "",
