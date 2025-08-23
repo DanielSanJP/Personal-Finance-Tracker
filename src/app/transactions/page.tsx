@@ -356,16 +356,25 @@ export default function TransactionsPage() {
                             >
                               <TableCell className="font-medium">
                                 <div>
-                                  <div className="font-semibold text-gray-900">
+                                  <div
+                                    className="font-semibold text-gray-900 truncate max-w-[200px]"
+                                    title={transaction.description}
+                                  >
                                     {transaction.description}
                                   </div>
-                                  <div className="text-sm text-gray-500">
+                                  <div
+                                    className="text-sm text-gray-500 truncate max-w-[200px]"
+                                    title={transaction.merchant}
+                                  >
                                     {transaction.merchant}
                                   </div>
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <div className="text-sm">
+                                <div
+                                  className="text-sm truncate max-w-[120px]"
+                                  title={transaction.category}
+                                >
                                   {transaction.category}
                                 </div>
                               </TableCell>

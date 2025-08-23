@@ -20,9 +20,8 @@ import Nav from "@/components/nav";
 import { getCurrentUserAccounts, createExpenseTransaction } from "@/lib/data";
 import { FormSkeleton } from "@/components/loading-states";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
-import { VoiceInputButton } from "@/components/voice-input-button";
-import { useVoiceInput } from "@/hooks/useVoiceInput";
-import { parseExpenseFromSpeech } from "@/lib/speechParsing";
+import { ContinuousVoiceInput } from "@/components/continuous-voice-input";
+import { useContinuousVoice } from "@/hooks/useContinuousVoice";
 
 interface Account {
   id: string;
@@ -142,42 +141,41 @@ export default function AddTransactionPage() {
     }
   };
 
-  // Voice input functionality
-  const handleVoiceResult = useCallback(
-    (parsedData: {
-      amount?: string;
-      description?: string;
-      category?: string;
-      account?: string;
-      date?: Date;
-    }) => {
-      setFormData((prev) => ({
-        ...prev,
-        ...(parsedData.amount && { amount: parsedData.amount }),
-        ...(parsedData.description && { description: parsedData.description }),
-        ...(parsedData.category && { category: parsedData.category }),
-        ...(parsedData.account && { account: parsedData.account }),
-        ...(parsedData.date && { date: parsedData.date }),
-      }));
+  const handleFieldUpdate = useCallback(
+    (field: string, value: string | Date) => {
+      if (field === "date" && value instanceof Date) {
+        setFormData((prev) => ({
+          ...prev,
+          date: value,
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          [field]: value as string,
+        }));
+      }
     },
     []
   );
 
-  const parseFunction = useCallback(
-    (transcript: string) => {
-      return parseExpenseFromSpeech(transcript, accounts);
+  // Continuous voice input (Expensify-style)
+  const {
+    isRecording: isContinuousRecording,
+    isProcessing: isContinuousProcessing,
+    parsedData,
+    confidence,
+    startListening,
+    stopListening,
+  } = useContinuousVoice({
+    onFieldUpdate: handleFieldUpdate,
+    onComplete: () => {
+      toast.success("Transaction auto-filled!", {
+        description: "Review the details and save when ready.",
+      });
     },
-    [accounts]
-  );
-
-  const { isListening, isSupported, startListening } = useVoiceInput({
-    onResult: handleVoiceResult,
-    parseFunction,
+    accounts: accounts,
+    type: "expense",
   });
-
-  const handleVoiceInput = () => {
-    startListening();
-  };
 
   const handleScanReceipt = () => {
     toast("Scan Receipt functionality not implemented yet", {
@@ -360,10 +358,13 @@ export default function AddTransactionPage() {
 
                   {/* Voice Input and Scan Receipt */}
                   <div className="flex flex-wrap gap-4 justify-center">
-                    <VoiceInputButton
-                      isListening={isListening}
-                      isSupported={isSupported}
-                      onStartListening={handleVoiceInput}
+                    <ContinuousVoiceInput
+                      isRecording={isContinuousRecording}
+                      isProcessing={isContinuousProcessing}
+                      parsedData={parsedData}
+                      confidence={confidence}
+                      onStartListening={startListening}
+                      onStopListening={stopListening}
                     />
                     <Button
                       onClick={handleScanReceipt}

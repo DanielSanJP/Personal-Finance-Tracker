@@ -21,9 +21,8 @@ import { toast } from "sonner";
 import { getCurrentUserAccounts, createIncomeTransaction } from "@/lib/data";
 import { FormSkeleton } from "@/components/loading-states";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
-import { VoiceInputButton } from "@/components/voice-input-button";
-import { useVoiceInput } from "@/hooks/useVoiceInput";
-import { parseIncomeFromSpeech } from "@/lib/speechParsing";
+import { ContinuousVoiceInput } from "@/components/continuous-voice-input";
+import { useContinuousVoice } from "@/hooks/useContinuousVoice";
 
 interface Account {
   id: string;
@@ -60,43 +59,39 @@ export default function AddIncomePage() {
 
   // Using standardized income categories from constants
 
-  // Voice input functionality
-  const handleVoiceResult = useCallback(
-    (parsedData: {
-      amount?: string;
-      description?: string;
-      incomeSource?: string;
-      account?: string;
-      date?: Date;
-    }) => {
-      if (parsedData.amount) setAmount(parsedData.amount);
-      if (parsedData.description) setDescription(parsedData.description);
-      if (parsedData.incomeSource) setIncomeSource(parsedData.incomeSource);
-      if (parsedData.account) setAccount(parsedData.account);
-      if (parsedData.date) setDate(parsedData.date);
+  const handleFieldUpdate = useCallback(
+    (field: string, value: string | Date) => {
+      if (field === "amount") setAmount(value as string);
+      else if (field === "description") setDescription(value as string);
+      else if (field === "incomeSource") setIncomeSource(value as string);
+      else if (field === "account") setAccount(value as string);
+      else if (field === "date" && value instanceof Date) setDate(value);
     },
     []
   );
 
-  const parseFunction = useCallback(
-    (transcript: string) => {
-      return parseIncomeFromSpeech(transcript, accounts);
+  // Continuous voice input (Expensify-style)
+  const {
+    isRecording: isContinuousRecording,
+    isProcessing: isContinuousProcessing,
+    parsedData,
+    confidence,
+    startListening,
+    stopListening,
+  } = useContinuousVoice({
+    onFieldUpdate: handleFieldUpdate,
+    onComplete: () => {
+      toast.success("Income auto-filled!", {
+        description: "Review the details and save when ready.",
+      });
     },
-    [accounts]
-  );
-
-  const { isListening, isSupported, startListening } = useVoiceInput({
-    onResult: handleVoiceResult,
-    parseFunction,
+    accounts: accounts,
+    type: "income",
   });
 
   const handleQuickAdd = (source: string) => {
     setIncomeSource(source);
     setDescription(source);
-  };
-
-  const handleVoiceInput = () => {
-    startListening();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -277,10 +272,17 @@ export default function AddIncomePage() {
                   <Button type="submit" className="w-40 min-w-32">
                     Save
                   </Button>
-                  <VoiceInputButton
-                    isListening={isListening}
-                    isSupported={isSupported}
-                    onStartListening={handleVoiceInput}
+                </div>
+
+                {/* Voice Input Options */}
+                <div className="flex flex-wrap gap-4 justify-center mt-4">
+                  <ContinuousVoiceInput
+                    isRecording={isContinuousRecording}
+                    isProcessing={isContinuousProcessing}
+                    parsedData={parsedData}
+                    confidence={confidence}
+                    onStartListening={startListening}
+                    onStopListening={stopListening}
                   />
                 </div>
               </form>
