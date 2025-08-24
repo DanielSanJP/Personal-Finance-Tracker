@@ -152,8 +152,8 @@ export const ReceiptScanModal = ({
     if (videoStream) {
       try {
         const file = await onCaptureFromVideo(videoStream.video);
-        handleCloseCamera();
         await onScanFromFile(file);
+        handleCloseCamera();
       } catch (error) {
         console.error("Failed to capture image:", error);
       }
