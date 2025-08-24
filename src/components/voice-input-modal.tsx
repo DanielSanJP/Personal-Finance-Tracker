@@ -23,7 +23,7 @@ interface ParsedTransaction {
   date?: Date;
 }
 
-interface ContinuousVoiceInputProps {
+interface VoiceInputModalProps {
   isRecording: boolean;
   isProcessing: boolean;
   parsedData: ParsedTransaction;
@@ -32,14 +32,14 @@ interface ContinuousVoiceInputProps {
   onStopListening: () => void;
 }
 
-export const ContinuousVoiceInput = ({
+export const VoiceInputModal = ({
   isRecording,
   isProcessing,
   parsedData,
   confidence,
   onStartListening,
   onStopListening,
-}: ContinuousVoiceInputProps) => {
+}: VoiceInputModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleStart = () => {
@@ -178,8 +178,8 @@ export const ContinuousVoiceInput = ({
               <strong>Examples:</strong>
             </p>
             <p>• &quot;25 dollars for lunch at Chipotle&quot;</p>
-            <p>• &quot;50 bucks gas at Shell&quot;</p>
-            <p>• &quot;15 dollars coffee&quot;</p>
+            <p>• &quot;50 dollars petrol at BP&quot;</p>
+            <p>• &quot;15 coffee&quot;</p>
           </div>
         </div>
       </DialogContent>

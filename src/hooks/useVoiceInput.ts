@@ -10,7 +10,7 @@ interface Account {
   type: string;
 }
 
-interface UseContinuousVoiceProps {
+interface UseVoiceInputProps {
   onFieldUpdate: (field: string, value: string | Date) => void;
   onComplete?: () => void;
   accounts?: Account[];
@@ -35,52 +35,131 @@ const parseTransactionFromSpeech = (
   const result: ParsedTransaction = {};
   const lowerTranscript = transcript.toLowerCase();
   
+  // Helper function to parse amounts with word multipliers
+  const parseAmountWithWords = (amountStr: string): string | null => {
+    const cleanAmount = amountStr.toLowerCase().trim();
+    
+    // Handle written numbers with multipliers
+    const wordPatterns = [
+      // "2 thousand", "20 thousand", etc.
+      /(\d+(?:\.\d+)?)\s*(?:k|thousand)/i,
+      // "1 million", "2.5 million", etc.
+      /(\d+(?:\.\d+)?)\s*(?:m|million)/i,
+      // "1 billion" (just in case!)
+      /(\d+(?:\.\d+)?)\s*(?:b|billion)/i,
+      // Numbers with commas "500,000"
+      /([\d,]+(?:\.\d+)?)/,
+      // Regular numbers
+      /(\d+(?:\.\d+)?)/
+    ];
+
+    for (const pattern of wordPatterns) {
+      const match = cleanAmount.match(pattern);
+      if (match) {
+        let number = parseFloat(match[1].replace(/,/g, ''));
+        
+        if (pattern.source.includes('thousand|k')) {
+          number *= 1000;
+        } else if (pattern.source.includes('million|m')) {
+          number *= 1000000;
+        } else if (pattern.source.includes('billion|b')) {
+          number *= 1000000000;
+        }
+        
+        return number.toString();
+      }
+    }
+    return null;
+  };
+
   // Extract amount (look for currency patterns)
   const amountPatterns = [
-    /(\d+(?:\.\d{2})?)\s*dollars?/,
-    /\$(\d+(?:\.\d{2})?)/,
-    /(\d+(?:\.\d{2})?)\s*bucks?/,
-    /(\d+(?:\.\d{2})?)(?:\s|$)/
+    // Word-based amounts
+    /(\d+(?:\.\d+)?\s*(?:thousand|k|million|m|billion|b))\s*dollars?/i,
+    /\$(\d+(?:\.\d+)?\s*(?:thousand|k|million|m|billion|b))/i,
+    /(\d+(?:\.\d+)?\s*(?:thousand|k|million|m|billion|b))\s*bucks?/i,
+    
+    // Numbers with commas
+    /([\d,]+(?:\.\d+)?)\s*dollars?/i,
+    /\$([\d,]+(?:\.\d+)?)/,
+    /([\d,]+(?:\.\d+)?)\s*bucks?/i,
+    
+    // Regular patterns
+    /(\d+(?:\.\d{2})?)\s*dollars?/i,
+    /(\d+(?:\.\d{2})?)\s*bucks?/i,
+    /(\d+(?:\.\d{2})?)\s*cents?/i, // Handle cents
+    /(\d+)\s*and\s*(\d+)\s*cents?/i, // "5 and 50 cents"
+    /(\d+)\s*(?:dollars?\s*and\s*)?(\d+)\s*cents?/i, // "5 dollars and 50 cents"
+    
+    // Fallback: any number (including with commas)
+    /([\d,]+(?:\.\d{2})?)(?:\s|$)/
   ];
-  
+
   for (const pattern of amountPatterns) {
     const match = transcript.match(pattern);
     if (match) {
-      result.amount = match[1];
+      // Handle special cases like "5 and 50 cents" or "5 dollars and 50 cents"
+      if (match[2]) {
+        // Convert "dollars and cents" to decimal
+        result.amount = `${match[1]}.${match[2].padStart(2, '0')}`;
+      } else if (pattern.source.includes('cents')) {
+        // Convert cents to dollars
+        result.amount = (parseInt(match[1]) / 100).toFixed(2);
+      } else {
+        // Try to parse with word multipliers
+        const parsedAmount = parseAmountWithWords(match[1]);
+        result.amount = parsedAmount || match[1].replace(/,/g, '');
+      }
       break;
     }
-  }
-  
-  // Extract merchant/description - look for common patterns
+  }  // Extract merchant/description - look for common patterns
   const merchantKeywords = [
-    'at', 'from', 'to', 'for', 'on', 'in', 'with'
+    'at', 'from', 'to', 'for', 'on', 'in', 'with', 'via', 'through', 'using'
   ];
   
   // Find merchant after "at", "from", etc.
   for (const keyword of merchantKeywords) {
-    const regex = new RegExp(`\\b${keyword}\\s+([\\w\\s&'-]+?)(?:\\s+(?:for|in|on|\\d)|$)`, 'i');
+    // Improved regex to better capture merchant names at the end of sentences
+    const regex = new RegExp(`\\b${keyword}\\s+([\\w\\s&'-]+?)(?:\\s*(?:for|in|on|with|\\.|,|$)|$)`, 'i');
     const match = transcript.match(regex);
     if (match && match[1].trim().length > 1) {
-      result.merchant = match[1].trim();
-      console.log(`Extracted merchant: "${result.merchant}" using keyword: "${keyword}"`);
+      // Clean up the merchant name (remove trailing punctuation)
+      result.merchant = match[1].trim().replace(/[.,!?;:]+$/, '');
       
       // Extract the action part (what comes before the keyword)
       const beforeKeyword = transcript.split(new RegExp(`\\b${keyword}\\b`, 'i'))[0]
-        .replace(/\$?\d+(?:\.\d{2})?\s*(?:dollars?|bucks?)?/gi, '') // Remove amount
-        .trim();
+        .replace(/\$?[\d,]+(?:\.\d+)?\s*(?:thousand|k|million|m|billion|b)?\s*(?:dollars?|bucks?|cents?)?/gi, '') // Remove amount with multipliers
+        .trim()
+        .replace(/[.,!?;:]+$/, ''); // Remove trailing punctuation
       
       result.description = beforeKeyword || result.merchant;
-      console.log(`Extracted description: "${result.description}"`);
       break;
+    }
+  }
+  
+  // If no merchant found, try alternative patterns
+  if (!result.merchant) {
+    // Look for capitalized words (likely merchant names)
+    const capitalizedWords = transcript.match(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*/g);
+    if (capitalizedWords) {
+      // Filter out common words that aren't merchants
+      const commonWords = ['I', 'The', 'A', 'An', 'For', 'At', 'To', 'From', 'With', 'On', 'In'];
+      const potentialMerchants = capitalizedWords.filter(word => 
+        !commonWords.includes(word) && word.length > 2
+      );
+      if (potentialMerchants.length > 0) {
+        result.merchant = potentialMerchants[potentialMerchants.length - 1]
+          .replace(/[.,!?;:]+$/, ''); // Remove trailing punctuation
+      }
     }
   }
   
   // If no merchant found, use the whole transcript (minus amount) as description
   if (!result.description) {
     result.description = transcript
-      .replace(/\$?\d+(?:\.\d{2})?\s*(?:dollars?|bucks?)?/gi, '')
-      .trim();
-    console.log(`No merchant found, using full description: "${result.description}"`);
+      .replace(/\$?[\d,]+(?:\.\d+)?\s*(?:thousand|k|million|m|billion|b)?\s*(?:dollars?|bucks?|cents?)?/gi, '')
+      .trim()
+      .replace(/[.,!?;:]+$/, ''); // Remove trailing punctuation
   }
   
   // Smart category detection based on merchant/description
@@ -175,12 +254,12 @@ const parseTransactionFromSpeech = (
   return result;
 };
 
-export const useContinuousVoice = ({ 
+export const useVoiceInput = ({ 
   onFieldUpdate, 
   onComplete,
   accounts = [],
   type = 'expense'
-}: UseContinuousVoiceProps) => {
+}: UseVoiceInputProps) => {
   const [isListening, setIsListening] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedTransaction>({});
   const [confidence, setConfidence] = useState(0);

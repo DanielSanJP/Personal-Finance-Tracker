@@ -21,8 +21,8 @@ import { toast } from "sonner";
 import { getCurrentUserAccounts, createIncomeTransaction } from "@/lib/data";
 import { FormSkeleton } from "@/components/loading-states";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
-import { ContinuousVoiceInput } from "@/components/continuous-voice-input";
-import { useContinuousVoice } from "@/hooks/useContinuousVoice";
+import { VoiceInputModal } from "@/components/voice-input-modal";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
 
 interface Account {
   id: string;
@@ -78,7 +78,7 @@ export default function AddIncomePage() {
     confidence,
     startListening,
     stopListening,
-  } = useContinuousVoice({
+  } = useVoiceInput({
     onFieldUpdate: handleFieldUpdate,
     onComplete: () => {
       toast.success("Income auto-filled!", {
@@ -276,7 +276,7 @@ export default function AddIncomePage() {
 
                 {/* Voice Input Options */}
                 <div className="flex flex-wrap gap-4 justify-center mt-4">
-                  <ContinuousVoiceInput
+                  <VoiceInputModal
                     isRecording={isContinuousRecording}
                     isProcessing={isContinuousProcessing}
                     parsedData={parsedData}
