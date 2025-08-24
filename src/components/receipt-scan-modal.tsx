@@ -17,7 +17,7 @@ import {
   X,
   Image as ImageIcon,
 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 interface ReceiptData {
   merchant?: string;
@@ -55,11 +55,73 @@ export const ReceiptScanModal = ({
 }: ReceiptScanModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [cameraModalOpen, setCameraModalOpen] = useState(false);
+  const [screenDimensions, setScreenDimensions] = useState({
+    width: 0,
+    height: 0,
+  });
   const [videoStream, setVideoStream] = useState<{
     video: HTMLVideoElement;
     stream: MediaStream;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Update screen dimensions when camera modal opens
+  useEffect(() => {
+    if (cameraModalOpen) {
+      const updateDimensions = () => {
+        setScreenDimensions({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+      };
+
+      updateDimensions();
+      window.addEventListener("resize", updateDimensions);
+      window.addEventListener("orientationchange", updateDimensions);
+
+      return () => {
+        window.removeEventListener("resize", updateDimensions);
+        window.removeEventListener("orientationchange", updateDimensions);
+      };
+    }
+  }, [cameraModalOpen]);
+
+  // Calculate dynamic bottom padding based on screen height
+  const getBottomPadding = () => {
+    const { height } = screenDimensions;
+
+    // For very small screens (iPhone SE, etc.)
+    if (height <= 667) return "pb-2";
+
+    // For medium screens (iPhone 12, 13, etc.)
+    if (height <= 844) return "pb-4";
+
+    // For larger screens (iPhone 14 Pro Max, etc.)
+    return "pb-6";
+  };
+
+  // Calculate button size based on screen dimensions
+  const getButtonSize = () => {
+    const { height, width } = screenDimensions;
+    const minDimension = Math.min(height, width);
+
+    // Smaller button for very small screens
+    if (minDimension <= 375) return { size: "w-16 h-16", icon: "w-8 h-8" };
+
+    // Standard button for most screens
+    return { size: "w-20 h-20", icon: "w-10 h-10" };
+  };
+
+  // Calculate controls container height to ensure it fits
+  const getControlsHeight = () => {
+    const { height } = screenDimensions;
+
+    // Reserve less space on smaller screens
+    if (height <= 667) return "min-h-[120px] max-h-[140px]";
+    if (height <= 844) return "min-h-[140px] max-h-[160px]";
+
+    return "min-h-[160px] max-h-[180px]";
+  };
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -126,7 +188,10 @@ export const ReceiptScanModal = ({
     <>
       {/* Fullscreen Camera Modal */}
       {cameraModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-black flex flex-col overflow-hidden">
+        <div
+          className="fixed inset-0 z-[100] bg-black flex flex-col overflow-hidden"
+          style={{ height: "100dvh" }} // Use dynamic viewport height for better mobile support
+        >
           {/* Camera Header */}
           <div className="flex items-center justify-between p-4 bg-black/80 text-white shrink-0">
             <h2 className="text-lg font-semibold">Camera</h2>
@@ -140,8 +205,11 @@ export const ReceiptScanModal = ({
             </Button>
           </div>
 
-          {/* Camera View */}
-          <div className="flex-1 relative overflow-hidden">
+          {/* Camera View - Takes remaining space */}
+          <div
+            className="flex-1 relative overflow-hidden"
+            style={{ minHeight: 0 }}
+          >
             {videoStream && (
               <video
                 ref={(video) => {
@@ -158,19 +226,28 @@ export const ReceiptScanModal = ({
             )}
           </div>
 
-          {/* Camera Controls - Fixed at bottom */}
-          <div className="shrink-0 bg-black/90 px-6 py-4 pb-8 safe-area-inset-bottom">
-            <div className="flex justify-center mb-3">
+          {/* Camera Controls - Fixed at bottom with dynamic positioning */}
+          <div
+            className={`shrink-0 bg-black/90 px-6 py-3 ${getBottomPadding()} ${getControlsHeight()} flex flex-col justify-center`}
+            style={{
+              position: "relative",
+              bottom: 0,
+              maxHeight: "25vh", // Never take more than 25% of viewport height
+            }}
+          >
+            <div className="flex justify-center mb-2">
               <Button
                 onClick={handleCapture}
                 disabled={isProcessing}
                 size="lg"
-                className="rounded-full w-20 h-20 bg-white text-black hover:bg-gray-200 shadow-lg border-4 border-gray-300"
+                className={`rounded-full ${
+                  getButtonSize().size
+                } bg-white text-black hover:bg-gray-200 shadow-lg border-4 border-gray-300 flex items-center justify-center`}
               >
-                <Camera className="w-10 h-10" />
+                <Camera className={getButtonSize().icon} />
               </Button>
             </div>
-            <p className="text-white text-center text-sm">
+            <p className="text-white text-center text-xs sm:text-sm leading-tight">
               Position receipt in frame and tap to capture
             </p>
           </div>
