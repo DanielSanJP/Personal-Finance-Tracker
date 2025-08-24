@@ -326,6 +326,245 @@ export default function BudgetsPage() {
                 <EmptyBudgets onRefresh={loadBudgets} />
               ) : (
                 <>
+                  {/* Action Buttons - Show at top when there are budgets */}
+                  <div className="pb-4 flex flex-wrap gap-4 justify-center border-b">
+                    <Dialog
+                      open={addBudgetOpen}
+                      onOpenChange={setAddBudgetOpen}
+                    >
+                      <DialogTrigger asChild>
+                        <Button>Add Budget</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Add New Budget</DialogTitle>
+                          <DialogDescription>
+                            Create a new budget category with your desired
+                            spending limit.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <CategorySelect
+                            value={newBudget.category}
+                            onValueChange={(value) =>
+                              setNewBudget({
+                                ...newBudget,
+                                category: value,
+                              })
+                            }
+                            type="expense"
+                            required
+                            className="w-full"
+                          />
+                          <div className="grid gap-2">
+                            <Label htmlFor="amount">Budget Amount</Label>
+                            <Input
+                              id="amount"
+                              type="number"
+                              placeholder="Enter budget amount"
+                              className="w-full"
+                              value={newBudget.budgetAmount}
+                              onChange={(e) =>
+                                setNewBudget({
+                                  ...newBudget,
+                                  budgetAmount: e.target.value,
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="period">Budget Period</Label>
+                            <Select
+                              value={newBudget.period}
+                              onValueChange={(value) =>
+                                setNewBudget({ ...newBudget, period: value })
+                              }
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select period" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="monthly">Monthly</SelectItem>
+                                <SelectItem value="weekly">Weekly</SelectItem>
+                                <SelectItem value="yearly">Yearly</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setAddBudgetOpen(false);
+                              // Reset form
+                              setNewBudget({
+                                category: "",
+                                budgetAmount: "",
+                                period: "monthly",
+                              });
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button type="submit" onClick={handleCreateBudget}>
+                            Create Budget
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Dialog
+                      open={editBudgetsOpen}
+                      onOpenChange={setEditBudgetsOpen}
+                    >
+                      <DialogTrigger asChild>
+                        <Button variant="outline">Edit Budgets</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[525px]">
+                        <DialogHeader>
+                          <DialogTitle>Edit Budget Categories</DialogTitle>
+                          <DialogDescription>
+                            Modify your existing budget amounts and categories.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
+                          {budgets.map((budget) => {
+                            const handleSaveBudget = () => {
+                              const budgetInput = document.getElementById(
+                                `budget-${budget.id}`
+                              ) as HTMLInputElement;
+
+                              if (budgetInput) {
+                                handleUpdateBudget(
+                                  budget.id,
+                                  {
+                                    budgetAmount:
+                                      parseFloat(budgetInput.value) || 0,
+                                  },
+                                  true
+                                ); // Close modal after individual save
+                              }
+                            };
+
+                            const handleDeleteBudgetClick = () => {
+                              setBudgetToDelete(budget);
+                              setDeleteConfirmOpen(true);
+                            };
+
+                            return (
+                              <div
+                                key={budget.id}
+                                className="grid gap-3 p-4 border rounded-lg"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <Label className="text-base font-medium">
+                                    {budget.category}
+                                  </Label>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      onClick={handleSaveBudget}
+                                    >
+                                      Save
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={handleDeleteBudgetClick}
+                                    >
+                                      Delete
+                                    </Button>
+                                  </div>
+                                </div>
+                                <div className="grid gap-2">
+                                  <Label htmlFor={`budget-${budget.id}`}>
+                                    Budget Amount
+                                  </Label>
+                                  <Input
+                                    id={`budget-${budget.id}`}
+                                    type="number"
+                                    defaultValue={budget.budgetAmount}
+                                    className="w-full"
+                                  />
+                                </div>
+                                <div className="text-sm text-gray-600">
+                                  Current spending:{" "}
+                                  {formatCurrency(budget.spentAmount)}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <DialogFooter className="gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setEditBudgetsOpen(false);
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="submit"
+                            onClick={async () => {
+                              // Save all budgets at once without individual reloads
+                              try {
+                                // Close modal immediately to prevent flickering
+                                setEditBudgetsOpen(false);
+
+                                const savePromises = budgets.map(
+                                  async (budget) => {
+                                    const budgetInput = document.getElementById(
+                                      `budget-${budget.id}`
+                                    ) as HTMLInputElement;
+
+                                    if (budgetInput) {
+                                      // Call updateBudget directly without going through handleUpdateBudget
+                                      return updateBudget(budget.id, {
+                                        budgetAmount:
+                                          parseFloat(budgetInput.value) || 0,
+                                      });
+                                    }
+                                  }
+                                );
+
+                                await Promise.all(savePromises.filter(Boolean));
+
+                                // Reload budgets only once at the end
+                                await loadBudgets();
+
+                                toast.success(
+                                  "All budgets updated successfully!"
+                                );
+                              } catch (error) {
+                                console.error("Error saving budgets:", error);
+                                toast.error("Failed to save some changes");
+                              }
+                            }}
+                          >
+                            Save All Changes
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        toast("Export Data functionality not implemented yet", {
+                          description:
+                            "This feature will be available in a future update.",
+                          action: {
+                            label: "Dismiss",
+                            onClick: () => console.log("Dismissed"),
+                          },
+                        })
+                      }
+                    >
+                      Export Data
+                    </Button>
+                  </div>
+
                   {/* Over Budget Alert */}
                   {budgets.some((budget) =>
                     isOverBudget(budget.spentAmount, budget.budgetAmount)
@@ -468,261 +707,6 @@ export default function BudgetsPage() {
                           }}
                         />
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="pt-4 space-y-4 flex flex-col items-center">
-                    <div className="flex flex-wrap gap-4 justify-center">
-                      <Dialog
-                        open={addBudgetOpen}
-                        onOpenChange={setAddBudgetOpen}
-                      >
-                        <DialogTrigger asChild>
-                          <Button className="w-40">Add Budget</Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                          <DialogHeader>
-                            <DialogTitle>Add New Budget</DialogTitle>
-                            <DialogDescription>
-                              Create a new budget category with your desired
-                              spending limit.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="grid gap-4 py-4">
-                            <CategorySelect
-                              value={newBudget.category}
-                              onValueChange={(value) =>
-                                setNewBudget({
-                                  ...newBudget,
-                                  category: value,
-                                })
-                              }
-                              type="expense"
-                              required
-                              className="w-full"
-                            />
-                            <div className="grid gap-2">
-                              <Label htmlFor="amount">Budget Amount</Label>
-                              <Input
-                                id="amount"
-                                type="number"
-                                placeholder="Enter budget amount"
-                                className="w-full"
-                                value={newBudget.budgetAmount}
-                                onChange={(e) =>
-                                  setNewBudget({
-                                    ...newBudget,
-                                    budgetAmount: e.target.value,
-                                  })
-                                }
-                              />
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor="period">Budget Period</Label>
-                              <Select
-                                value={newBudget.period}
-                                onValueChange={(value) =>
-                                  setNewBudget({ ...newBudget, period: value })
-                                }
-                              >
-                                <SelectTrigger className="w-full">
-                                  <SelectValue placeholder="Select period" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="monthly">
-                                    Monthly
-                                  </SelectItem>
-                                  <SelectItem value="weekly">Weekly</SelectItem>
-                                  <SelectItem value="yearly">Yearly</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <DialogFooter>
-                            <Button
-                              variant="outline"
-                              onClick={() => {
-                                setAddBudgetOpen(false);
-                                // Reset form
-                                setNewBudget({
-                                  category: "",
-                                  budgetAmount: "",
-                                  period: "monthly",
-                                });
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                            <Button type="submit" onClick={handleCreateBudget}>
-                              Create Budget
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-
-                      <Dialog
-                        open={editBudgetsOpen}
-                        onOpenChange={setEditBudgetsOpen}
-                      >
-                        <DialogTrigger asChild>
-                          <Button variant="outline" className="w-40">
-                            Edit Budgets
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[525px]">
-                          <DialogHeader>
-                            <DialogTitle>Edit Budget Categories</DialogTitle>
-                            <DialogDescription>
-                              Modify your existing budget amounts and
-                              categories.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
-                            {budgets.map((budget) => {
-                              const handleSaveBudget = () => {
-                                const budgetInput = document.getElementById(
-                                  `budget-${budget.id}`
-                                ) as HTMLInputElement;
-
-                                if (budgetInput) {
-                                  handleUpdateBudget(
-                                    budget.id,
-                                    {
-                                      budgetAmount:
-                                        parseFloat(budgetInput.value) || 0,
-                                    },
-                                    true
-                                  ); // Close modal after individual save
-                                }
-                              };
-
-                              const handleDeleteBudgetClick = () => {
-                                setBudgetToDelete(budget);
-                                setDeleteConfirmOpen(true);
-                              };
-
-                              return (
-                                <div
-                                  key={budget.id}
-                                  className="grid gap-3 p-4 border rounded-lg"
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <Label className="text-base font-medium">
-                                      {budget.category}
-                                    </Label>
-                                    <div className="flex gap-2">
-                                      <Button
-                                        size="sm"
-                                        onClick={handleSaveBudget}
-                                      >
-                                        Save
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        onClick={handleDeleteBudgetClick}
-                                      >
-                                        Delete
-                                      </Button>
-                                    </div>
-                                  </div>
-                                  <div className="grid gap-2">
-                                    <Label htmlFor={`budget-${budget.id}`}>
-                                      Budget Amount
-                                    </Label>
-                                    <Input
-                                      id={`budget-${budget.id}`}
-                                      type="number"
-                                      defaultValue={budget.budgetAmount}
-                                      className="w-full"
-                                    />
-                                  </div>
-                                  <div className="text-sm text-gray-600">
-                                    Current spending:{" "}
-                                    {formatCurrency(budget.spentAmount)}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <DialogFooter className="gap-2">
-                            <Button
-                              variant="outline"
-                              onClick={() => {
-                                setEditBudgetsOpen(false);
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              type="submit"
-                              onClick={async () => {
-                                // Save all budgets at once without individual reloads
-                                try {
-                                  // Close modal immediately to prevent flickering
-                                  setEditBudgetsOpen(false);
-
-                                  const savePromises = budgets.map(
-                                    async (budget) => {
-                                      const budgetInput =
-                                        document.getElementById(
-                                          `budget-${budget.id}`
-                                        ) as HTMLInputElement;
-
-                                      if (budgetInput) {
-                                        // Call updateBudget directly without going through handleUpdateBudget
-                                        return updateBudget(budget.id, {
-                                          budgetAmount:
-                                            parseFloat(budgetInput.value) || 0,
-                                        });
-                                      }
-                                    }
-                                  );
-
-                                  await Promise.all(
-                                    savePromises.filter(Boolean)
-                                  );
-
-                                  // Reload budgets only once at the end
-                                  await loadBudgets();
-
-                                  toast.success(
-                                    "All budgets updated successfully!"
-                                  );
-                                } catch (error) {
-                                  console.error("Error saving budgets:", error);
-                                  toast.error("Failed to save some changes");
-                                }
-                              }}
-                            >
-                              Save All Changes
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-
-                    <div className="flex flex-wrap gap-4 justify-center">
-                      <Button
-                        variant="outline"
-                        className="w-40"
-                        onClick={() =>
-                          toast(
-                            "Export Data functionality not implemented yet",
-                            {
-                              description:
-                                "This feature will be available in a future update.",
-                              action: {
-                                label: "Dismiss",
-                                onClick: () => console.log("Dismissed"),
-                              },
-                            }
-                          )
-                        }
-                      >
-                        Export Data
-                      </Button>
                     </div>
                   </div>
                 </>

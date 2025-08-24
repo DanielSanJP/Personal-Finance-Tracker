@@ -110,6 +110,41 @@ export default function Dashboard() {
       <Nav showDashboardTabs={true} />
 
       <div className="max-w-7xl mx-auto p-4 py-8">
+        {/* Quick Actions */}
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="pb-4 flex flex-wrap gap-2 justify-center border-b">
+              <Link href="/income/add">
+                <Button>Add Income</Button>
+              </Link>
+              <Link href="/transactions/add">
+                <Button>Add Expense</Button>
+              </Link>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  toast("Scan Receipt functionality not implemented yet", {
+                    description:
+                      "This feature will be available in a future update.",
+                    action: {
+                      label: "Dismiss",
+                      onClick: () => console.log("Dismissed"),
+                    },
+                  })
+                }
+              >
+                Scan Receipt
+              </Button>
+              <Link href="/reports">
+                <Button variant="outline">View Reports</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Financial Summary Cards */}
         <div className="grid grid-cols-2 gap-3 mb-4">
           <Card>
@@ -218,49 +253,6 @@ export default function Dashboard() {
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4 flex flex-col items-center">
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <Link href="/income/add">
-                    <Button className="w-32">Add Income</Button>
-                  </Link>
-                  <Link href="/transactions/add">
-                    <Button className="w-32">Add Expense</Button>
-                  </Link>
-                </div>
-
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <Button
-                    variant="outline"
-                    className="w-32"
-                    onClick={() =>
-                      toast("Scan Receipt functionality not implemented yet", {
-                        description:
-                          "This feature will be available in a future update.",
-                        action: {
-                          label: "Dismiss",
-                          onClick: () => console.log("Dismissed"),
-                        },
-                      })
-                    }
-                  >
-                    Scan Receipt
-                  </Button>
-                  <Link href="/reports">
-                    <Button variant="outline" className="w-32">
-                      View Reports
-                    </Button>
-                  </Link>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>
