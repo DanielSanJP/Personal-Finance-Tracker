@@ -54,7 +54,7 @@ export const ReceiptScanModal = ({
   isSupported = true,
 }: ReceiptScanModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [cameraMode, setCameraMode] = useState(false);
+  const [cameraModalOpen, setCameraModalOpen] = useState(false);
   const [videoStream, setVideoStream] = useState<{
     video: HTMLVideoElement;
     stream: MediaStream;
@@ -66,7 +66,6 @@ export const ReceiptScanModal = ({
     if (!open) {
       handleCloseCamera();
       onClearPreview();
-      setCameraMode(false);
     }
   };
 
@@ -79,11 +78,11 @@ export const ReceiptScanModal = ({
 
   const handleCameraStart = async () => {
     try {
-      setCameraMode(true);
+      setCameraModalOpen(true);
       const stream = await onScanFromCamera();
       setVideoStream(stream);
     } catch {
-      setCameraMode(false);
+      setCameraModalOpen(false);
     }
   };
 
@@ -91,8 +90,8 @@ export const ReceiptScanModal = ({
     if (videoStream) {
       try {
         const file = await onCaptureFromVideo(videoStream.video);
-        await onScanFromFile(file);
         handleCloseCamera();
+        await onScanFromFile(file);
       } catch (error) {
         console.error("Failed to capture image:", error);
       }
@@ -104,7 +103,7 @@ export const ReceiptScanModal = ({
       videoStream.stream.getTracks().forEach((track) => track.stop());
       setVideoStream(null);
     }
-    setCameraMode(false);
+    setCameraModalOpen(false);
   };
 
   // Show different button state if not supported
@@ -125,6 +124,59 @@ export const ReceiptScanModal = ({
 
   return (
     <>
+      {/* Fullscreen Camera Modal */}
+      {cameraModalOpen && (
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+          {/* Camera Header */}
+          <div className="flex items-center justify-between p-4 bg-black/80 text-white">
+            <h2 className="text-lg font-semibold">Camera</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleCloseCamera}
+              className="text-white hover:bg-white/20"
+            >
+              <X className="w-6 h-6" />
+            </Button>
+          </div>
+
+          {/* Camera View */}
+          <div className="flex-1 relative">
+            {videoStream && (
+              <video
+                ref={(video) => {
+                  if (video && videoStream.video !== video) {
+                    video.srcObject = videoStream.stream;
+                    video.play();
+                  }
+                }}
+                className="w-full h-full object-cover"
+                autoPlay
+                muted
+                playsInline
+              />
+            )}
+          </div>
+
+          {/* Camera Controls */}
+          <div className="p-6 bg-black/80">
+            <div className="flex justify-center">
+              <Button
+                onClick={handleCapture}
+                disabled={isProcessing}
+                size="lg"
+                className="rounded-full w-16 h-16 bg-white text-black hover:bg-gray-200"
+              >
+                <Camera className="w-8 h-8" />
+              </Button>
+            </div>
+            <p className="text-white text-center text-sm mt-4">
+              Position receipt in frame and tap to capture
+            </p>
+          </div>
+        </div>
+      )}
+
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
           <Button className="w-40 min-w-32" type="button" variant="outline">
@@ -139,51 +191,6 @@ export const ReceiptScanModal = ({
           </DialogHeader>
 
           <div className="space-y-1 sm:space-y-2">
-            {/* Camera View */}
-            {cameraMode && videoStream && (
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Camera className="w-4 h-4" />
-                      Camera Active
-                    </CardTitle>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleCloseCamera}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="relative bg-black rounded-lg overflow-hidden">
-                    <video
-                      ref={(video) => {
-                        if (video && videoStream.video !== video) {
-                          video.srcObject = videoStream.stream;
-                          video.play();
-                        }
-                      }}
-                      className="w-full h-32 sm:h-48 object-cover"
-                      autoPlay
-                      muted
-                      playsInline
-                    />
-                  </div>
-                  <Button
-                    onClick={handleCapture}
-                    disabled={isProcessing}
-                    className="w-full"
-                  >
-                    <Camera className="w-4 h-4 mr-2" />
-                    Capture Receipt
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
             {/* Image Preview */}
             {previewUrl && (
               <Card>
@@ -273,7 +280,7 @@ export const ReceiptScanModal = ({
                 )}
 
                 {/* Control Buttons */}
-                {!cameraMode && !previewUrl && (
+                {!cameraModalOpen && !previewUrl && (
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       type="button"
