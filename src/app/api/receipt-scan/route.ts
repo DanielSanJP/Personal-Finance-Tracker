@@ -329,15 +329,8 @@ function parseReceiptText(text: string) {
   
   // If no pattern match, look for merchant names in common locations
   if (!result.merchant) {
-    const firstFewLines = lines.slice(0, 5).join(' ').toLowerCase();
-    const lastFewLines = lines.slice(-5).join(' ').toLowerCase();
-    
-    // Check for specific location indicators
-    if (firstFewLines.includes('riccarton') || lastFewLines.includes('riccarton')) {
-      result.merchant = 'Pak n Save'; // Common chain at Riccarton
-    } else if (firstFewLines.includes('westfield') || lastFewLines.includes('westfield')) {
-      result.merchant = 'Westfield'; // Shopping center
-    }
+    // Future enhancement: Add more sophisticated merchant detection
+    // Could include location-based matching or additional pattern recognition
   }
 
   // SMART DATE EXTRACTION
