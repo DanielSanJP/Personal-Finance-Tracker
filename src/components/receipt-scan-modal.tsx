@@ -55,6 +55,7 @@ export const ReceiptScanModal = ({
 }: ReceiptScanModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [cameraModalOpen, setCameraModalOpen] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
   const [screenDimensions, setScreenDimensions] = useState({
     width: 0,
     height: 0,
@@ -125,7 +126,7 @@ export const ReceiptScanModal = ({
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
-    if (!open) {
+    if (!open && !isCapturing) {
       handleCloseCamera();
       onClearPreview();
     }
@@ -151,11 +152,14 @@ export const ReceiptScanModal = ({
   const handleCapture = async () => {
     if (videoStream) {
       try {
+        setIsCapturing(true);
         const file = await onCaptureFromVideo(videoStream.video);
         await onScanFromFile(file);
         handleCloseCamera();
       } catch (error) {
         console.error("Failed to capture image:", error);
+      } finally {
+        setIsCapturing(false);
       }
     }
   };
@@ -238,7 +242,7 @@ export const ReceiptScanModal = ({
             <div className="flex justify-center mb-2">
               <Button
                 onClick={handleCapture}
-                disabled={isProcessing}
+                disabled={isProcessing || isCapturing}
                 size="lg"
                 className={`rounded-full ${
                   getButtonSize().size
