@@ -30,6 +30,7 @@ interface VoiceInputModalProps {
   confidence: number;
   onStartListening: () => void;
   onStopListening: () => void;
+  isSupported?: boolean;
 }
 
 export const VoiceInputModal = ({
@@ -39,6 +40,7 @@ export const VoiceInputModal = ({
   confidence,
   onStartListening,
   onStopListening,
+  isSupported = true,
 }: VoiceInputModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -53,6 +55,22 @@ export const VoiceInputModal = ({
       onStopListening();
     }
   };
+
+  // Show different button state if not supported
+  if (!isSupported) {
+    return (
+      <Button
+        className="w-40 min-w-32"
+        type="button"
+        variant="outline"
+        disabled
+        title="Voice input not supported in this browser"
+      >
+        <MicOff className="w-4 h-4 mr-2" />
+        Voice Input
+      </Button>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>

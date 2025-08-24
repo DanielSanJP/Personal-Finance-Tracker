@@ -162,6 +162,7 @@ export default function AddTransactionPage() {
   const {
     isRecording: isContinuousRecording,
     isProcessing: isContinuousProcessing,
+    isSupported: isVoiceSupported,
     parsedData,
     confidence,
     startListening,
@@ -361,6 +362,7 @@ export default function AddTransactionPage() {
                     <VoiceInputModal
                       isRecording={isContinuousRecording}
                       isProcessing={isContinuousProcessing}
+                      isSupported={isVoiceSupported}
                       parsedData={parsedData}
                       confidence={confidence}
                       onStartListening={startListening}

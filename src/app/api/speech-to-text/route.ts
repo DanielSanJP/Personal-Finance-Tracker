@@ -22,13 +22,35 @@ export async function POST(request: NextRequest) {
     // Convert audio file to buffer
     const audioBytes = Buffer.from(await audioFile.arrayBuffer());
 
-    // Configure the recognition request
+    // Determine encoding based on file type
+    let encoding: 'WEBM_OPUS' | 'MP3' | 'LINEAR16' | 'OGG_OPUS' = 'WEBM_OPUS';
+    let sampleRateHertz = 48000;
+    
+    const mimeType = audioFile.type.toLowerCase();
+    console.log('Received audio type:', mimeType);
+    
+    if (mimeType.includes('webm')) {
+      encoding = 'WEBM_OPUS';
+      sampleRateHertz = 48000;
+    } else if (mimeType.includes('mp4') || mimeType.includes('mp3') || mimeType.includes('mpeg')) {
+      encoding = 'MP3';
+      sampleRateHertz = 44100;
+    } else if (mimeType.includes('wav')) {
+      encoding = 'LINEAR16';
+      sampleRateHertz = 44100;
+    } else if (mimeType.includes('ogg')) {
+      encoding = 'OGG_OPUS';
+      sampleRateHertz = 48000;
+    }
+
+    // Configure the recognition request with dynamic encoding
     const config = {
-      encoding: 'WEBM_OPUS' as const, // or 'LINEAR16' for WAV
-      sampleRateHertz: 48000,
+      encoding,
+      sampleRateHertz,
       languageCode: 'en-US',
       enableAutomaticPunctuation: true,
       model: 'latest_short', // Best for short audio clips
+      useEnhanced: true, // Better accuracy for mobile audio
     };
 
     const audio = {

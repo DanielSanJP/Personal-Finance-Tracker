@@ -74,6 +74,7 @@ export default function AddIncomePage() {
   const {
     isRecording: isContinuousRecording,
     isProcessing: isContinuousProcessing,
+    isSupported: isVoiceSupported,
     parsedData,
     confidence,
     startListening,
@@ -279,6 +280,7 @@ export default function AddIncomePage() {
                   <VoiceInputModal
                     isRecording={isContinuousRecording}
                     isProcessing={isContinuousProcessing}
+                    isSupported={isVoiceSupported}
                     parsedData={parsedData}
                     confidence={confidence}
                     onStartListening={startListening}

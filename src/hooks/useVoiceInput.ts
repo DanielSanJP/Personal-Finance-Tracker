@@ -302,7 +302,7 @@ export const useVoiceInput = ({
     }
   }, [accounts, type, onFieldUpdate, onComplete]);
 
-  const { isRecording, isProcessing, startRecording, stopRecording } = useAudioRecorder({
+  const { isRecording, isProcessing, isSupported, startRecording, stopRecording } = useAudioRecorder({
     onTranscription: handleTranscription,
   });
 
@@ -324,6 +324,7 @@ export const useVoiceInput = ({
     isListening,
     isRecording,
     isProcessing,
+    isSupported,
     parsedData,
     confidence,
     startListening,
