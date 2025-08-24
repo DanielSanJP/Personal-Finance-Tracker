@@ -133,12 +133,12 @@ export const ReceiptScanModal = ({
           </Button>
         </DialogTrigger>
 
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-w-[95vw] w-full mx-auto max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Receipt Scanner</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-1 sm:space-y-2">
             {/* Camera View */}
             {cameraMode && videoStream && (
               <Card>
@@ -166,7 +166,7 @@ export const ReceiptScanModal = ({
                           video.play();
                         }
                       }}
-                      className="w-full h-48 object-cover"
+                      className="w-full h-32 sm:h-48 object-cover"
                       autoPlay
                       muted
                       playsInline
@@ -204,7 +204,7 @@ export const ReceiptScanModal = ({
                     <img
                       src={previewUrl}
                       alt="Receipt preview"
-                      className="w-full max-h-80 object-contain rounded-lg"
+                      className="w-full max-h-48 sm:max-h-80 object-contain rounded-lg"
                     />
                   </div>
                 </CardContent>
@@ -212,8 +212,8 @@ export const ReceiptScanModal = ({
             )}
 
             {/* Scanning Status */}
-            <Card>
-              <CardHeader className="pb-3">
+            <Card className="gap-1">
+              <CardHeader className="pb-1">
                 <CardTitle className="text-sm flex items-center gap-2">
                   {isProcessing ? (
                     <>
@@ -237,22 +237,34 @@ export const ReceiptScanModal = ({
                     </p>
                     <div className="flex flex-wrap gap-1">
                       {parsedData.amount && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] sm:text-xs"
+                        >
                           ${parsedData.amount}
                         </Badge>
                       )}
                       {parsedData.merchant && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] sm:text-xs"
+                        >
                           {parsedData.merchant}
                         </Badge>
                       )}
                       {parsedData.category && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] sm:text-xs"
+                        >
                           {parsedData.category}
                         </Badge>
                       )}
                       {parsedData.date && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] sm:text-xs"
+                        >
                           {parsedData.date.toLocaleDateString()}
                         </Badge>
                       )}
