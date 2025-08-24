@@ -21,7 +21,9 @@ import { getCurrentUserAccounts, createExpenseTransaction } from "@/lib/data";
 import { FormSkeleton } from "@/components/loading-states";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { VoiceInputModal } from "@/components/voice-input-modal";
+import { ReceiptScanModal } from "@/components/receipt-scan-modal";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { useReceiptScan } from "@/hooks/useReceiptScan";
 
 interface Account {
   id: string;
@@ -44,7 +46,7 @@ export default function AddTransactionPage() {
     merchant: "",
     account: "",
     status: "completed",
-    date: undefined as Date | undefined,
+    date: new Date() as Date,
   });
 
   useEffect(() => {
@@ -52,6 +54,14 @@ export default function AddTransactionPage() {
       try {
         const userAccounts = await getCurrentUserAccounts();
         setAccounts(userAccounts);
+
+        // Set first account as default if no account is selected and accounts exist
+        if (userAccounts.length > 0 && !formData.account) {
+          setFormData((prev) => ({
+            ...prev,
+            account: userAccounts[0].id,
+          }));
+        }
       } catch (error) {
         console.error("Error fetching accounts:", error);
         toast.error("Error loading accounts", {
@@ -63,7 +73,7 @@ export default function AddTransactionPage() {
     };
 
     fetchAccounts();
-  }, []);
+  }, [formData.account]);
 
   const transactionStatuses = ["pending", "completed", "cancelled", "failed"];
 
@@ -124,9 +134,9 @@ export default function AddTransactionPage() {
           description: "",
           category: "",
           merchant: "",
-          account: "",
+          account: accounts.length > 0 ? accounts[0].id : "",
           status: "completed",
-          date: undefined,
+          date: new Date(),
         });
 
         // Navigate back to transactions page after a short delay
@@ -143,10 +153,21 @@ export default function AddTransactionPage() {
 
   const handleFieldUpdate = useCallback(
     (field: string, value: string | Date) => {
-      if (field === "date" && value instanceof Date) {
+      if (field === "date") {
+        // Ensure we always have a valid Date object
+        let dateValue: Date;
+        if (value instanceof Date && !isNaN(value.getTime())) {
+          dateValue = value;
+        } else if (typeof value === "string") {
+          const parsedDate = new Date(value);
+          dateValue = !isNaN(parsedDate.getTime()) ? parsedDate : new Date();
+        } else {
+          dateValue = new Date();
+        }
+
         setFormData((prev) => ({
           ...prev,
-          date: value,
+          date: dateValue,
         }));
       } else {
         setFormData((prev) => ({
@@ -178,15 +199,42 @@ export default function AddTransactionPage() {
     type: "expense",
   });
 
-  const handleScanReceipt = () => {
-    toast("Scan Receipt functionality not implemented yet", {
-      description: "This feature will be available in a future update.",
-      action: {
-        label: "Dismiss",
-        onClick: () => console.log("Dismissed"),
-      },
-    });
-  };
+  // Receipt scanning functionality
+  const {
+    isProcessing: isReceiptProcessing,
+    isSupported: isReceiptSupported,
+    parsedData: receiptParsedData,
+    confidence: receiptConfidence,
+    previewUrl,
+    scanFromFile,
+    scanFromCamera,
+    captureFromVideo,
+    clearPreview,
+  } = useReceiptScan({
+    onReceiptData: (data) => {
+      // Map receipt data to form fields
+      if (data.amount) {
+        handleFieldUpdate("amount", data.amount);
+      }
+      if (data.merchant) {
+        handleFieldUpdate("description", data.merchant);
+        handleFieldUpdate("merchant", data.merchant);
+      }
+      if (data.category) {
+        handleFieldUpdate("category", data.category);
+      }
+      if (data.date) {
+        handleFieldUpdate("date", data.date);
+      }
+
+      toast.success("Receipt scanned successfully!", {
+        description: "Review the auto-filled fields and save when ready.",
+      });
+    },
+    onError: (error) => {
+      console.error("Receipt scan error:", error);
+    },
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -335,8 +383,15 @@ export default function AddTransactionPage() {
                   </Label>
                   <DatePicker
                     id="date"
-                    date={formData.date}
-                    onDateChange={(date) => setFormData({ ...formData, date })}
+                    date={
+                      formData.date instanceof Date &&
+                      !isNaN(formData.date.getTime())
+                        ? formData.date
+                        : new Date()
+                    }
+                    onDateChange={(date) =>
+                      setFormData({ ...formData, date: date || new Date() })
+                    }
                     placeholder="dd/mm/yyyy"
                   />
                 </div>
@@ -368,13 +423,17 @@ export default function AddTransactionPage() {
                       onStartListening={startListening}
                       onStopListening={stopListening}
                     />
-                    <Button
-                      onClick={handleScanReceipt}
-                      variant="outline"
-                      className="w-40 min-w-32"
-                    >
-                      Scan Receipt
-                    </Button>
+                    <ReceiptScanModal
+                      isProcessing={isReceiptProcessing}
+                      isSupported={isReceiptSupported}
+                      parsedData={receiptParsedData}
+                      confidence={receiptConfidence}
+                      previewUrl={previewUrl}
+                      onScanFromFile={scanFromFile}
+                      onScanFromCamera={scanFromCamera}
+                      onCaptureFromVideo={captureFromVideo}
+                      onClearPreview={clearPreview}
+                    />
                   </div>
                 </div>
               </div>

@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useAudioRecorder } from "./useAudioRecorder";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/constants/categories";
+import { getCategoryFromBusiness } from "@/constants/business-mapping";
 
 interface Account {
   id: string;
@@ -162,54 +163,18 @@ const parseTransactionFromSpeech = (
       .replace(/[.,!?;:]+$/, ''); // Remove trailing punctuation
   }
   
-  // Smart category detection based on merchant/description
+  // Smart category detection using shared business mapping
   const categories = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
   const searchText = `${result.description || ''} ${result.merchant || ''}`.toLowerCase();
   
-  // Enhanced keyword mapping for better categorization
-  const categoryKeywords = {
-    'Food & Dining': [
-      'coffee', 'starbucks', 'dunkin', 'cafe', 'restaurant', 'lunch', 'dinner', 
-      'breakfast', 'food', 'eat', 'drink', 'pizza', 'burger', 'sushi', 'mcdonalds',
-      'subway', 'chipotle', 'taco bell', 'kfc', 'grocery', 'supermarket', 'safeway',
-      'whole foods', 'trader joes', 'costco food'
-    ],
-    'Transportation': [
-      'gas', 'fuel', 'shell', 'exxon', 'bp', 'chevron', 'uber', 'lyft', 'taxi',
-      'metro', 'bus', 'train', 'parking', 'toll', 'car wash', 'auto'
-    ],
-    'Shopping': [
-      'amazon', 'target', 'walmart', 'costco', 'shopping', 'clothes', 'clothing',
-      'shoes', 'electronics', 'best buy', 'apple store', 'mall'
-    ],
-    'Entertainment': [
-      'netflix', 'spotify', 'movie', 'cinema', 'theater', 'game', 'gaming',
-      'concert', 'music', 'streaming', 'youtube', 'disney'
-    ],
-    'Healthcare': [
-      'doctor', 'hospital', 'pharmacy', 'cvs', 'walgreens', 'medical', 'dentist',
-      'medicine', 'prescription', 'health'
-    ],
-    'Utilities': [
-      'electric', 'electricity', 'water', 'internet', 'phone', 'cell', 'cable',
-      'verizon', 'att', 'comcast', 'bill', 'utility'
-    ],
-    'Housing': [
-      'rent', 'mortgage', 'home depot', 'lowes', 'apartment', 'house', 'housing'
-    ]
-  };
+  // Try to get category from business mapping first
+  const detectedCategoryId = getCategoryFromBusiness(searchText);
   
-  // Find best category match
-  for (const [categoryName, keywords] of Object.entries(categoryKeywords)) {
-    if (keywords.some(keyword => searchText.includes(keyword))) {
-      const category = categories.find(cat => 
-        cat.name.toLowerCase().includes(categoryName.toLowerCase()) ||
-        categoryName.toLowerCase().includes(cat.name.toLowerCase())
-      );
-      if (category) {
-        result.category = category.name;
-        break;
-      }
+  if (detectedCategoryId) {
+    // Find the matching category by ID
+    const category = categories.find(cat => cat.id === detectedCategoryId);
+    if (category) {
+      result.category = category.name;
     }
   }
   

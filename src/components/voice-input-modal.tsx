@@ -31,6 +31,7 @@ interface VoiceInputModalProps {
   onStartListening: () => void;
   onStopListening: () => void;
   isSupported?: boolean;
+  type?: "expense" | "income";
 }
 
 export const VoiceInputModal = ({
@@ -41,6 +42,7 @@ export const VoiceInputModal = ({
   onStartListening,
   onStopListening,
   isSupported = true,
+  type = "expense",
 }: VoiceInputModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -195,9 +197,19 @@ export const VoiceInputModal = ({
             <p>
               <strong>Examples:</strong>
             </p>
-            <p>• &quot;25 dollars for lunch at Chipotle&quot;</p>
-            <p>• &quot;50 dollars petrol at BP&quot;</p>
-            <p>• &quot;15 coffee&quot;</p>
+            {type === "income" ? (
+              <>
+                <p>• &quot;50 dollars for salary&quot;</p>
+                <p>• &quot;1500 freelance payment&quot;</p>
+                <p>• &quot;200 gift from family&quot;</p>
+              </>
+            ) : (
+              <>
+                <p>• &quot;25 dollars for lunch at Chipotle&quot;</p>
+                <p>• &quot;50 dollars petrol at BP&quot;</p>
+                <p>• &quot;15 coffee&quot;</p>
+              </>
+            )}
           </div>
         </div>
       </DialogContent>

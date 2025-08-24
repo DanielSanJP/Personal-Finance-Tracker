@@ -230,16 +230,17 @@ export default function Dashboard() {
               <div className="space-y-4 flex flex-col items-center">
                 <div className="flex flex-wrap gap-2 justify-center">
                   <Link href="/income/add">
-                    <Button>Add Income</Button>
+                    <Button className="w-32">Add Income</Button>
                   </Link>
                   <Link href="/transactions/add">
-                    <Button>Add Expense</Button>
+                    <Button className="w-32">Add Expense</Button>
                   </Link>
                 </div>
 
                 <div className="flex flex-wrap gap-2 justify-center">
                   <Button
                     variant="outline"
+                    className="w-32"
                     onClick={() =>
                       toast("Scan Receipt functionality not implemented yet", {
                         description:
@@ -254,7 +255,9 @@ export default function Dashboard() {
                     Scan Receipt
                   </Button>
                   <Link href="/reports">
-                    <Button variant="outline">View Reports</Button>
+                    <Button variant="outline" className="w-32">
+                      View Reports
+                    </Button>
                   </Link>
                 </div>
               </div>

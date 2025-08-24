@@ -39,13 +39,19 @@ export default function AddIncomePage() {
   const [description, setDescription] = useState("");
   const [incomeSource, setIncomeSource] = useState("");
   const [account, setAccount] = useState("");
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date>(new Date());
 
   useEffect(() => {
     const loadAccounts = async () => {
       try {
         const accountsData = await getCurrentUserAccounts();
-        setAccounts(Array.isArray(accountsData) ? accountsData : []);
+        const accountArray = Array.isArray(accountsData) ? accountsData : [];
+        setAccounts(accountArray);
+
+        // Set first account as default if no account is selected and accounts exist
+        if (accountArray.length > 0 && !account) {
+          setAccount(accountArray[0].id);
+        }
       } catch (error) {
         console.error("Error loading accounts:", error);
         setAccounts([]);
@@ -55,7 +61,7 @@ export default function AddIncomePage() {
     };
 
     loadAccounts();
-  }, []);
+  }, [account]);
 
   // Using standardized income categories from constants
 
@@ -63,9 +69,26 @@ export default function AddIncomePage() {
     (field: string, value: string | Date) => {
       if (field === "amount") setAmount(value as string);
       else if (field === "description") setDescription(value as string);
-      else if (field === "incomeSource") setIncomeSource(value as string);
+      else if (field === "merchant")
+        setDescription(
+          value as string
+        ); // Use merchant as description for income
+      else if (field === "incomeSource" || field === "category")
+        setIncomeSource(value as string);
       else if (field === "account") setAccount(value as string);
-      else if (field === "date" && value instanceof Date) setDate(value);
+      else if (field === "date") {
+        // Ensure we always have a valid Date object
+        let dateValue: Date;
+        if (value instanceof Date && !isNaN(value.getTime())) {
+          dateValue = value;
+        } else if (typeof value === "string") {
+          const parsedDate = new Date(value);
+          dateValue = !isNaN(parsedDate.getTime()) ? parsedDate : new Date();
+        } else {
+          dateValue = new Date();
+        }
+        setDate(dateValue);
+      }
     },
     []
   );
@@ -236,7 +259,7 @@ export default function AddIncomePage() {
                   <DatePicker
                     id="date"
                     date={date}
-                    onDateChange={setDate}
+                    onDateChange={(newDate) => setDate(newDate || new Date())}
                     placeholder="dd/mm/yyyy"
                   />
                 </div>
@@ -285,6 +308,7 @@ export default function AddIncomePage() {
                     confidence={confidence}
                     onStartListening={startListening}
                     onStopListening={stopListening}
+                    type="income"
                   />
                 </div>
               </form>
