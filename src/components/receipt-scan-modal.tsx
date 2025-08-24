@@ -126,9 +126,9 @@ export const ReceiptScanModal = ({
     <>
       {/* Fullscreen Camera Modal */}
       {cameraModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col overflow-hidden">
           {/* Camera Header */}
-          <div className="flex items-center justify-between p-4 bg-black/80 text-white">
+          <div className="flex items-center justify-between p-4 bg-black/80 text-white shrink-0">
             <h2 className="text-lg font-semibold">Camera</h2>
             <Button
               variant="ghost"
@@ -141,7 +141,7 @@ export const ReceiptScanModal = ({
           </div>
 
           {/* Camera View */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative overflow-hidden">
             {videoStream && (
               <video
                 ref={(video) => {
@@ -158,19 +158,19 @@ export const ReceiptScanModal = ({
             )}
           </div>
 
-          {/* Camera Controls */}
-          <div className="p-6 bg-black/80">
-            <div className="flex justify-center">
+          {/* Camera Controls - Fixed at bottom */}
+          <div className="shrink-0 bg-black/90 px-6 py-4 pb-8 safe-area-inset-bottom">
+            <div className="flex justify-center mb-3">
               <Button
                 onClick={handleCapture}
                 disabled={isProcessing}
                 size="lg"
-                className="rounded-full w-16 h-16 bg-white text-black hover:bg-gray-200"
+                className="rounded-full w-20 h-20 bg-white text-black hover:bg-gray-200 shadow-lg border-4 border-gray-300"
               >
-                <Camera className="w-8 h-8" />
+                <Camera className="w-10 h-10" />
               </Button>
             </div>
-            <p className="text-white text-center text-sm mt-4">
+            <p className="text-white text-center text-sm">
               Position receipt in frame and tap to capture
             </p>
           </div>
