@@ -34,6 +34,7 @@ import { exportTransactionsToCSV } from "@/lib/export/csv-export";
 import { exportTransactionsToPDF } from "@/lib/export/pdf-export";
 import { formatCurrency } from "@/lib/utils";
 import type { Transaction } from "@/types";
+import { EmptyTransactions } from "@/components/empty-states";
 import { TransactionSummary } from "./TransactionSummary";
 import { TransactionBulkEditModal } from "./TransactionBulkEditModal";
 import { TransactionEditModal } from "./TransactionEditModal";
@@ -101,6 +102,12 @@ export function TransactionsList({
 
   const formatTransactionType = (type: string) => {
     return type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
+  // Helper function to truncate long merchant names
+  const truncateMerchant = (merchant: string, maxLength: number = 30) => {
+    if (merchant.length <= maxLength) return merchant;
+    return merchant.substring(0, maxLength) + "...";
   };
 
   // Export handlers
@@ -184,12 +191,26 @@ export function TransactionsList({
                 onValueChange={setSelectedMerchant}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Filter by merchant" />
+                  <SelectValue placeholder="Filter by merchant">
+                    {selectedMerchant &&
+                    selectedMerchant !== "All Merchants" ? (
+                      <div
+                        className="truncate max-w-[150px]"
+                        title={selectedMerchant}
+                      >
+                        {truncateMerchant(selectedMerchant)}
+                      </div>
+                    ) : (
+                      selectedMerchant || "Filter by merchant"
+                    )}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {merchants.map((merchant) => (
                     <SelectItem key={merchant} value={merchant}>
-                      {merchant}
+                      <div className="truncate max-w-[200px]" title={merchant}>
+                        {truncateMerchant(merchant)}
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -220,7 +241,7 @@ export function TransactionsList({
               variant="outline"
               onClick={() => {
                 setSelectedCategory("All Categories");
-                setSelectedPeriod("Last 3 Months");
+                setSelectedPeriod("This Month");
                 setSelectedMerchant("All Merchants");
                 setSelectedType("All Types");
               }}
@@ -232,14 +253,7 @@ export function TransactionsList({
 
           {/* Transaction List or Empty State */}
           {filteredTransactions.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">
-                No transactions found for the selected filters.
-              </p>
-              <p className="text-sm text-gray-400 mt-2">
-                Try adjusting your filter criteria or adding new transactions.
-              </p>
-            </div>
+            <EmptyTransactions />
           ) : (
             <div className="rounded-md border">
               <Table>

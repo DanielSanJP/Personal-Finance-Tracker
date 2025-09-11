@@ -433,8 +433,8 @@ export async function createIncomeTransaction(incomeData: {
       type: 'income',
       amount: Math.abs(incomeData.amount), // Income is positive
       description: incomeData.description,
-      category: incomeData.source, // Use source as category for income
-      merchant: null,
+      category: incomeData.source, // Keep source in category for consistency
+      merchant: incomeData.source, // Also store income source as merchant for database compatibility
       date: incomeData.date.toISOString().split('T')[0],
       status: 'completed',
     })

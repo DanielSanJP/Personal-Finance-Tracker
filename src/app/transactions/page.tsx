@@ -11,9 +11,9 @@ import { useState } from "react";
 import TransactionsLoading from "./loading";
 
 export default function TransactionsPage() {
-  // Filter states - Start with "Last 3 Months" to show recent transactions by default
+  // Filter states - Start with "This Month" to show current month transactions by default
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
-  const [selectedPeriod, setSelectedPeriod] = useState("Last 3 Months");
+  const [selectedPeriod, setSelectedPeriod] = useState("This Month");
   const [selectedMerchant, setSelectedMerchant] = useState("All Merchants");
   const [selectedType, setSelectedType] = useState("All Types");
 
