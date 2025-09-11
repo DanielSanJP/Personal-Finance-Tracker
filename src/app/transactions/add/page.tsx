@@ -17,7 +17,8 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { CategorySelect } from "@/components/category-select";
 import { toast } from "sonner";
 import Nav from "@/components/nav";
-import { getCurrentUserAccounts, createExpenseTransaction } from "@/lib/data";
+import { useAccounts } from "@/hooks/queries/useAccounts";
+import { createExpenseTransaction } from "@/hooks/queries/useTransactions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { VoiceInputModal } from "@/components/voice-input-modal";
@@ -37,8 +38,11 @@ interface Account {
 
 export default function AddTransactionPage() {
   const router = useRouter();
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [loadingAccounts, setLoadingAccounts] = useState(true);
+  const [hasSetDefaultAccount, setHasSetDefaultAccount] = useState(false);
+
+  // Use React Query hook for accounts
+  const { data: userAccounts = [], isLoading: accountsLoading } = useAccounts();
+
   const [formData, setFormData] = useState({
     amount: "",
     description: "",
@@ -50,30 +54,15 @@ export default function AddTransactionPage() {
   });
 
   useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        const userAccounts = await getCurrentUserAccounts();
-        setAccounts(userAccounts);
-
-        // Set first account as default if no account is selected and accounts exist
-        if (userAccounts.length > 0 && !formData.account) {
-          setFormData((prev) => ({
-            ...prev,
-            account: userAccounts[0].id,
-          }));
-        }
-      } catch (error) {
-        console.error("Error fetching accounts:", error);
-        toast.error("Error loading accounts", {
-          description: "Please refresh the page to try again.",
-        });
-      } finally {
-        setLoadingAccounts(false);
-      }
-    };
-
-    fetchAccounts();
-  }, [formData.account]);
+    // Set first account as default if no account is selected and accounts exist
+    if (userAccounts.length > 0 && !formData.account && !hasSetDefaultAccount) {
+      setFormData((prev) => ({
+        ...prev,
+        account: userAccounts[0].id,
+      }));
+      setHasSetDefaultAccount(true);
+    }
+  }, [userAccounts, formData.account, hasSetDefaultAccount]);
 
   const transactionStatuses = ["pending", "completed", "cancelled", "failed"];
 
@@ -109,7 +98,7 @@ export default function AddTransactionPage() {
     }
 
     try {
-      const result = await createExpenseTransaction({
+      await createExpenseTransaction({
         amount: Number(formData.amount),
         description: formData.description,
         category: formData.category || undefined,
@@ -119,31 +108,30 @@ export default function AddTransactionPage() {
         date: formData.date,
       });
 
-      if (result.success) {
-        toast.success("Expense saved successfully!", {
-          description: "Your expense has been recorded.",
-          action: {
-            label: "Close",
-            onClick: () => console.log("Closed"),
-          },
-        });
+      // If we get here, the transaction was created successfully
+      toast.success("Expense saved successfully!", {
+        description: "Your expense has been recorded.",
+        action: {
+          label: "Close",
+          onClick: () => console.log("Closed"),
+        },
+      });
 
-        // Reset form
-        setFormData({
-          amount: "",
-          description: "",
-          category: "",
-          merchant: "",
-          account: accounts.length > 0 ? accounts[0].id : "",
-          status: "completed",
-          date: new Date(),
-        });
+      // Reset form
+      setFormData({
+        amount: "",
+        description: "",
+        category: "",
+        merchant: "",
+        account: userAccounts.length > 0 ? userAccounts[0].id : "",
+        status: "completed",
+        date: new Date(),
+      });
 
-        // Navigate back to transactions page after a short delay
-        setTimeout(() => {
-          router.push("/transactions");
-        }, 1500);
-      }
+      // Navigate back to transactions page after a short delay
+      setTimeout(() => {
+        router.push("/transactions");
+      }, 1500);
     } catch {
       toast.error("Error saving expense", {
         description: "Please try again later.",
@@ -195,7 +183,7 @@ export default function AddTransactionPage() {
         description: "Review the details and save when ready.",
       });
     },
-    accounts: accounts,
+    accounts: userAccounts,
     type: "expense",
   });
 
@@ -249,7 +237,7 @@ export default function AddTransactionPage() {
           </CardHeader>
 
           <CardContent>
-            {loadingAccounts ? (
+            {accountsLoading ? (
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-16" />
@@ -365,26 +353,26 @@ export default function AddTransactionPage() {
                     onValueChange={(value) =>
                       setFormData({ ...formData, account: value })
                     }
-                    disabled={loadingAccounts}
+                    disabled={accountsLoading}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={
-                          loadingAccounts
+                          accountsLoading
                             ? "Loading accounts..."
                             : "Select account..."
                         }
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {accounts.map((account) => (
+                      {userAccounts.map((account: Account) => (
                         <SelectItem key={account.id} value={account.id}>
                           {account.name} ({account.type})
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {accounts.length === 0 && !loadingAccounts && (
+                  {userAccounts.length === 0 && !accountsLoading && (
                     <p className="text-sm text-gray-500">
                       No accounts found.{" "}
                       <a

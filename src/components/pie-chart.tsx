@@ -28,8 +28,8 @@ import {
 import {
   getCurrentMonthSpendingByCategory,
   getSpendingByCategoryForMonth,
-  formatCurrency,
-} from "@/lib/data";
+} from "@/hooks/queries/useTransactions";
+import { formatCurrency } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-states";
 
 export const description = "A pie chart showing actual spending by category";

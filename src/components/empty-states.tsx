@@ -22,7 +22,8 @@ import { DatePicker } from "@/components/ui/date-picker";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createBudget, createGoal } from "@/lib/data";
+import { useCreateBudget } from "@/hooks/queries/useBudgets";
+import { useCreateGoal } from "@/hooks/queries/useGoals";
 import { getCurrentUser } from "@/lib/auth";
 
 interface EmptyStateProps {
@@ -130,6 +131,8 @@ export function EmptyBudgets({ onRefresh }: { onRefresh?: () => void }) {
     period: "monthly",
   });
 
+  const createBudgetMutation = useCreateBudget();
+
   const categories = [
     "Food & Dining",
     "Transportation",
@@ -205,7 +208,7 @@ export function EmptyBudgets({ onRefresh }: { onRefresh?: () => void }) {
 
       console.log("Calling createBudget with:", budgetData);
 
-      await createBudget(budgetData);
+      await createBudgetMutation.mutateAsync(budgetData);
 
       // Reset form
       setNewBudget({
@@ -359,6 +362,8 @@ export function EmptyGoals({ onRefresh }: { onRefresh?: () => void }) {
     priority: "medium",
   });
 
+  const createGoalMutation = useCreateGoal();
+
   const handleCreateGoal = async () => {
     try {
       if (!newGoal.name.trim() || !newGoal.targetAmount) {
@@ -401,7 +406,7 @@ export function EmptyGoals({ onRefresh }: { onRefresh?: () => void }) {
 
       console.log("Calling createGoal with:", goalData);
 
-      await createGoal(goalData);
+      await createGoalMutation.mutateAsync(goalData);
 
       // Reset form
       setNewGoal({

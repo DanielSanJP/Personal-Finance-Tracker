@@ -2,7 +2,7 @@
 
 import Nav from "@/components/nav";
 import ReportsContent from "@/components/reports/ReportsContent";
-import { useTransactions } from "@/hooks/queries";
+import { useTransactions } from "@/hooks/queries/useTransactions";
 import ReportsLoading from "./loading";
 
 export default function ReportsPage() {

@@ -2,10 +2,19 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency, getCurrentMonthName } from "@/lib/utils";
-import type { DashboardData } from "@/lib/data/dashboard";
+
+interface DashboardSummary {
+  totalBalance: number;
+  monthlyChange: number;
+  monthlyIncome: number;
+  monthlyExpenses: number;
+  budgetRemaining: number;
+  accountBreakdown: Record<string, unknown>;
+  categorySpending: Record<string, unknown>;
+}
 
 interface FinancialSummaryCardsProps {
-  summary: DashboardData["summary"];
+  summary: DashboardSummary;
 }
 
 export default function FinancialSummaryCards({

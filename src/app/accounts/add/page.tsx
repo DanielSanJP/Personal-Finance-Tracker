@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import Nav from "@/components/nav";
-import { createAccount } from "@/lib/data";
+import { createAccount } from "@/hooks/queries/useAccounts";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 
 export default function AddAccountPage() {
@@ -47,36 +47,36 @@ export default function AddAccountPage() {
     }
 
     try {
-      const result = await createAccount({
+      await createAccount({
         name: formData.name,
         type: formData.type,
         balance: Number(formData.balance),
         accountNumber: formData.accountNumber || undefined,
       });
 
-      if (result.success) {
-        toast.success("Account created successfully!", {
-          description: `${formData.name} has been added to your accounts.`,
-          action: {
-            label: "Close",
-            onClick: () => console.log("Closed"),
-          },
-        });
+      // If we get here, the account was created successfully
+      toast.success("Account created successfully!", {
+        description: `${formData.name} has been added to your accounts.`,
+        action: {
+          label: "Close",
+          onClick: () => console.log("Closed"),
+        },
+      });
 
-        // Reset form
-        setFormData({
-          name: "",
-          type: "",
-          balance: "",
-          accountNumber: "",
-        });
+      // Reset form
+      setFormData({
+        name: "",
+        type: "",
+        balance: "",
+        accountNumber: "",
+      });
 
-        // Navigate back to accounts page after a short delay
-        setTimeout(() => {
-          router.push("/accounts");
-        }, 1500);
-      }
-    } catch {
+      // Navigate back to accounts page after a short delay
+      setTimeout(() => {
+        router.push("/accounts");
+      }, 1500);
+    } catch (error) {
+      console.error("Error creating account:", error);
       toast.error("Error creating account", {
         description: "Please try again later.",
       });

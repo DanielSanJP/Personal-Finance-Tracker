@@ -1,8 +1,166 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { getDashboardData } from "@/lib/data";
 import { createClient } from "@/lib/supabase/client";
+import { getCurrentUser } from "@/lib/auth";
 import { toast } from "sonner";
+import { getCurrentUserBudgetsWithRealTimeSpending } from "./useBudgets";
+import type { User, Account, Transaction, Budget } from "@/types";
+
+// Dashboard data interface
+interface DashboardData {
+  user: User;
+  accounts: Account[];
+  transactions: Transaction[];
+  summary: {
+    totalBalance: number;
+    monthlyChange: number;
+    monthlyIncome: number;
+    monthlyExpenses: number;
+    budgetRemaining: number;
+    accountBreakdown: Record<string, unknown>;
+    categorySpending: Record<string, unknown>;
+  };
+}
+
+// Helper function to get accounts by user ID
+const getAccountsByUserId = async (userId: string) => {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('accounts')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('is_active', true);
+
+    if (error) {
+      console.error('Error fetching accounts by user ID:', error);
+      return [];
+    }
+
+    return (data || []).map(account => ({
+      id: account.id,
+      userId: account.user_id,
+      name: account.name,
+      balance: Number(account.balance),
+      type: account.type,
+      accountNumber: account.account_number || '',
+      isActive: account.is_active
+    }));
+  } catch (error) {
+    console.error('Error in getAccountsByUserId:', error);
+    return [];
+  }
+};
+
+// Helper function to get transactions by user ID
+const getTransactionsByUserId = async (userId: string): Promise<Transaction[]> => {
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('date', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching transactions by user ID:', error);
+      return [];
+    }
+
+    return (data || []).map(transaction => ({
+      id: transaction.id,
+      user_id: transaction.user_id,
+      account_id: transaction.account_id,
+      date: transaction.date,
+      description: transaction.description,
+      amount: Number(transaction.amount),
+      category: transaction.category || '',
+      type: transaction.type,
+      merchant: transaction.merchant || '',
+      status: transaction.status || 'completed',
+      created_at: transaction.created_at,
+      updated_at: transaction.updated_at
+    }));
+  } catch (error) {
+    console.error('Error in getTransactionsByUserId:', error);
+    return [];
+  }
+};
+
+// Helper function to calculate monthly income from transactions
+const calculateMonthlyIncomeFromTransactions = (transactions: Transaction[]): number => {
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  
+  return transactions
+    .filter((transaction: Transaction) => {
+      const transactionDate = new Date(transaction.date);
+      return transactionDate.getMonth() === currentMonth && 
+             transactionDate.getFullYear() === currentYear &&
+             transaction.type === 'income';
+    })
+    .reduce((total: number, transaction: Transaction) => total + Math.abs(transaction.amount), 0);
+};
+
+// Helper function to calculate monthly expenses from transactions
+const calculateMonthlyExpensesFromTransactions = (transactions: Transaction[]): number => {
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  
+  return transactions
+    .filter((transaction: Transaction) => {
+      const transactionDate = new Date(transaction.date);
+      return transactionDate.getMonth() === currentMonth && 
+             transactionDate.getFullYear() === currentYear &&
+             transaction.type === 'expense';
+    })
+    .reduce((total: number, transaction: Transaction) => total + Math.abs(transaction.amount), 0);
+};
+
+// Dashboard data function moved from deleted data folder
+const getDashboardData = async (): Promise<DashboardData | null> => {
+  try {
+    // First get the user (this is cached now)
+    const user = await getCurrentUser();
+    if (!user) {
+      return null;
+    }
+
+    // Now fetch all data in parallel using the user ID
+    const [accounts, transactions, budgets] = await Promise.all([
+      getAccountsByUserId(user.id),
+      getTransactionsByUserId(user.id),
+      getCurrentUserBudgetsWithRealTimeSpending()
+    ]);
+
+    // Calculate derived values from the fetched data
+    const totalBalance = accounts.reduce((total: number, account: Account) => total + account.balance, 0);
+    const monthlyIncome = calculateMonthlyIncomeFromTransactions(transactions);
+    const monthlyExpenses = calculateMonthlyExpensesFromTransactions(transactions);
+    const monthlyChange = monthlyIncome - monthlyExpenses;
+
+    // Calculate total budget remaining across all budgets
+    const budgetRemaining = budgets.reduce((total: number, budget: Budget) => total + budget.remainingAmount, 0);
+
+    return {
+      user,
+      accounts,
+      transactions,
+      summary: {
+        totalBalance,
+        monthlyChange,
+        monthlyIncome,
+        monthlyExpenses,
+        budgetRemaining, // Now calculated from actual budget data
+        accountBreakdown: {},
+        categorySpending: {}
+      }
+    };
+  } catch (error) {
+    console.error('Error loading dashboard data:', error);
+    return null;
+  }
+};
 
 export const DASHBOARD_QUERY_KEYS = {
   dashboardData: ["dashboard", "data"] as const,

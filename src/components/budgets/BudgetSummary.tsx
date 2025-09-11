@@ -3,18 +3,7 @@
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
-
-interface Budget {
-  id: string;
-  userId: string;
-  category: string;
-  budgetAmount: number;
-  spentAmount: number;
-  remainingAmount: number;
-  period: string;
-  startDate: string;
-  endDate: string;
-}
+import { Budget } from "@/types";
 
 interface BudgetSummaryProps {
   budgets: Budget[];
@@ -23,11 +12,11 @@ interface BudgetSummaryProps {
 export default function BudgetSummary({ budgets }: BudgetSummaryProps) {
   // Calculate totals
   const totalBudget = budgets.reduce(
-    (sum, budget) => sum + budget.budgetAmount,
+    (sum: number, budget: Budget) => sum + budget.budgetAmount,
     0
   );
   const totalSpent = budgets.reduce(
-    (sum, budget) => sum + budget.spentAmount,
+    (sum: number, budget: Budget) => sum + budget.spentAmount,
     0
   );
   const totalRemaining = totalBudget - totalSpent;

@@ -1,24 +1,22 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { 
-  createTransaction, 
   createExpenseTransaction, 
-  createIncomeTransaction,
-  createTransferTransaction 
-} from '@/lib/data/transactions';
+  createIncomeTransaction
+} from '@/hooks/queries/useTransactions';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuth } from '../queries/useAuth';
 import { checkGuestAndWarn } from '@/lib/guest-protection';
 import type { Transaction } from '@/types';
 
 interface CreateTransactionData {
-  type: string;
+  type: 'income' | 'expense' | 'transfer';
   amount: number;
   description: string;
   category?: string;
   merchant?: string;
   accountId: string;
-  status?: string;
+  status?: 'pending' | 'completed' | 'cancelled' | 'failed';
   date: Date;
 }
 
@@ -65,7 +63,26 @@ export function useCreateTransaction() {
         throw new Error('Guest users cannot create transactions');
       }
 
-      return createTransaction(data);
+      // Determine which function to call based on transaction type
+      if (data.type === 'income') {
+        return createIncomeTransaction({
+          amount: data.amount,
+          description: data.description,
+          source: data.category || '',
+          accountId: data.accountId,
+          date: data.date,
+        });
+      } else {
+        return createExpenseTransaction({
+          amount: data.amount,
+          description: data.description,
+          category: data.category,
+          merchant: data.merchant,
+          accountId: data.accountId,
+          status: data.status,
+          date: data.date,
+        });
+      }
     },
     onMutate: async (newTransaction) => {
       if (isGuest) return; // Don't do optimistic updates for guests
@@ -82,15 +99,17 @@ export function useCreateTransaction() {
       if (previousTransactions) {
         const optimisticTransaction: Transaction = {
           id: `temp-${Date.now()}`, // Temporary ID
-          userId: 'current-user', // Will be updated with real data
-          accountId: newTransaction.accountId,
+          user_id: 'current-user', // Will be updated with real data
+          account_id: newTransaction.accountId,
           date: newTransaction.date.toISOString(),
           description: newTransaction.description,
           amount: newTransaction.amount,
-          category: newTransaction.category || '',
+          category: newTransaction.category || null,
           type: newTransaction.type,
-          merchant: newTransaction.merchant || '',
+          merchant: newTransaction.merchant || null,
           status: newTransaction.status || 'completed',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         };
 
         queryClient.setQueryData<Transaction[]>(
@@ -199,7 +218,16 @@ export function useCreateTransfer() {
         throw new Error('Guest users cannot create transfers');
       }
 
-      return createTransferTransaction(data);
+      // Create transfer as an expense transaction with 'transfer' type
+      return createExpenseTransaction({
+        amount: data.amount,
+        description: data.description,
+        category: data.category || 'Transfer',
+        merchant: data.merchant,
+        accountId: data.accountId,
+        status: data.status,
+        date: data.date,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });

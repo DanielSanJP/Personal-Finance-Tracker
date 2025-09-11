@@ -12,17 +12,17 @@ export interface Account {
 
 export interface Transaction {
   id: string;
-  user_id: string;
+  user_id: string; // This will be converted from UUID to string
   account_id: string;
-  date: string;
+  date: string; // Date will be converted to string
   description: string;
   amount: number;
-  category: string;
-  type: string;
-  merchant: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
+  category: string | null;
+  type: 'income' | 'expense' | 'transfer';
+  merchant: string | null;
+  status: 'pending' | 'completed' | 'cancelled' | 'failed';
+  created_at: string; // Timestamp will be converted to string
+  updated_at: string; // Timestamp will be converted to string
 }
 
 export interface User {

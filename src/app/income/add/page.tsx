@@ -18,7 +18,8 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { CategorySelect } from "@/components/category-select";
 import { getIncomeCategoryNames } from "@/constants/categories";
 import { toast } from "sonner";
-import { getCurrentUserAccounts, createIncomeTransaction } from "@/lib/data";
+import { useAccounts } from "@/hooks/queries/useAccounts";
+import { createIncomeTransaction } from "@/hooks/queries/useTransactions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { VoiceInputModal } from "@/components/voice-input-modal";
@@ -35,6 +36,10 @@ export default function AddIncomePage() {
   const router = useRouter();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Use React Query hook for accounts
+  const { data: accountsData = [], isLoading: accountsLoading } = useAccounts();
+
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [incomeSource, setIncomeSource] = useState("");
@@ -42,26 +47,16 @@ export default function AddIncomePage() {
   const [date, setDate] = useState<Date>(new Date());
 
   useEffect(() => {
-    const loadAccounts = async () => {
-      try {
-        const accountsData = await getCurrentUserAccounts();
-        const accountArray = Array.isArray(accountsData) ? accountsData : [];
-        setAccounts(accountArray);
+    // Update accounts state when data changes
+    const accountArray = Array.isArray(accountsData) ? accountsData : [];
+    setAccounts(accountArray);
+    setLoading(accountsLoading);
 
-        // Set first account as default if no account is selected and accounts exist
-        if (accountArray.length > 0 && !account) {
-          setAccount(accountArray[0].id);
-        }
-      } catch (error) {
-        console.error("Error loading accounts:", error);
-        setAccounts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadAccounts();
-  }, [account]);
+    // Set first account as default if no account is selected and accounts exist
+    if (accountArray.length > 0 && !account) {
+      setAccount(accountArray[0].id);
+    }
+  }, [accountsData, accountsLoading, account]);
 
   // Using standardized income categories from constants
 
@@ -139,7 +134,7 @@ export default function AddIncomePage() {
     }
 
     try {
-      const result = await createIncomeTransaction({
+      await createIncomeTransaction({
         amount: Number(amount),
         description: description,
         source: incomeSource,
@@ -147,27 +142,26 @@ export default function AddIncomePage() {
         date: date,
       });
 
-      if (result.success) {
-        toast.success("Income added successfully!", {
-          description: `${description} has been recorded.`,
-          action: {
-            label: "Close",
-            onClick: () => console.log("Closed"),
-          },
-        });
+      // If we get here, the transaction was created successfully
+      toast.success("Income added successfully!", {
+        description: `${description} has been recorded.`,
+        action: {
+          label: "Close",
+          onClick: () => console.log("Closed"),
+        },
+      });
 
-        // Reset form
-        setAmount("");
-        setDescription("");
-        setIncomeSource("");
-        setAccount("");
-        setDate(new Date());
+      // Reset form
+      setAmount("");
+      setDescription("");
+      setIncomeSource("");
+      setAccount("");
+      setDate(new Date());
 
-        // Navigate back to income page after a short delay
-        setTimeout(() => {
-          router.push("/income");
-        }, 1500);
-      }
+      // Navigate back to income page after a short delay
+      setTimeout(() => {
+        router.push("/income");
+      }, 1500);
     } catch {
       toast.error("Error adding income", {
         description: "Please try again later.",

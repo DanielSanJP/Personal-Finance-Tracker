@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { updateAccount } from "@/lib/data";
+import { updateAccount } from "@/hooks/queries/useAccounts";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 
 interface Account {

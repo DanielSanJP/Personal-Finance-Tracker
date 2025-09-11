@@ -34,7 +34,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { getYearlyBudgetAnalysis } from "@/lib/data";
+import { getYearlyBudgetAnalysis } from "@/hooks/queries/useBudgets";
 import { EmptyState } from "@/components/empty-states";
 
 interface MonthlyBudgetData {

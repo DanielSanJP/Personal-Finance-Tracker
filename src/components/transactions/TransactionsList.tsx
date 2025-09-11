@@ -269,18 +269,18 @@ export function TransactionsList({
                           </div>
                           <div
                             className="text-sm text-gray-500 truncate max-w-[200px]"
-                            title={transaction.merchant}
+                            title={transaction.merchant || undefined}
                           >
-                            {transaction.merchant}
+                            {transaction.merchant || "N/A"}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div
                           className="text-sm truncate max-w-[120px]"
-                          title={transaction.category}
+                          title={transaction.category || undefined}
                         >
-                          {transaction.category}
+                          {transaction.category || "Other"}
                         </div>
                       </TableCell>
                       <TableCell>

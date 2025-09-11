@@ -1,15 +1,18 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useBudgets } from "@/hooks/queries";
 import { EmptyBudgets } from "@/components/empty-states";
 import BudgetActions from "./BudgetActions";
 import { BudgetList } from "./BudgetList";
 import BudgetSummary from "./BudgetSummary";
+import { Budget } from "@/types";
 
-export function BudgetContent() {
-  const { data: budgets = [], isLoading, refetch } = useBudgets();
+interface BudgetContentProps {
+  budgets?: Budget[];
+  onRefresh?: () => void;
+}
 
+export function BudgetContent({ budgets = [], onRefresh }: BudgetContentProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       <Card>
@@ -20,8 +23,8 @@ export function BudgetContent() {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          {budgets.length === 0 && !isLoading ? (
-            <EmptyBudgets onRefresh={refetch} />
+          {budgets.length === 0 ? (
+            <EmptyBudgets onRefresh={onRefresh} />
           ) : (
             <>
               {/* Action Buttons - Show at top when there are budgets */}

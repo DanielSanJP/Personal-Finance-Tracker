@@ -2,7 +2,7 @@
 
 import { TrendingUp } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 
 import {
   Card,
@@ -17,7 +17,7 @@ import {
   ChartContainer,
   ChartTooltip,
 } from "@/components/ui/chart";
-import { getCurrentUserTransactions } from "@/lib/data";
+import { useTransactions } from "@/hooks/queries/useTransactions";
 import { formatCurrency, getCurrentMonthName } from "@/lib/utils";
 import type { Transaction } from "@/types";
 
@@ -97,37 +97,33 @@ const chartConfig = {
 export function SpendingChart({
   transactions: propTransactions,
 }: SpendingChartProps = {}) {
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // Use React Query hook to get transactions if not provided via props
+  const { data: fetchedTransactions = [], isLoading } = useTransactions();
 
-        // Use provided transactions or fetch them
-        const transactions =
-          propTransactions || (await getCurrentUserTransactions());
+  // Memoize the transactions to use to prevent unnecessary re-renders
+  const transactions = useMemo(() => {
+    return propTransactions || fetchedTransactions;
+  }, [propTransactions, fetchedTransactions]);
 
-        if (Array.isArray(transactions)) {
-          const processedData = processChartData(transactions);
-          setChartData(processedData);
-        } else {
-          setChartData([]);
-        }
-      } catch (err) {
-        console.error("Error loading chart data:", err);
-        setError("Failed to load chart data");
-        setChartData([]);
-      } finally {
-        setLoading(false);
+  // Memoize the chart data processing
+  const chartData = useMemo(() => {
+    try {
+      setError(null);
+      if (Array.isArray(transactions) && transactions.length > 0) {
+        return processChartData(transactions);
       }
-    };
+      return [];
+    } catch (err) {
+      console.error("Error processing chart data:", err);
+      setError("Failed to process chart data");
+      return [];
+    }
+  }, [transactions]);
 
-    loadData();
-  }, [propTransactions]);
+  // Loading state should come from React Query when no prop transactions are provided
+  const loading = propTransactions ? false : isLoading;
 
   if (loading) {
     return (

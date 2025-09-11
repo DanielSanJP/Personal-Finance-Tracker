@@ -97,7 +97,7 @@ export function TransactionBulkEditModal({
                   <Label htmlFor={`category-${transaction.id}`}>Category</Label>
                   <Input
                     id={`category-${transaction.id}`}
-                    defaultValue={transaction.category}
+                    defaultValue={transaction.category || ""}
                     className="w-full"
                   />
                 </div>

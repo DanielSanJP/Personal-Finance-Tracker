@@ -3,10 +3,10 @@
 import Nav from "@/components/nav";
 import { TransactionsList } from "@/components/transactions";
 import {
-  useFilteredTransactionsRpc,
-  useTransactionFilterOptionsRpc,
-} from "@/hooks/queries/useTransactionsRpc";
-import { TransactionFilters } from "@/lib/data/transactions-rpc";
+  useFilteredTransactions,
+  useTransactionFilterOptions,
+  TransactionFilters,
+} from "@/hooks/queries/useTransactions";
 import { useState } from "react";
 import TransactionsLoading from "./loading";
 
@@ -30,14 +30,14 @@ export default function TransactionsPage() {
     data: filteredTransactions = [],
     isLoading: transactionsLoading,
     error: transactionsError,
-  } = useFilteredTransactionsRpc(filters);
+  } = useFilteredTransactions(filters);
 
   // Get filter options using RPC
   const {
     data: filterOptions,
     isLoading: optionsLoading,
     error: optionsError,
-  } = useTransactionFilterOptionsRpc();
+  } = useTransactionFilterOptions();
 
   // Combined loading state - show loading if either query is loading
   const isLoading = transactionsLoading || optionsLoading;

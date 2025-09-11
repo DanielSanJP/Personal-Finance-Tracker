@@ -28,14 +28,7 @@ import {
   useDeleteBudget,
 } from "@/hooks/queries";
 import { formatCurrency } from "@/lib/utils";
-
-interface Budget {
-  id: string;
-  category: string;
-  budgetAmount: number;
-  spentAmount: number;
-  period: string;
-}
+import { Budget } from "@/types";
 
 interface BudgetActionsProps {
   budgets: Budget[];

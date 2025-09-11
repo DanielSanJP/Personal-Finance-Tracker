@@ -88,7 +88,7 @@ export function TransactionEditModal({
               <Label htmlFor="edit-category">Category</Label>
               <Input
                 id="edit-category"
-                defaultValue={transaction.category}
+                defaultValue={transaction.category || ""}
                 className="w-full"
               />
             </div>
@@ -111,7 +111,7 @@ export function TransactionEditModal({
             <Label htmlFor="edit-merchant">Merchant</Label>
             <Input
               id="edit-merchant"
-              defaultValue={transaction.merchant}
+              defaultValue={transaction.merchant || ""}
               className="w-full"
             />
           </div>

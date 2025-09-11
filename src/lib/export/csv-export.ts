@@ -7,11 +7,11 @@ export interface ExportableData {
 export interface Transaction {
   id: string;
   description: string;
-  category: string;
+  category: string | null;
   date: string;
   amount: number;
   type: string;
-  merchant?: string;
+  merchant?: string | null;
 }
 
 export const exportToCSV = (
@@ -90,7 +90,7 @@ export const exportTransactionsToCSV = (transactions: Transaction[]) => {
     headers.join(","),
     ...transactions.map((transaction) => [
       `"${transaction.description.replace(/"/g, '""')}"`,
-      `"${transaction.category.replace(/"/g, '""')}"`,
+      `"${(transaction.category || "Other").replace(/"/g, '""')}"`,
       `"${formatDate(transaction.date)}"`,
       transaction.amount.toFixed(2),
       `"${transaction.type}"`,

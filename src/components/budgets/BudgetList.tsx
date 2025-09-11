@@ -4,14 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-
-interface Budget {
-  id: string;
-  category: string;
-  budgetAmount: number;
-  spentAmount: number;
-  period: string;
-}
+import { Budget } from "@/types";
 
 interface BudgetListProps {
   budgets: Budget[];

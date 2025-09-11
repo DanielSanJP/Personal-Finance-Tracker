@@ -8,9 +8,15 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { User } from "lucide-react";
 import { toast } from "sonner";
-import { validateProfileData, type UpdateProfileData } from "@/lib/data";
+import {
+  validateProfileData,
+  type UpdateProfileData,
+} from "../../hooks/queries/useProfile";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
-import { useUserProfile, useUpdateUserProfile } from "./useProfile";
+import {
+  useUserProfile,
+  useUpdateUserProfile,
+} from "../../hooks/queries/useProfile";
 
 export default function ProfileContent() {
   const [formData, setFormData] = useState({
