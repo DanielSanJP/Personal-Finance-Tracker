@@ -17,12 +17,9 @@ import {
   ChartContainer,
   ChartTooltip,
 } from "@/components/ui/chart";
-import {
-  getCurrentUserTransactions,
-  formatCurrency,
-  getCurrentMonthName,
-} from "@/lib/data";
-import type { Transaction } from "@/lib/data";
+import { getCurrentUserTransactions } from "@/lib/data";
+import { formatCurrency, getCurrentMonthName } from "@/lib/utils";
+import type { Transaction } from "@/types";
 
 // Generate dynamic date range description
 const getDateRangeDescription = () => {

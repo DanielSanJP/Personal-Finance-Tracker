@@ -1,7 +1,7 @@
 import { createClient } from '../supabase/client';
-import { getCurrentUser } from './auth';
-import { formatDateForDatabase } from './utils';
-import type { Transaction } from './types';
+import { getCurrentUser } from '../auth';
+import { formatDateForDatabase } from '../utils';
+import type { Transaction } from '@/types';
 
 // Transaction functions
 export const getCurrentUserTransactions = async (): Promise<Transaction[]> => {

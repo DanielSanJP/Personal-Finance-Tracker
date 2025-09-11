@@ -1,0 +1,102 @@
+"use client";
+
+import { Separator } from "@/components/ui/separator";
+import { formatCurrency } from "@/lib/utils";
+
+interface Goal {
+  id: string;
+  userId: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  targetDate: string | null;
+  category: string | null;
+  priority: string | null;
+  status: string;
+}
+
+interface GoalListProps {
+  goals: Goal[];
+  isLoading?: boolean;
+}
+
+export default function GoalList({ goals, isLoading }: GoalListProps) {
+  // Helper function to format dates
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "No target date";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  // Helper function to get progress width
+  const getProgressWidth = (current: number, target: number) => {
+    if (target === 0) return 0;
+    const percentage = (current / target) * 100;
+    return Math.min(percentage, 100);
+  };
+
+  // Helper function to check if goal is achieved
+  const isGoalAchieved = (current: number, target: number) => {
+    return current >= target;
+  };
+
+  if (isLoading) {
+    return <div className="text-center text-gray-500">Loading goals...</div>;
+  }
+
+  return (
+    <>
+      {goals.map((goal, index) => {
+        const progressWidth = getProgressWidth(
+          goal.currentAmount,
+          goal.targetAmount
+        );
+        const goalAchieved = isGoalAchieved(
+          goal.currentAmount,
+          goal.targetAmount
+        );
+
+        return (
+          <div key={goal.id}>
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                <span className="text-sm sm:text-base font-medium">
+                  {goal.name}
+                </span>
+                <span className="text-sm sm:text-base text-gray-600">
+                  {formatCurrency(goal.currentAmount)} /{" "}
+                  {formatCurrency(goal.targetAmount)}
+                </span>
+              </div>
+
+              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div
+                  className={`h-2 rounded-full transition-all ${
+                    goalAchieved ? "bg-green-600" : "bg-gray-900"
+                  }`}
+                  style={{ width: `${progressWidth}%` }}
+                />
+              </div>
+
+              <div className="text-sm text-gray-600">
+                <span>Target: {formatDate(goal.targetDate)}</span>
+              </div>
+
+              {goalAchieved && (
+                <div className="text-sm font-medium text-green-600">
+                  🎉 Goal Achieved!
+                </div>
+              )}
+            </div>
+
+            {index < goals.length - 1 && <Separator className="mt-4" />}
+          </div>
+        );
+      })}
+    </>
+  );
+}

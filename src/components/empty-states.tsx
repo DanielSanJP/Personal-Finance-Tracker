@@ -22,7 +22,8 @@ import { DatePicker } from "@/components/ui/date-picker";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createBudget, createGoal, getCurrentUser } from "@/lib/data";
+import { createBudget, createGoal } from "@/lib/data";
+import { getCurrentUser } from "@/lib/auth";
 
 interface EmptyStateProps {
   title: string;

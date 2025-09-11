@@ -1,6 +1,5 @@
-import { createClient } from '../supabase/client';
-import { dataCache } from './cache';
-import type { User } from './types';
+import { createClient } from './supabase/client';
+import type { User } from '@/types';
 
 // Normalize user data to ensure consistent format
 // Note: email and display_name should always come from auth, not database
@@ -31,14 +30,8 @@ const normalizeUserData = (userData: {
   };
 };
 
-// Get current authenticated user with caching
+// Get current authenticated user using Supabase auth directly
 export const getCurrentUser = async (): Promise<User | null> => {
-  // Check cache first
-  const cachedUser = dataCache.getUser();
-  if (cachedUser !== undefined) {
-    return cachedUser;
-  }
-
   try {
     const supabase = createClient();
     const { data: { user }, error } = await supabase.auth.getUser();
@@ -72,17 +65,12 @@ export const getCurrentUser = async (): Promise<User | null> => {
         };
       }
       
-      // Cache the result
-      dataCache.setUser(userData);
       return userData;
     }
 
-    // Cache null result
-    dataCache.setUser(null);
     return null;
   } catch (error) {
     console.error('Error getting current user:', error);
-    // Don't cache errors, allow retry
     return null;
   }
 };
@@ -128,9 +116,4 @@ export const GUEST_USER_ID = '55e3b0e6-b683-4cab-aa5b-6a5b192bde7d';
 // Check if current user is guest
 export const isGuestUser = (user: User | null): boolean => {
   return user?.id === GUEST_USER_ID;
-};
-
-// Clear user cache (useful for logout)
-export const clearUserCache = (): void => {
-  dataCache.clearUser();
 };

@@ -1,9 +1,9 @@
-import { getCurrentUser } from './auth';
+import { getCurrentUser } from '../auth';
 import { getAccountsByUserId } from './accounts';
 import { getTransactionsByUserId } from './transactions';
 import { calculateRealTimeBudgetRemainingFromTransactions } from './budgets';
 import { getSummaryByUserId } from './summary';
-import type { User, Account, Transaction } from './types';
+import type { User, Account, Transaction } from '@/types';
 
 // Dashboard data interface
 export interface DashboardData {

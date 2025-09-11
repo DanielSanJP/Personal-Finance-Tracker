@@ -1,7 +1,7 @@
 import { createClient } from '../supabase/client';
-import { getCurrentUser } from './auth';
+import { getCurrentUser } from '../auth';
 import { getCurrentUserTransactions } from './transactions';
-import type { Transaction } from './types';
+import type { Transaction } from '@/types';
 
 // Calculate spent amount for a budget based on transactions
 export const calculateBudgetSpentAmount = async (budget: {

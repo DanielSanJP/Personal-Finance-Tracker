@@ -19,7 +19,7 @@ import { CategorySelect } from "@/components/category-select";
 import { getIncomeCategoryNames } from "@/constants/categories";
 import { toast } from "sonner";
 import { getCurrentUserAccounts, createIncomeTransaction } from "@/lib/data";
-import { FormSkeleton } from "@/components/loading-states";
+import { Skeleton } from "@/components/ui/skeleton";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { VoiceInputModal } from "@/components/voice-input-modal";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
@@ -69,10 +69,8 @@ export default function AddIncomePage() {
     (field: string, value: string | Date) => {
       if (field === "amount") setAmount(value as string);
       else if (field === "description") setDescription(value as string);
-      else if (field === "merchant")
-        setDescription(
-          value as string
-        ); // Use merchant as description for income
+      else if (field === "merchant") setDescription(value as string);
+      // Use merchant as description for income
       else if (field === "incomeSource" || field === "category")
         setIncomeSource(value as string);
       else if (field === "account") setAccount(value as string);
@@ -191,7 +189,25 @@ export default function AddIncomePage() {
 
           <CardContent>
             {loading ? (
-              <FormSkeleton />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <Skeleton className="h-10 w-full" />
+              </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Amount */}

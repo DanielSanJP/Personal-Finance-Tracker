@@ -1,5 +1,5 @@
 import { createClient } from '../supabase/client';
-import { getCurrentUser } from './auth';
+import { getCurrentUser } from '../auth';
 import { updateAccount } from './accounts';
 import { createTransferTransaction } from './transactions';
 

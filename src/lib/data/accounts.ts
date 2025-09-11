@@ -1,6 +1,6 @@
 import { createClient } from '../supabase/client';
-import { getCurrentUser } from './auth';
-import type { Account } from './types';
+import { getCurrentUser } from '../auth';
+import type { Account } from '@/types';
 
 // Account functions
 export const getCurrentUserAccounts = async (): Promise<Account[]> => {

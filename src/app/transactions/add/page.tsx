@@ -18,7 +18,7 @@ import { CategorySelect } from "@/components/category-select";
 import { toast } from "sonner";
 import Nav from "@/components/nav";
 import { getCurrentUserAccounts, createExpenseTransaction } from "@/lib/data";
-import { FormSkeleton } from "@/components/loading-states";
+import { Skeleton } from "@/components/ui/skeleton";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { VoiceInputModal } from "@/components/voice-input-modal";
 import { ReceiptScanModal } from "@/components/receipt-scan-modal";
@@ -250,7 +250,29 @@ export default function AddTransactionPage() {
 
           <CardContent>
             {loadingAccounts ? (
-              <FormSkeleton />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <Skeleton className="h-10 w-full" />
+              </div>
             ) : (
               <div className="space-y-4">
                 {/* Amount */}

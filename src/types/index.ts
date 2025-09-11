@@ -12,8 +12,8 @@ export interface Account {
 
 export interface Transaction {
   id: string;
-  userId: string;
-  accountId: string;
+  user_id: string;
+  account_id: string;
   date: string;
   description: string;
   amount: number;
@@ -21,6 +21,8 @@ export interface Transaction {
   type: string;
   merchant: string;
   status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface User {

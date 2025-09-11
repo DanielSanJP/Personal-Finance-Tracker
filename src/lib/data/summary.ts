@@ -1,5 +1,5 @@
 import { createClient } from '../supabase/client';
-import { getCurrentUser } from './auth';
+import { getCurrentUser } from '../auth';
 import { getMonthlyIncome, getMonthlyExpenses } from './transactions';
 import { calculateRealTimeBudgetRemaining } from './budgets';
 

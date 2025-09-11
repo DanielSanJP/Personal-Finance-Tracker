@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/client";
-import { dataCache } from "./cache";
 
 export interface UserProfile {
   id: string;
@@ -131,9 +130,6 @@ export async function updateUserProfile(
       // The users table sync is secondary
       console.warn("Auth profile updated successfully, but users table sync failed");
     }
-
-    // Clear user cache to force refresh
-    dataCache.clearUser();
 
     return { success: true };
   } catch (error) {

@@ -16,8 +16,6 @@ import {
 import Breadcrumbs from "@/components/breadcrumbs";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { clearUserCache } from "@/lib/data/auth";
-import { dataCache } from "@/lib/data/cache";
 import { useState, useEffect } from "react";
 import type { User } from "@supabase/supabase-js";
 import { GUEST_USER_ID } from "@/lib/guest-protection";
@@ -100,10 +98,6 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
   const handleSignOut = async () => {
     try {
       const supabase = createClient();
-
-      // Clear all cached data first
-      dataCache.clearAll();
-      clearUserCache();
 
       // Sign out from Supabase
       await supabase.auth.signOut();
