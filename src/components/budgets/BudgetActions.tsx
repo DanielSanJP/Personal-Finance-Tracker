@@ -155,19 +155,19 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
           <DialogHeader>
             <DialogTitle>Add New Budget</DialogTitle>
             <DialogDescription>
-              Create a new budget to track your spending in a specific category.
+              Create a new budget category with your desired spending limit.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
               <CategorySelect
                 value={newBudget.category}
                 onValueChange={(value) =>
                   setNewBudget({ ...newBudget, category: value })
                 }
                 placeholder="Select a category"
+                className="w-full"
               />
             </div>
 
@@ -185,14 +185,14 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="period">Period</Label>
+              <Label htmlFor="period">Budget Period</Label>
               <Select
                 value={newBudget.period}
                 onValueChange={(value) =>
                   setNewBudget({ ...newBudget, period: value })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select period" />
                 </SelectTrigger>
                 <SelectContent>
