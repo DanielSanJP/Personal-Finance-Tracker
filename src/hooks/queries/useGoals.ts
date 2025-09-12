@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { createClient } from "@/lib/supabase/client";
 import { getCurrentUser } from "@/lib/auth";
+import { queryKeys } from "@/lib/query-keys";
 
 // Goal functions moved from deleted data folder
 export const getCurrentUserGoals = async () => {
@@ -231,32 +232,22 @@ export const makeGoalContribution = async (contributionData: {
   try {
     const supabase = createClient();
     
-    // Get current goal
-    const { data: goal, error: goalError } = await supabase
-      .from('goals')
-      .select('current_amount')
-      .eq('id', contributionData.goalId)
-      .eq('user_id', user.id)
-      .single();
+    // Use RPC function for atomic goal contribution transaction
+    const { data, error } = await supabase.rpc('make_goal_contribution', {
+      p_user_id: user.id,
+      p_goal_id: contributionData.goalId,
+      p_account_id: contributionData.accountId,
+      p_amount: contributionData.amount,
+      p_date: contributionData.date.toISOString().split('T')[0], // Format as YYYY-MM-DD
+      p_notes: contributionData.notes || 'Goal contribution'
+    });
 
-    if (goalError || !goal) {
-      throw new Error('Goal not found');
+    if (error) {
+      console.error('RPC error:', error);
+      throw new Error(`Failed to make goal contribution: ${error.message}`);
     }
 
-    // Update goal with new contribution amount
-    const newCurrentAmount = Number(goal.current_amount) + contributionData.amount;
-    
-    const { error: updateError } = await supabase
-      .from('goals')
-      .update({ current_amount: newCurrentAmount })
-      .eq('id', contributionData.goalId)
-      .eq('user_id', user.id);
-
-    if (updateError) {
-      throw new Error('Failed to update goal contribution');
-    }
-
-    return { success: true, newCurrentAmount };
+    return data;
   } catch (error) {
     console.error('Error in makeGoalContribution:', error);
     throw error;
@@ -315,9 +306,11 @@ export function useCreateGoal() {
     },
     onSuccess: () => {
       toast.success("Goal created successfully!");
-      queryClient.invalidateQueries({
-        queryKey: GOAL_QUERY_KEYS.goals,
-      });
+      // Invalidate goals and dashboard data
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      // Legacy compatibility
+      queryClient.invalidateQueries({ queryKey: GOAL_QUERY_KEYS.goals });
     },
     onError: (error: Error) => {
       if (error.message !== "Guest users cannot create goals") {
@@ -368,9 +361,11 @@ export function useUpdateGoal() {
     },
     onSuccess: () => {
       toast.success("Goal updated successfully!");
-      queryClient.invalidateQueries({
-        queryKey: GOAL_QUERY_KEYS.goals,
-      });
+      // Invalidate goals and dashboard data
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      // Legacy compatibility
+      queryClient.invalidateQueries({ queryKey: GOAL_QUERY_KEYS.goals });
     },
     onError: (error: Error) => {
       if (error.message !== "Guest users cannot update goals") {
@@ -395,9 +390,11 @@ export function useDeleteGoal() {
     },
     onSuccess: () => {
       toast.success("Goal deleted successfully!");
-      queryClient.invalidateQueries({
-        queryKey: GOAL_QUERY_KEYS.goals,
-      });
+      // Invalidate goals and dashboard data
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      // Legacy compatibility
+      queryClient.invalidateQueries({ queryKey: GOAL_QUERY_KEYS.goals });
     },
     onError: (error: Error) => {
       if (error.message !== "Guest users cannot delete goals") {
@@ -428,12 +425,21 @@ export function useMakeGoalContribution() {
     },
     onSuccess: () => {
       toast.success("Contribution made successfully!");
-      queryClient.invalidateQueries({
-        queryKey: GOAL_QUERY_KEYS.goals,
-      });
-      queryClient.invalidateQueries({
-        queryKey: GOAL_QUERY_KEYS.accounts,
-      });
+      
+      // Invalidate ALL related queries for comprehensive data consistency
+      // Goal contributions affect accounts, goals, transactions, and dashboard
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.all });
+      
+      // Legacy key invalidations for backwards compatibility
+      queryClient.invalidateQueries({ queryKey: GOAL_QUERY_KEYS.goals });
+      queryClient.invalidateQueries({ queryKey: GOAL_QUERY_KEYS.accounts });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
     },
     onError: (error: Error) => {
       if (error.message !== "Guest users cannot make goal contributions") {

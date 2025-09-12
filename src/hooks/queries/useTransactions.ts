@@ -3,6 +3,7 @@ import { Transaction } from '@/types';
 import { useAuth } from './useAuth';
 import { createClient } from '@/lib/supabase/client';
 import { getCurrentUser } from '@/lib/auth';
+import { queryKeys } from '@/lib/query-keys';
 
 // Type definitions
 export interface TransactionFilters {
@@ -371,39 +372,98 @@ export async function createExpenseTransaction(expenseData: {
 
   const supabase = createClient();
   
-  // Generate a unique ID for the transaction
-  const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
-  const { data, error } = await supabase
-    .from('transactions')
-    .insert({
-      id: transactionId,
-      user_id: user.id,
-      account_id: expenseData.accountId,
-      type: 'expense',
-      amount: -Math.abs(expenseData.amount), // Expenses are negative
-      description: expenseData.description,
-      category: expenseData.category || null,
-      merchant: expenseData.merchant || null,
-      date: expenseData.date.toISOString().split('T')[0],
-      status: expenseData.status || 'completed',
-    })
-    .select()
-    .single();
+  // Start a transaction to ensure data consistency
+  const { data: transaction, error: transactionError } = await supabase.rpc('create_expense_transaction', {
+    p_user_id: user.id,
+    p_account_id: expenseData.accountId,
+    p_amount: Math.abs(expenseData.amount), // Pass positive amount, function handles sign
+    p_description: expenseData.description,
+    p_category: expenseData.category || null,
+    p_merchant: expenseData.merchant || null,
+    p_date: expenseData.date.toISOString().split('T')[0],
+    p_status: expenseData.status || 'completed'
+  });
 
-  if (error) {
-    console.error('Error creating expense transaction:', error);
-    throw new Error(`Failed to create expense transaction: ${error.message}`);
+  if (transactionError) {
+    console.error('Error creating expense transaction:', transactionError);
+    throw new Error(`Failed to create expense transaction: ${transactionError.message}`);
   }
 
-  // Transform the data to match our interface
-  return {
-    ...data,
-    user_id: data.user_id?.toString() || '',
-    date: data.date?.toString() || '',
-    created_at: data.created_at?.toString() || '',
-    updated_at: data.updated_at?.toString() || ''
-  } as Transaction;
+  // If RPC function doesn't exist, fall back to manual transaction + account update
+  if (!transaction) {
+    // Generate a unique ID for the transaction
+    const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert({
+        id: transactionId,
+        user_id: user.id,
+        account_id: expenseData.accountId,
+        type: 'expense',
+        amount: -Math.abs(expenseData.amount), // Expenses are negative
+        description: expenseData.description,
+        category: expenseData.category || null,
+        merchant: expenseData.merchant || null,
+        date: expenseData.date.toISOString().split('T')[0],
+        status: expenseData.status || 'completed',
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating expense transaction:', error);
+      throw new Error(`Failed to create expense transaction: ${error.message}`);
+    }
+
+    // Update account balance (subtract expense amount)
+    const { error: accountError } = await supabase.rpc('update_account_balance', {
+      account_id_param: expenseData.accountId,
+      amount_change: -Math.abs(expenseData.amount)
+    });
+
+    if (accountError) {
+      // Try direct update if RPC doesn't exist
+      const { data: accountData, error: fetchError } = await supabase
+        .from('accounts')
+        .select('balance')
+        .eq('id', expenseData.accountId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching account for balance update:', fetchError);
+        throw new Error(`Failed to fetch account for balance update: ${fetchError.message}`);
+      }
+
+      const newBalance = Number(accountData.balance) - Math.abs(expenseData.amount);
+      
+      const { error: updateError } = await supabase
+        .from('accounts')
+        .update({
+          balance: newBalance,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', expenseData.accountId)
+        .eq('user_id', user.id);
+
+      if (updateError) {
+        console.error('Error updating account balance:', updateError);
+        throw new Error(`Failed to update account balance: ${updateError.message}`);
+      }
+    }
+
+    // Transform the data to match our interface
+    return {
+      ...data,
+      user_id: data.user_id?.toString() || '',
+      date: data.date?.toString() || '',
+      created_at: data.created_at?.toString() || '',
+      updated_at: data.updated_at?.toString() || ''
+    } as Transaction;
+  }
+
+  return transaction;
 }
 
 /**
@@ -421,39 +481,97 @@ export async function createIncomeTransaction(incomeData: {
 
   const supabase = createClient();
   
-  // Generate a unique ID for the transaction
-  const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
-  const { data, error } = await supabase
-    .from('transactions')
-    .insert({
-      id: transactionId,
-      user_id: user.id,
-      account_id: incomeData.accountId,
-      type: 'income',
-      amount: Math.abs(incomeData.amount), // Income is positive
-      description: incomeData.description,
-      category: incomeData.source, // Keep source in category for consistency
-      merchant: incomeData.source, // Also store income source as merchant for database compatibility
-      date: incomeData.date.toISOString().split('T')[0],
-      status: 'completed',
-    })
-    .select()
-    .single();
+  // Start with RPC function attempt for income transaction
+  const { data: transaction, error: transactionError } = await supabase.rpc('create_income_transaction', {
+    p_user_id: user.id,
+    p_account_id: incomeData.accountId,
+    p_amount: Math.abs(incomeData.amount),
+    p_description: incomeData.description,
+    p_category: incomeData.source || 'income',
+    p_merchant: 'Income Source',
+    p_date: incomeData.date.toISOString().split('T')[0]
+  });
 
-  if (error) {
-    console.error('Error creating income transaction:', error);
-    throw new Error(`Failed to create income transaction: ${error.message}`);
+  if (transactionError) {
+    console.error('Error creating income transaction:', transactionError);
+    throw new Error(`Failed to create income transaction: ${transactionError.message}`);
   }
 
-  // Transform the data to match our interface
-  return {
-    ...data,
-    user_id: data.user_id?.toString() || '',
-    date: data.date?.toString() || '',
-    created_at: data.created_at?.toString() || '',
-    updated_at: data.updated_at?.toString() || ''
-  } as Transaction;
+  // If RPC function doesn't exist, fall back to manual transaction + account update
+  if (!transaction) {
+    // Generate a unique ID for the transaction
+    const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert({
+        id: transactionId,
+        user_id: user.id,
+        account_id: incomeData.accountId,
+        type: 'income',
+        amount: Math.abs(incomeData.amount), // Income is positive
+        description: incomeData.description,
+        category: incomeData.source, // Keep source in category for consistency
+        merchant: incomeData.source, // Also store income source as merchant for database compatibility
+        date: incomeData.date.toISOString().split('T')[0],
+        status: 'completed',
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating income transaction:', error);
+      throw new Error(`Failed to create income transaction: ${error.message}`);
+    }
+
+    // Update account balance (add income amount)
+    const { error: accountError } = await supabase.rpc('update_account_balance', {
+      account_id_param: incomeData.accountId,
+      amount_change: Math.abs(incomeData.amount)
+    });
+
+    if (accountError) {
+      // Try direct update if RPC doesn't exist
+      const { data: accountData, error: fetchError } = await supabase
+        .from('accounts')
+        .select('balance')
+        .eq('id', incomeData.accountId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching account for balance update:', fetchError);
+        throw new Error(`Failed to fetch account for balance update: ${fetchError.message}`);
+      }
+
+      const newBalance = Number(accountData.balance) + Math.abs(incomeData.amount);
+      
+      const { error: updateError } = await supabase
+        .from('accounts')
+        .update({
+          balance: newBalance,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', incomeData.accountId)
+        .eq('user_id', user.id);
+
+      if (updateError) {
+        console.error('Error updating account balance:', updateError);
+        throw new Error(`Failed to update account balance: ${updateError.message}`);
+      }
+    }
+
+    // Transform the data to match our interface
+    return {
+      ...data,
+      user_id: data.user_id?.toString() || '',
+      date: data.date?.toString() || '',
+      created_at: data.created_at?.toString() || '',
+      updated_at: data.updated_at?.toString() || ''
+    } as Transaction;
+  }
+
+  return transaction;
 }
 
 // Query keys for RPC-based queries (consolidated)
@@ -607,7 +725,15 @@ export function useCreateTransaction() {
   return useMutation({
     mutationFn: createTransaction,
     onSuccess: () => {
-      // Invalidate all transaction-related queries
+      // Invalidate ALL related queries for comprehensive data consistency
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.all });
+      
+      // Legacy key invalidations for backwards compatibility
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['transaction-summary'] });
       queryClient.invalidateQueries({ queryKey: ['recent-transactions'] });
@@ -627,7 +753,15 @@ export function useUpdateTransaction() {
     mutationFn: ({ id, updates }: { id: string; updates: Partial<Omit<Transaction, 'id' | 'user_id' | 'created_at'>> }) =>
       updateTransaction(id, updates),
     onSuccess: () => {
-      // Invalidate all transaction-related queries
+      // Invalidate ALL related queries for comprehensive data consistency
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.all });
+      
+      // Legacy key invalidations for backwards compatibility
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['transaction-summary'] });
       queryClient.invalidateQueries({ queryKey: ['recent-transactions'] });
@@ -646,7 +780,15 @@ export function useDeleteTransaction() {
   return useMutation({
     mutationFn: deleteTransaction,
     onSuccess: () => {
-      // Invalidate all transaction-related queries
+      // Invalidate ALL related queries for comprehensive data consistency
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.all });
+      
+      // Legacy key invalidations for backwards compatibility
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       queryClient.invalidateQueries({ queryKey: ['transaction-summary'] });
       queryClient.invalidateQueries({ queryKey: ['recent-transactions'] });
@@ -658,6 +800,62 @@ export function useDeleteTransaction() {
 
 // Legacy exports for backwards compatibility
 export const useTransactionsByUserId = useTransactions; // Admin can use useTransactions for now
+
+/**
+ * Mutation hook to create an expense transaction
+ */
+export function useCreateExpenseTransaction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createExpenseTransaction,
+    onSuccess: () => {
+      // Invalidate ALL related queries for comprehensive data consistency
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.all });
+      
+      // Legacy key invalidations for backwards compatibility
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['transaction-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['recent-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['all-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['transaction-filter-options'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    },
+  });
+}
+
+/**
+ * Mutation hook to create an income transaction
+ */
+export function useCreateIncomeTransaction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createIncomeTransaction,
+    onSuccess: () => {
+      // Invalidate ALL related queries for comprehensive data consistency
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.all });
+      
+      // Legacy key invalidations for backwards compatibility
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['transaction-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['recent-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['all-transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['transaction-filter-options'] });
+      queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    },
+  });
+}
 
 // Additional spending analysis functions - using RPC for optimal performance
 export const getCurrentMonthSpendingByCategory = async (): Promise<Array<{category: string, spentAmount: number}>> => {

@@ -134,10 +134,13 @@ export function useCreateTransaction() {
       });
     },
     onSuccess: () => {
-      // Invalidate and refetch
+      // Invalidate ALL related queries for comprehensive data consistency
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.all });
       
       toast.success('Transaction created successfully!');
     },
@@ -160,10 +163,13 @@ export function useCreateExpense() {
       return createExpenseTransaction(data);
     },
     onSuccess: () => {
+      // Invalidate ALL related queries for comprehensive data consistency
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.all });
       
       toast.success('Expense created successfully!');
     },
@@ -191,9 +197,13 @@ export function useCreateIncome() {
       return createIncomeTransaction(data);
     },
     onSuccess: () => {
+      // Invalidate ALL related queries for comprehensive data consistency
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.all });
       
       toast.success('Income added successfully!');
     },
@@ -230,9 +240,13 @@ export function useCreateTransfer() {
       });
     },
     onSuccess: () => {
+      // Invalidate ALL related queries for comprehensive data consistency
       queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile.all });
       
       toast.success('Transfer completed successfully!');
     },
