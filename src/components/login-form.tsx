@@ -1,5 +1,6 @@
 "use client";
 
+import { useActionState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,18 +12,51 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { loginAsGuest } from "@/app/login/actions";
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
-  loginAction?: (formData: FormData) => Promise<void>;
+  loginAction?: (formData: FormData) => Promise<{ error?: string } | void>;
+  guestLoginAction?: (formData: FormData) => Promise<{ error?: string } | void>;
 }
 
 export function LoginForm({
   className,
   loginAction,
+  guestLoginAction = loginAsGuest,
   ...props
 }: LoginFormProps) {
+  // Wrapper function to match useActionState signature
+  const actionWrapper = async (
+    prevState: { error?: string } | void,
+    formData: FormData
+  ) => {
+    if (!loginAction) return { error: undefined };
+    const result = await loginAction(formData);
+    return result || { error: undefined };
+  };
+
+  // Guest login wrapper
+  const guestActionWrapper = async (
+    prevState: { error?: string } | void,
+    formData: FormData
+  ) => {
+    if (!guestLoginAction) return { error: undefined };
+    const result = await guestLoginAction(formData);
+    return result || { error: undefined };
+  };
+
+  const [state, formAction, isPending] = useActionState(actionWrapper, {
+    error: undefined,
+  });
+
+  const [guestState, guestFormAction, isGuestPending] = useActionState(
+    guestActionWrapper,
+    { error: undefined }
+  );
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -34,7 +68,16 @@ export function LoginForm({
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-6">
-            <form action={loginAction}>
+            {(state?.error || guestState?.error) && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {state?.error || guestState?.error}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <form action={formAction}>
               <div className="flex flex-col gap-6">
                 <div className="grid gap-3">
                   <Label htmlFor="email">Email</Label>
@@ -44,6 +87,7 @@ export function LoginForm({
                     type="email"
                     placeholder="m@example.com"
                     required
+                    disabled={isPending || isGuestPending}
                   />
                 </div>
                 <div className="grid gap-3">
@@ -61,21 +105,27 @@ export function LoginForm({
                     name="password"
                     type="password"
                     required
+                    disabled={isPending || isGuestPending}
                   />
                 </div>
-                <Button type="submit" className="w-full cursor-pointer">
-                  Login
+                <Button
+                  type="submit"
+                  className="w-full cursor-pointer"
+                  disabled={isPending || isGuestPending}
+                >
+                  {isPending ? "Signing in..." : "Login"}
                 </Button>
               </div>
             </form>
 
-            <form action={loginAsGuest}>
+            <form action={guestFormAction}>
               <Button
                 type="submit"
                 variant="outline"
                 className="w-full cursor-pointer"
+                disabled={isPending || isGuestPending}
               >
-                Continue as Guest
+                {isGuestPending ? "Signing in..." : "Continue as Guest"}
               </Button>
             </form>
 

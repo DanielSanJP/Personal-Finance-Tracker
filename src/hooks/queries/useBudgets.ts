@@ -317,6 +317,8 @@ export function useCreateBudget() {
           toast.error(result.error || "Budget already exists", {
             duration: 5000,
           });
+          // Don't throw error for budget exists - just show the message
+          return;
         } else {
           toast.error(result.error || "Failed to create budget");
         }
@@ -324,10 +326,19 @@ export function useCreateBudget() {
       }
     },
     onError: (error: Error) => {
-      if (error.message !== "Guest users cannot create budgets") {
-        console.error("Error creating budget:", error);
-        toast.error("An unexpected error occurred");
+      // Only show unexpected error for guest users or other actual errors
+      if (error.message === "Guest users cannot create budgets") {
+        // Guest error is already handled by checkGuestAndWarn
+        return;
       }
+      
+      // Don't show unexpected error for budget exists errors
+      if (error.message?.includes("Budget already exists")) {
+        return;
+      }
+      
+      console.error("Error creating budget:", error);
+      toast.error("An unexpected error occurred");
     },
   });
 }
@@ -350,7 +361,6 @@ export function useUpdateBudget() {
       return updateBudget(id, budgetData);
     },
     onSuccess: () => {
-      toast.success("Budget updated successfully!");
       queryClient.invalidateQueries({
         queryKey: BUDGET_QUERY_KEYS.budgets,
       });

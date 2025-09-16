@@ -17,7 +17,7 @@ export async function login(formData: FormData) {
 
   if (!email || !password) {
     console.log('🔥 Missing email or password');
-    redirect('/error?message=Missing email or password')
+    return { error: 'Please provide both email and password' }
   }
 
   const data = {
@@ -30,7 +30,14 @@ export async function login(formData: FormData) {
 
   if (error) {
     console.error('🔥 Login error:', error)
-    redirect(`/error?message=${encodeURIComponent(error.message)}`)
+    // Return user-friendly error messages
+    if (error.message.includes('Invalid login credentials')) {
+      return { error: 'Email or password is incorrect' }
+    }
+    if (error.message.includes('Email not confirmed')) {
+      return { error: 'Please check your email and click the confirmation link' }
+    }
+    return { error: 'Login failed. Please try again.' }
   }
 
   console.log('🔍 Login successful, user:', authData.user?.id);
@@ -96,20 +103,20 @@ export async function loginAsGuest() {
     
     if (error) {
       console.error('🔥 Guest login error:', error)
-      redirect(`/error?message=${encodeURIComponent('Guest mode temporarily unavailable')}`)
+      return { error: 'Guest mode temporarily unavailable' }
     }
     
     // Verify this is the correct guest user
     if (data.user?.id !== '55e3b0e6-b683-4cab-aa5b-6a5b192bde7d') {
       console.error('🔥 Wrong user ID for guest account')
-      redirect(`/error?message=${encodeURIComponent('Guest account configuration error')}`)
+      return { error: 'Guest account configuration error' }
     }
     
     console.log('🔍 Guest login successful');
     
   } catch (error) {
     console.error('🔥 Guest login failed:', error)
-    redirect(`/error?message=${encodeURIComponent('Guest mode unavailable')}`)
+    return { error: 'Guest mode unavailable' }
   }
   
   // Success - redirect outside try/catch to avoid catching the redirect

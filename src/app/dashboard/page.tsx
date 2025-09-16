@@ -1,6 +1,5 @@
 "use client";
 
-import Nav from "@/components/nav";
 import DashboardContent from "@/components/dashboard/DashboardContent";
 import { useDashboardData } from "@/hooks/queries";
 import DashboardLoading from "./loading";
@@ -15,7 +14,6 @@ export default function Dashboard() {
   if (error || !dashboardData) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Nav showDashboardTabs={true} />
         <DashboardContent />
       </div>
     );
@@ -23,7 +21,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Nav showDashboardTabs={true} />
       <DashboardContent />
     </div>
   );

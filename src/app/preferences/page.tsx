@@ -1,6 +1,5 @@
 "use client";
 
-import Nav from "@/components/nav";
 import PreferencesContent from "@/components/preferences/PreferencesContent";
 import { useAuth } from "@/hooks/queries";
 import PreferencesLoading from "./loading";
@@ -15,7 +14,6 @@ export default function PreferencesPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Nav showDashboardTabs={true} />
         <PreferencesContent />
       </div>
     );
@@ -23,7 +21,6 @@ export default function PreferencesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Nav showDashboardTabs={true} />
       <PreferencesContent />
     </div>
   );

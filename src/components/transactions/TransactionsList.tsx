@@ -33,6 +33,7 @@ import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { exportTransactionsToCSV } from "@/lib/export/csv-export";
 import { exportTransactionsToPDF } from "@/lib/export/pdf-export";
 import { formatCurrency } from "@/lib/utils";
+import { useDeleteTransaction } from "@/hooks/queries/useTransactions";
 import type { Transaction } from "@/types";
 import { EmptyTransactions } from "@/components/empty-states";
 import { TransactionSummary } from "./TransactionSummary";
@@ -70,6 +71,9 @@ export function TransactionsList({
   selectedType,
   setSelectedType,
 }: TransactionsListProps) {
+  // Mutations
+  const deleteTransactionMutation = useDeleteTransaction();
+
   // Modal states
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
@@ -85,6 +89,18 @@ export function TransactionsList({
   const handleTransactionClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setDetailModalOpen(true);
+  };
+
+  const handleDeleteTransaction = async (transaction: Transaction) => {
+    if (await checkGuestAndWarn()) return;
+
+    try {
+      await deleteTransactionMutation.mutateAsync(transaction.id);
+      toast.success("Transaction deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+      toast.error("Failed to delete transaction");
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -356,11 +372,7 @@ export function TransactionsList({
                             <DropdownMenuItem
                               onClick={async (e) => {
                                 e.stopPropagation();
-                                if (await checkGuestAndWarn()) return;
-                                // Delete transaction functionality will go here
-                                toast.info(
-                                  "Delete functionality not implemented yet"
-                                );
+                                await handleDeleteTransaction(transaction);
                               }}
                               className="text-red-600"
                             >

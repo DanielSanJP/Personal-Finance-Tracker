@@ -2,12 +2,10 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import Nav from "@/components/nav";
 
 export default function DashboardLoading() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Nav showDashboardTabs={true} />
       <div className="max-w-7xl mx-auto p-4 py-8">
         {/* Quick Actions Skeleton */}
         <div className="flex flex-wrap gap-4 justify-center mb-8">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,11 @@ import { useReceiptScan } from "@/hooks/useReceiptScan";
 
 export default function TransactionForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [hasSetDefaultAccount, setHasSetDefaultAccount] = useState(false);
+
+  // Check if we should auto-open the scan receipt modal
+  const shouldAutoScanReceipt = searchParams.get("scan") === "true";
 
   // Use React Query hook for accounts
   const { data: userAccounts = [], isLoading: accountsLoading } = useAccounts();
@@ -52,6 +56,15 @@ export default function TransactionForm() {
       setHasSetDefaultAccount(true);
     }
   }, [userAccounts, formData.account, hasSetDefaultAccount]);
+
+  // Clear the scan query parameter after component mounts to prevent auto-opening on refresh
+  useEffect(() => {
+    if (shouldAutoScanReceipt) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("scan");
+      router.replace(url.pathname + url.search, { scroll: false });
+    }
+  }, [shouldAutoScanReceipt, router]);
 
   // Use React Query mutation for creating transactions
   const createExpenseMutation = useCreateExpenseTransaction();
@@ -164,17 +177,44 @@ export default function TransactionForm() {
     isSupported: isVoiceSupported,
     parsedData,
     confidence,
-    startListening,
-    stopListening,
+    startVoiceInput,
+    stopVoiceInput,
   } = useVoiceInput({
-    onFieldUpdate: handleFieldUpdate,
-    onComplete: () => {
+    onResult: (result) => {
+      // Map voice input result to form fields
+      if (result.amount) {
+        handleFieldUpdate("amount", result.amount);
+      }
+      if (result.description) {
+        handleFieldUpdate("description", result.description);
+      }
+      if (result.merchant) {
+        handleFieldUpdate("merchant", result.merchant);
+      }
+      if (result.category) {
+        handleFieldUpdate("category", result.category);
+      }
+      if (result.account) {
+        // Find account by name and set its ID
+        const matchedAccount = userAccounts.find(
+          (acc) => acc.name === result.account
+        );
+        if (matchedAccount) {
+          handleFieldUpdate("account", matchedAccount.id);
+        }
+      }
+      if (result.date) {
+        handleFieldUpdate("date", new Date(result.date));
+      }
+
       toast.success("Transaction auto-filled!", {
-        description: "Review the details and save when ready.",
+        description: `Confidence: ${Math.round(
+          result.confidence * 100
+        )}%. Review the details and save when ready.`,
       });
     },
     accounts: userAccounts,
-    type: "expense",
+    transactionType: "expense",
   });
 
   // Receipt scanning functionality
@@ -433,10 +473,23 @@ export default function TransactionForm() {
                 isRecording={isContinuousRecording}
                 isProcessing={isContinuousProcessing}
                 isSupported={isVoiceSupported}
-                parsedData={parsedData}
+                parsedData={
+                  parsedData
+                    ? {
+                        amount: parsedData.amount,
+                        description: parsedData.description,
+                        merchant: parsedData.merchant,
+                        category: parsedData.category,
+                        account: parsedData.account,
+                        date: parsedData.date
+                          ? new Date(parsedData.date)
+                          : undefined,
+                      }
+                    : undefined
+                }
                 confidence={confidence}
-                onStartListening={startListening}
-                onStopListening={stopListening}
+                onStartListening={startVoiceInput}
+                onStopListening={stopVoiceInput}
               />
               <ReceiptScanModal
                 isProcessing={isReceiptProcessing}
@@ -448,6 +501,7 @@ export default function TransactionForm() {
                 onScanFromCamera={scanFromCamera}
                 onCaptureFromVideo={captureFromVideo}
                 onClearPreview={clearPreview}
+                autoOpen={shouldAutoScanReceipt}
               />
             </div>
           </div>

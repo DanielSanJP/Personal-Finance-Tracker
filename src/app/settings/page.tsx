@@ -1,6 +1,5 @@
 "use client";
 
-import Nav from "@/components/nav";
 import SettingsContent from "@/components/settings/SettingsContent";
 import { useAuth } from "@/hooks/queries";
 import SettingsLoading from "./loading";
@@ -15,7 +14,6 @@ export default function SettingsPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Nav showDashboardTabs={true} />
         <SettingsContent />
       </div>
     );
@@ -23,7 +21,6 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Nav showDashboardTabs={true} />
       <SettingsContent />
     </div>
   );

@@ -2,13 +2,10 @@
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import Nav from "@/components/nav";
 
 export default function AccountsLoading() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Nav showDashboardTabs={true} />
-
       {/* Main content skeleton */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header skeleton */}

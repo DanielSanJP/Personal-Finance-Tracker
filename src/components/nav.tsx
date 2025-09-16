@@ -20,11 +20,19 @@ import { useState, useEffect } from "react";
 import type { User } from "@supabase/supabase-js";
 import { GUEST_USER_ID } from "@/lib/guest-protection";
 
+// Routes that should NOT show dashboard tabs
+const NO_DASHBOARD_ROUTES = [
+  "/login",
+  "/register",
+  "/error",
+  // Add any other routes that shouldn't show dashboard tabs
+];
+
 interface NavProps {
   showDashboardTabs?: boolean;
 }
 
-export default function Nav({ showDashboardTabs = false }: NavProps) {
+export default function Nav({ showDashboardTabs }: NavProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -60,6 +68,21 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
 
   // Check if current user is guest
   const isGuestUser = user?.id === GUEST_USER_ID;
+
+  // Determine whether to show dashboard tabs automatically if not explicitly provided
+  const shouldShowDashboardTabs =
+    showDashboardTabs !== undefined
+      ? showDashboardTabs
+      : (() => {
+          // Don't show dashboard tabs if loading
+          if (loading) return false;
+
+          // Don't show dashboard tabs on specific routes
+          if (NO_DASHBOARD_ROUTES.includes(pathname)) return false;
+
+          // Show dashboard tabs for authenticated users on other routes
+          return !!user;
+        })();
 
   // Function to determine if a tab is active
   const isActiveTab = (path: string) => pathname === path;
@@ -156,14 +179,14 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
                 </Link>
               )}
             </div>
-            {!showDashboardTabs && (
+            {!shouldShowDashboardTabs && (
               <div className="flex flex-wrap items-center gap-2 md:flex-row flex-shrink-0">
                 <Button asChild>
                   <Link href="/login">Login</Link>
                 </Button>
               </div>
             )}
-            {showDashboardTabs && userData && (
+            {shouldShowDashboardTabs && userData && (
               <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -226,7 +249,7 @@ export default function Nav({ showDashboardTabs = false }: NavProps) {
         </div>
       </nav>
 
-      {showDashboardTabs && (
+      {shouldShowDashboardTabs && (
         <>
           <div className="bg-zinc-100 border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1">

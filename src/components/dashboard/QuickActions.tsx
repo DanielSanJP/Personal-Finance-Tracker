@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "sonner";
 import Link from "next/link";
 
 export default function QuickActions() {
@@ -19,21 +18,9 @@ export default function QuickActions() {
           <Link href="/transactions/add">
             <Button>Add Expense</Button>
           </Link>
-          <Button
-            variant="outline"
-            onClick={() =>
-              toast("Scan Receipt functionality not implemented yet", {
-                description:
-                  "This feature will be available in a future update.",
-                action: {
-                  label: "Dismiss",
-                  onClick: () => console.log("Dismissed"),
-                },
-              })
-            }
-          >
-            Scan Receipt
-          </Button>
+          <Link href="/transactions/add?scan=true">
+            <Button variant="outline">Scan Receipt</Button>
+          </Link>
           <Link href="/reports">
             <Button variant="outline">View Reports</Button>
           </Link>

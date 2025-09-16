@@ -50,6 +50,10 @@ interface CategorySelectProps {
    * Whether the field is required
    */
   required?: boolean;
+  /**
+   * Array of categories that are already added (to show "Added" indicator)
+   */
+  existingCategories?: string[];
 }
 
 export function CategorySelect({
@@ -62,16 +66,27 @@ export function CategorySelect({
   showIcons = true,
   className,
   required = false,
+  existingCategories = [],
 }: CategorySelectProps) {
   const categories =
     type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
   const defaultLabel = type === "expense" ? "Category" : "Income Category";
 
   const formatCategoryDisplay = (category: Category) => {
+    const isAlreadyAdded = existingCategories.includes(category.name);
+    let display = "";
+
     if (showIcons && category.icon) {
-      return `${category.icon} ${category.name}`;
+      display = `${category.icon} ${category.name}`;
+    } else {
+      display = category.name;
     }
-    return category.name;
+
+    if (isAlreadyAdded) {
+      display += " (Added)";
+    }
+
+    return display;
   };
 
   return (
@@ -87,11 +102,19 @@ export function CategorySelect({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          {categories.map((category) => (
-            <SelectItem key={category.id} value={category.name}>
-              {formatCategoryDisplay(category)}
-            </SelectItem>
-          ))}
+          {categories.map((category) => {
+            const isAlreadyAdded = existingCategories.includes(category.name);
+            return (
+              <SelectItem
+                key={category.id}
+                value={category.name}
+                disabled={isAlreadyAdded}
+                className={isAlreadyAdded ? "text-gray-400" : ""}
+              >
+                {formatCategoryDisplay(category)}
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
     </div>

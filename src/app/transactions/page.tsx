@@ -1,6 +1,5 @@
 "use client";
 
-import Nav from "@/components/nav";
 import { TransactionsList } from "@/components/transactions";
 import {
   useFilteredTransactions,
@@ -64,7 +63,6 @@ export default function TransactionsPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Nav showDashboardTabs={true} />
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="text-center text-red-600">
             <p>Error loading transactions:</p>
@@ -79,7 +77,6 @@ export default function TransactionsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Nav showDashboardTabs={true} />
       <TransactionsList
         transactions={filteredTransactions}
         filterOptions={{ categories, merchants, types, periods }}

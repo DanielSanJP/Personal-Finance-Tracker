@@ -1,15 +1,11 @@
 "use client";
 
-"use client";
-
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import Nav from "@/components/nav";
 
 export default function ReportsLoading() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Nav showDashboardTabs={true} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Card>
           <CardHeader>

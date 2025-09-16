@@ -26,7 +26,7 @@ interface ParsedTransaction {
 interface VoiceInputModalProps {
   isRecording: boolean;
   isProcessing: boolean;
-  parsedData: ParsedTransaction;
+  parsedData?: ParsedTransaction;
   confidence: number;
   onStartListening: () => void;
   onStopListening: () => void;
@@ -122,7 +122,7 @@ export const VoiceInputModal = ({
             </CardHeader>
             <CardContent className="space-y-3">
               {/* Parsed Data Preview */}
-              {Object.keys(parsedData).length > 0 && (
+              {parsedData && Object.keys(parsedData).length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-gray-700">Detected:</p>
                   <div className="flex flex-wrap gap-1">
@@ -174,7 +174,7 @@ export const VoiceInputModal = ({
               </Button>
 
               {/* Done Button - Show when we have parsed data */}
-              {Object.keys(parsedData).length > 0 && (
+              {parsedData && Object.keys(parsedData).length > 0 && (
                 <Button
                   type="button"
                   variant="outline"

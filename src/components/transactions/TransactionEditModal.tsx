@@ -18,6 +18,9 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
+import { useUpdateTransaction } from "@/hooks/queries/useTransactions";
+import { EXPENSE_CATEGORIES } from "@/constants/categories";
+import { useState, useEffect } from "react";
 import type { Transaction } from "@/types";
 
 interface TransactionEditModalProps {
@@ -31,11 +34,74 @@ export function TransactionEditModal({
   open,
   onOpenChange,
 }: TransactionEditModalProps) {
+  const updateTransactionMutation = useUpdateTransaction();
+
+  // Form state
+  const [formData, setFormData] = useState({
+    description: "",
+    amount: 0,
+    type: "expense",
+    category: "",
+    status: "completed",
+    merchant: "",
+    date: "",
+  });
+
+  // Update form data when transaction changes
+  useEffect(() => {
+    if (transaction) {
+      setFormData({
+        description: transaction.description,
+        amount: Math.abs(transaction.amount),
+        type: transaction.type,
+        category: transaction.category || "",
+        status: transaction.status,
+        merchant: transaction.merchant || "",
+        date: transaction.date,
+      });
+    }
+  }, [transaction]);
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (await checkGuestAndWarn()) return;
-    // Save single transaction functionality will go here
-    toast.info("Save functionality not implemented yet");
+
+    if (!transaction) return;
+
+    try {
+      // Convert amount to negative for expenses, positive for income
+      const adjustedAmount =
+        formData.type === "expense"
+          ? -Math.abs(formData.amount)
+          : Math.abs(formData.amount);
+
+      await updateTransactionMutation.mutateAsync({
+        id: transaction.id,
+        updates: {
+          description: formData.description,
+          amount: adjustedAmount,
+          type: formData.type as "expense" | "income",
+          category: formData.category,
+          status: formData.status as "completed" | "pending" | "failed",
+          merchant: formData.merchant,
+          date: formData.date,
+          updated_at: new Date().toISOString(),
+        },
+      });
+
+      toast.success("Transaction updated successfully!");
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error updating transaction:", error);
+      toast.error("Failed to update transaction");
+    }
+  };
+
+  const handleInputChange = (field: string, value: string | number) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   if (!transaction) return null;
@@ -54,7 +120,8 @@ export function TransactionEditModal({
             <Label htmlFor="edit-description">Description</Label>
             <Input
               id="edit-description"
-              defaultValue={transaction.description}
+              value={formData.description}
+              onChange={(e) => handleInputChange("description", e.target.value)}
               className="w-full"
             />
           </div>
@@ -65,13 +132,20 @@ export function TransactionEditModal({
               <Input
                 id="edit-amount"
                 type="number"
-                defaultValue={Math.abs(transaction.amount)}
+                step="0.01"
+                value={formData.amount}
+                onChange={(e) =>
+                  handleInputChange("amount", parseFloat(e.target.value) || 0)
+                }
                 className="w-full"
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-type">Type</Label>
-              <Select defaultValue={transaction.type}>
+              <Select
+                value={formData.type}
+                onValueChange={(value) => handleInputChange("type", value)}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -86,15 +160,28 @@ export function TransactionEditModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="edit-category">Category</Label>
-              <Input
-                id="edit-category"
-                defaultValue={transaction.category || ""}
-                className="w-full"
-              />
+              <Select
+                value={formData.category}
+                onValueChange={(value) => handleInputChange("category", value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {EXPENSE_CATEGORIES.map((category) => (
+                    <SelectItem key={category.id} value={category.name}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-status">Status</Label>
-              <Select defaultValue={transaction.status}>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => handleInputChange("status", value)}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -111,7 +198,8 @@ export function TransactionEditModal({
             <Label htmlFor="edit-merchant">Merchant</Label>
             <Input
               id="edit-merchant"
-              defaultValue={transaction.merchant || ""}
+              value={formData.merchant}
+              onChange={(e) => handleInputChange("merchant", e.target.value)}
               className="w-full"
             />
           </div>
@@ -121,7 +209,8 @@ export function TransactionEditModal({
             <Input
               id="edit-date"
               type="date"
-              defaultValue={transaction.date}
+              value={formData.date}
+              onChange={(e) => handleInputChange("date", e.target.value)}
               className="w-full"
             />
           </div>
@@ -130,8 +219,12 @@ export function TransactionEditModal({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="submit" onClick={handleSave}>
-            Save Changes
+          <Button
+            type="submit"
+            onClick={handleSave}
+            disabled={updateTransactionMutation.isPending}
+          >
+            {updateTransactionMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

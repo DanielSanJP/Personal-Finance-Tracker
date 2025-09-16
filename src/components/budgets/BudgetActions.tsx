@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import Link from "next/link";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { CategorySelect } from "@/components/category-select";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 import {
   useCreateBudget,
   useUpdateBudget,
@@ -60,24 +62,6 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
     );
   };
 
-  const handleUpdateBudget = async (
-    budgetId: string,
-    updates: Partial<Budget>,
-    closeModal = false
-  ) => {
-    try {
-      await updateBudget.mutateAsync({
-        id: budgetId,
-        budgetData: { budgetAmount: updates.budgetAmount || 0 },
-      });
-      if (closeModal) {
-        setEditBudgetsOpen(false);
-      }
-    } catch (error) {
-      console.error("Error updating budget:", error);
-    }
-  };
-
   const handleConfirmDelete = async () => {
     if (!budgetToDelete) return;
 
@@ -94,6 +78,15 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
     try {
       if (!newBudget.category || !newBudget.budgetAmount) {
         toast.error("Please fill in the category and budget amount");
+        return;
+      }
+
+      // Check if budget already exists for this category
+      const existingBudget = budgets.find(
+        (budget) => budget.category === newBudget.category
+      );
+      if (existingBudget) {
+        toast.error(`Budget already exists for ${newBudget.category} category`);
         return;
       }
 
@@ -168,6 +161,7 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
                 }
                 placeholder="Select a category"
                 className="w-full"
+                existingCategories={budgets.map((budget) => budget.category)}
               />
             </div>
 
@@ -241,22 +235,6 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
           </DialogHeader>
           <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
             {budgets.map((budget) => {
-              const handleSaveBudget = () => {
-                const budgetInput = document.getElementById(
-                  `budget-${budget.id}`
-                ) as HTMLInputElement;
-
-                if (budgetInput) {
-                  handleUpdateBudget(
-                    budget.id,
-                    {
-                      budgetAmount: parseFloat(budgetInput.value) || 0,
-                    },
-                    true
-                  );
-                }
-              };
-
               const handleDeleteBudgetClick = () => {
                 setBudgetToDelete(budget);
                 setDeleteConfirmOpen(true);
@@ -271,18 +249,15 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
                     <Label className="text-base font-medium">
                       {budget.category}
                     </Label>
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={handleSaveBudget}>
-                        Save
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={handleDeleteBudgetClick}
-                      >
-                        Delete
-                      </Button>
-                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleDeleteBudgetClick}
+                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete budget</span>
+                    </Button>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor={`budget-${budget.id}`}>Budget Amount</Label>
@@ -344,19 +319,8 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
         </DialogContent>
       </Dialog>
 
-      <Button
-        variant="outline"
-        onClick={() =>
-          toast("Export Data functionality not implemented yet", {
-            description: "This feature will be available in a future update.",
-            action: {
-              label: "Dismiss",
-              onClick: () => console.log("Dismissed"),
-            },
-          })
-        }
-      >
-        Export Data
+      <Button variant="outline" asChild>
+        <Link href="/reports">View Reports</Link>
       </Button>
 
       {/* Delete Confirmation Dialog */}

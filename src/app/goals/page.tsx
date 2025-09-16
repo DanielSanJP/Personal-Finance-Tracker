@@ -1,6 +1,5 @@
 "use client";
 
-import Nav from "@/components/nav";
 import GoalContent from "@/components/goals/GoalContent";
 import { useGoals } from "@/hooks/queries";
 import GoalsLoading from "./loading";
@@ -15,7 +14,6 @@ export default function GoalsPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Nav showDashboardTabs={true} />
         <GoalContent />
       </div>
     );
@@ -23,7 +21,6 @@ export default function GoalsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Nav showDashboardTabs={true} />
       <GoalContent />
     </div>
   );

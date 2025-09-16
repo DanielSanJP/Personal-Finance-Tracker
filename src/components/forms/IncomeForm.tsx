@@ -97,17 +97,44 @@ export default function IncomeForm() {
     isSupported: isVoiceSupported,
     parsedData,
     confidence,
-    startListening,
-    stopListening,
+    startVoiceInput,
+    stopVoiceInput,
   } = useVoiceInput({
-    onFieldUpdate: handleFieldUpdate,
-    onComplete: () => {
+    onResult: (result) => {
+      // Map voice input result to form fields
+      if (result.amount) {
+        handleFieldUpdate("amount", result.amount);
+      }
+      if (result.description) {
+        handleFieldUpdate("description", result.description);
+      }
+      if (result.merchant) {
+        handleFieldUpdate("merchant", result.merchant);
+      }
+      if (result.category) {
+        handleFieldUpdate("category", result.category);
+      }
+      if (result.account) {
+        // Find account by name and set its ID
+        const matchedAccount = userAccounts.find(
+          (acc) => acc.name === result.account
+        );
+        if (matchedAccount) {
+          handleFieldUpdate("account", matchedAccount.id);
+        }
+      }
+      if (result.date) {
+        handleFieldUpdate("date", new Date(result.date));
+      }
+
       toast.success("Income auto-filled!", {
-        description: "Review the details and save when ready.",
+        description: `Confidence: ${Math.round(
+          result.confidence * 100
+        )}%. Review the details and save when ready.`,
       });
     },
-    accounts: userAccounts, // Use userAccounts directly
-    type: "income",
+    accounts: userAccounts,
+    transactionType: "income",
   });
 
   const handleQuickAdd = (source: string) => {
@@ -375,10 +402,23 @@ export default function IncomeForm() {
               isRecording={isContinuousRecording}
               isProcessing={isContinuousProcessing}
               isSupported={isVoiceSupported}
-              parsedData={parsedData}
+              parsedData={
+                parsedData
+                  ? {
+                      amount: parsedData.amount,
+                      description: parsedData.description,
+                      merchant: parsedData.merchant,
+                      category: parsedData.category,
+                      account: parsedData.account,
+                      date: parsedData.date
+                        ? new Date(parsedData.date)
+                        : undefined,
+                    }
+                  : undefined
+              }
               confidence={confidence}
-              onStartListening={startListening}
-              onStopListening={stopListening}
+              onStartListening={startVoiceInput}
+              onStopListening={stopVoiceInput}
               type="income"
             />
           </div>

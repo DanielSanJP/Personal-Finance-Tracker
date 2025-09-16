@@ -1,6 +1,5 @@
 "use client";
 
-import Nav from "@/components/nav";
 import { BudgetContent } from "@/components/budgets/BudgetContent";
 import { useBudgets } from "@/hooks/queries";
 import BudgetsLoading from "./loading";
@@ -17,7 +16,6 @@ export default function BudgetsPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Nav showDashboardTabs={true} />
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="text-center text-red-600">
             <p>Error loading budgets: {error?.message || "Unknown error"}</p>
@@ -35,7 +33,6 @@ export default function BudgetsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Nav showDashboardTabs={true} />
       <BudgetContent budgets={budgets} onRefresh={refetch} />
     </div>
   );

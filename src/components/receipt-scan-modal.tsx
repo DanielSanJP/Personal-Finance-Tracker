@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Camera, Upload, CheckCircle, Image as ImageIcon } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ReceiptCamera } from "./receipt-camera";
 
 interface ReceiptData {
@@ -35,6 +35,7 @@ interface ReceiptScanModalProps {
   onCaptureFromVideo: (video: HTMLVideoElement) => Promise<File>;
   onClearPreview: () => void;
   isSupported?: boolean;
+  autoOpen?: boolean;
 }
 
 export const ReceiptScanModal = ({
@@ -47,10 +48,18 @@ export const ReceiptScanModal = ({
   onCaptureFromVideo,
   onClearPreview,
   isSupported = true,
+  autoOpen = false,
 }: ReceiptScanModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [cameraModalOpen, setCameraModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-open modal when autoOpen prop is true
+  useEffect(() => {
+    if (autoOpen) {
+      setIsOpen(true);
+    }
+  }, [autoOpen]);
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
