@@ -47,11 +47,13 @@ export async function updateSession(request: NextRequest) {
       response.cookies.delete('sb-refresh-token')
       
       // Only redirect to login if not already on auth pages
-      if (
-        !request.nextUrl.pathname.startsWith('/login') &&
-        !request.nextUrl.pathname.startsWith('/register') &&
-        !request.nextUrl.pathname.startsWith('/error')
-      ) {
+      const isPublicRoute = 
+        request.nextUrl.pathname === '/' ||
+        request.nextUrl.pathname.startsWith('/login') ||
+        request.nextUrl.pathname.startsWith('/register') ||
+        request.nextUrl.pathname.startsWith('/error')
+      
+      if (!isPublicRoute) {
         const url = request.nextUrl.clone()
         url.pathname = '/login'
         url.searchParams.set('message', 'Session expired. Please log in again.')
@@ -64,20 +66,17 @@ export async function updateSession(request: NextRequest) {
     user = null
   }
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/register') &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    !request.nextUrl.pathname.startsWith('/error') &&
-    !request.nextUrl.pathname.startsWith('/dashboard') &&
-    !request.nextUrl.pathname.startsWith('/transactions') &&
-    !request.nextUrl.pathname.startsWith('/budgets') &&
-    !request.nextUrl.pathname.startsWith('/goals') &&
-    !request.nextUrl.pathname.startsWith('/income') &&
-    request.nextUrl.pathname !== '/'
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  // Define public routes that don't require authentication
+  const isPublicRoute = 
+    request.nextUrl.pathname === '/' ||
+    request.nextUrl.pathname.startsWith('/login') ||
+    request.nextUrl.pathname.startsWith('/register') ||
+    request.nextUrl.pathname.startsWith('/auth') ||
+    request.nextUrl.pathname.startsWith('/error') ||
+    request.nextUrl.pathname.startsWith('/api/') // Allow API routes for auth
+
+  // If user is not authenticated and trying to access a protected route
+  if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
