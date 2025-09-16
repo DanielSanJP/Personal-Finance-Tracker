@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { createClient } from "@/lib/supabase/client";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "./useAuth";
 
 // Interface for RPC function response
 interface BudgetWithSpendingResponse {

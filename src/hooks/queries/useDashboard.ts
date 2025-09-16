@@ -1,10 +1,10 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-import { getCurrentUser } from "@/lib/auth";
 import { toast } from "sonner";
 import { getCurrentUserBudgetsWithRealTimeSpending } from "./useBudgets";
-import type { User, Account, Transaction, Budget } from "@/types";
+import { useAuth } from "./useAuth";
+import type { Account, Transaction, Budget } from "@/types";
+import type { User } from "@supabase/supabase-js";
 
 // Dashboard data interface
 interface DashboardData {
@@ -118,10 +118,8 @@ const calculateMonthlyExpensesFromTransactions = (transactions: Transaction[]): 
 };
 
 // Dashboard data function moved from deleted data folder
-const getDashboardData = async (): Promise<DashboardData | null> => {
+const getDashboardData = async (user: User): Promise<DashboardData | null> => {
   try {
-    // First get the user (this is cached now)
-    const user = await getCurrentUser();
     if (!user) {
       return null;
     }
@@ -167,43 +165,24 @@ export const DASHBOARD_QUERY_KEYS = {
 } as const;
 
 export function useDashboardData() {
-  const queryClient = useQueryClient();
-
-  // Handle auth state changes for cache clearing
-  useEffect(() => {
-    const supabase = createClient();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event) => {
-      // Clear React Query cache when user changes or signs out
-      if (event === "SIGNED_OUT" || event === "SIGNED_IN") {
-        // Invalidate dashboard queries
-        queryClient.invalidateQueries({
-          queryKey: DASHBOARD_QUERY_KEYS.dashboardData,
-        });
-
-        // If signed out, clear the query cache
-        if (event === "SIGNED_OUT") {
-          queryClient.setQueryData(DASHBOARD_QUERY_KEYS.dashboardData, null);
-        }
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [queryClient]);
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
 
   return useQuery({
     queryKey: DASHBOARD_QUERY_KEYS.dashboardData,
     queryFn: async () => {
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      
       try {
-        return await getDashboardData();
+        return await getDashboardData(user);
       } catch (error) {
         console.error("Error loading dashboard data:", error);
         toast.error("Failed to load dashboard data");
         throw error;
       }
     },
+    enabled: isAuthenticated && !authLoading && !!user,
     staleTime: 30 * 1000, // 30 seconds
     gcTime: 5 * 60 * 1000, // 5 minutes
     retry: 1,

@@ -10,9 +10,11 @@ import { toast } from "sonner";
 import Nav from "@/components/nav";
 import { createAccount } from "@/hooks/queries/useAccounts";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
+import { useAuth } from "@/hooks/queries/useAuth";
 
 export default function AddAccountPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     type: "",
@@ -47,7 +49,14 @@ export default function AddAccountPage() {
     }
 
     try {
-      await createAccount({
+      if (!user) {
+        toast.error("Authentication required", {
+          description: "Please log in to create an account.",
+        });
+        return;
+      }
+
+      await createAccount(user.id, {
         name: formData.name,
         type: formData.type,
         balance: Number(formData.balance),

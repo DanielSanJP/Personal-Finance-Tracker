@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { updateAccount } from "@/hooks/queries/useAccounts";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
+import { useAuth } from "@/hooks/queries/useAuth";
 
 interface Account {
   id: string;
@@ -39,6 +40,7 @@ export function EditAccountModal({
   onClose,
   onAccountUpdated,
 }: EditAccountModalProps) {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     type: "",
@@ -102,7 +104,14 @@ export function EditAccountModal({
     setIsLoading(true);
 
     try {
-      await updateAccount(account.id, {
+      if (!user) {
+        toast.error("Authentication required", {
+          description: "Please log in to update the account.",
+        });
+        return;
+      }
+
+      await updateAccount(user.id, account.id, {
         name: formData.name,
         type: formData.type,
         balance: Number(formData.balance),

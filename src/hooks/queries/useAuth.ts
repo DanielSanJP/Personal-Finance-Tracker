@@ -1,12 +1,51 @@
-import { useQuery } from '@tanstack/react-query';
-import { getCurrentUser, isGuestUser } from '@/lib/auth';
-import { queryKeys } from '@/lib/query-keys';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { createClient } from '@/lib/supabase/client';
+import { useEffect } from 'react';
+import type { User } from '@supabase/supabase-js';
+
+// Guest account constant
+export const GUEST_USER_ID = '55e3b0e6-b683-4cab-aa5b-6a5b192bde7d';
+
+// Simple function to get current user from Supabase
+export const getCurrentUser = async (): Promise<User | null> => {
+  try {
+    const supabase = createClient();
+    
+    // First check if there's an active session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.error('Session error:', sessionError);
+      return null;
+    }
+    
+    // If no session, return null (not an error)
+    if (!session) {
+      return null;
+    }
+    
+    // If we have a session, get the user
+    const { data: { user }, error } = await supabase.auth.getUser();
+    
+    if (error) {
+      console.error('Auth error:', error);
+      return null;
+    }
+    
+    return user;
+  } catch (error) {
+    console.error('Error getting current user:', error);
+    return null;
+  }
+};
 
 /**
- * React Query hook for authentication state
- * Handles both regular users and guest users seamlessly
+ * Simple React Query hook for authentication state
+ * Uses Supabase auth directly without extra complexity
  */
 export function useAuth() {
+  const queryClient = useQueryClient();
+  
   const {
     data: user,
     isLoading,
@@ -14,66 +53,43 @@ export function useAuth() {
     error,
     refetch,
   } = useQuery({
-    queryKey: queryKeys.auth.currentUser(),
+    queryKey: ['auth', 'currentUser'],
     queryFn: getCurrentUser,
-    staleTime: 10 * 60 * 1000, // Auth data is fresh for 10 minutes
-    gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
-    retry: (failureCount, error) => {
-      // Don't retry auth errors that are likely permanent
-      if (error instanceof Error && error.message.includes('Invalid')) {
-        return false;
-      }
-      return failureCount < 2;
-    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1,
   });
 
-  // Derived state for convenience
+  // Listen for auth changes and update the cache
+  useEffect(() => {
+    const supabase = createClient();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Update the query cache when auth state changes
+      queryClient.setQueryData(['auth', 'currentUser'], session?.user ?? null);
+      
+      // Clear all other queries on sign out
+      if (event === 'SIGNED_OUT') {
+        queryClient.clear();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [queryClient]);
+
+  // Derived state
   const isAuthenticated = !!user;
-  const isGuest = user ? isGuestUser(user) : false;
-  const isRegularUser = isAuthenticated && !isGuest;
+  const isGuest = user?.id === GUEST_USER_ID;
 
   return {
-    // Core auth state
     user,
     isLoading,
     isError,
     error,
-    
-    // Convenience flags
     isAuthenticated,
     isGuest,
-    isRegularUser,
-    
-    // Actions
     refetch,
-    
-    // Utility functions
-    hasPermission: (action: string): boolean => {
-      if (!user) return false;
-      
-      // Guest users have limited permissions
-      if (isGuest) {
-        const allowedActions = ['read', 'view', 'export'];
-        return allowedActions.includes(action);
-      }
-      
-      // Regular users have full permissions
-      return true;
-    },
   };
-}
-
-/**
- * Hook for getting user by ID (useful for profile pages, etc.)
- */
-export function useUser(userId: string | undefined) {
-  return useQuery({
-    queryKey: queryKeys.auth.user(userId || ''),
-    queryFn: () => {
-      if (!userId) throw new Error('User ID is required');
-      return getCurrentUser(); // You might want to implement getUserById here
-    },
-    enabled: !!userId,
-    staleTime: 5 * 60 * 1000,
-  });
 }

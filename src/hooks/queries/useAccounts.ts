@@ -1,15 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
 import { useAuth } from './useAuth';
-import { getCurrentUser } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/client';
 import type { Account } from '@/types';
 
 // Data functions (moved from data folder)
-async function getCurrentUserAccounts(): Promise<Account[]> {
-  const user = await getCurrentUser();
-  
-  if (!user) {
+async function getCurrentUserAccounts(userId: string): Promise<Account[]> {
+  if (!userId) {
     return [];
   }
   
@@ -18,7 +15,7 @@ async function getCurrentUserAccounts(): Promise<Account[]> {
     const { data, error } = await supabase
       .from('accounts')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('is_active', true);
 
     if (error) {
@@ -71,19 +68,18 @@ async function getAccountsByUserId(userId: string): Promise<Account[]> {
   }
 }
 
-async function getTotalBalance(): Promise<number> {
-  const accounts = await getCurrentUserAccounts();
+async function getTotalBalance(userId: string): Promise<number> {
+  const accounts = await getCurrentUserAccounts(userId);
   return accounts.reduce((total: number, account: Account) => total + account.balance, 0);
 }
 
-export async function createAccount(accountData: {
+export async function createAccount(userId: string, accountData: {
   name: string;
   type: string;
   balance: number;
   accountNumber?: string;
 }): Promise<Account> {
-  const user = await getCurrentUser();
-  if (!user) {
+  if (!userId) {
     throw new Error('User not authenticated');
   }
 
@@ -97,7 +93,7 @@ export async function createAccount(accountData: {
       .from('accounts')
       .insert({
         id: accountId,
-        user_id: user.id,
+        user_id: userId,
         name: accountData.name,
         balance: accountData.balance,
         type: accountData.type,
@@ -127,15 +123,14 @@ export async function createAccount(accountData: {
   }
 }
 
-export async function updateAccount(accountId: string, accountData: {
+export async function updateAccount(userId: string, accountId: string, accountData: {
   name?: string;
   balance?: number;
   type?: string;
   accountNumber?: string;
   isActive?: boolean;
 }): Promise<Account> {
-  const user = await getCurrentUser();
-  if (!user) {
+  if (!userId) {
     throw new Error('User not authenticated');
   }
 
@@ -152,7 +147,7 @@ export async function updateAccount(accountId: string, accountData: {
         updated_at: new Date().toISOString(),
       })
       .eq('id', accountId)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .select()
       .single();
 
@@ -186,7 +181,7 @@ export function useAccounts() {
     queryKey: queryKeys.accounts.lists(),
     queryFn: async (): Promise<Account[]> => {
       if (!user) return [];
-      return getCurrentUserAccounts();
+      return getCurrentUserAccounts(user.id);
     },
     enabled: !!user,
     staleTime: isGuest ? 10 * 60 * 1000 : 3 * 60 * 1000, // Account data can be less fresh
@@ -215,11 +210,12 @@ export function useAccountsByUserId(userId: string | undefined) {
  */
 export function useAccount(accountId: string | undefined) {
   const { data: accounts = [] } = useAccounts();
+  const { user } = useAuth();
 
   return useQuery({
     queryKey: queryKeys.accounts.detail(accountId || ''),
     queryFn: async (): Promise<Account | null> => {
-      if (!accountId) return null;
+      if (!accountId || !user) return null;
       
       // Try to find in the accounts list cache first
       const account = accounts.find(acc => acc.id === accountId);
@@ -229,10 +225,10 @@ export function useAccount(accountId: string | undefined) {
       if (accounts.length > 0) return null;
 
       // Otherwise fetch accounts and try again
-      const allAccounts = await getCurrentUserAccounts();
+      const allAccounts = await getCurrentUserAccounts(user.id);
       return allAccounts.find(acc => acc.id === accountId) || null;
     },
-    enabled: !!accountId,
+    enabled: !!accountId && !!user,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -245,7 +241,10 @@ export function useTotalBalance() {
 
   return useQuery({
     queryKey: queryKeys.accounts.balance('total'),
-    queryFn: getTotalBalance,
+    queryFn: async () => {
+      if (!user) return 0;
+      return getTotalBalance(user.id);
+    },
     enabled: !!user,
     staleTime: 2 * 60 * 1000, // Balance should be relatively fresh
     gcTime: 10 * 60 * 1000,

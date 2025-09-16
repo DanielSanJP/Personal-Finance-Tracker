@@ -24,7 +24,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useCreateBudget } from "@/hooks/queries/useBudgets";
 import { useCreateGoal } from "@/hooks/queries/useGoals";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/hooks/queries/useAuth";
 
 interface EmptyStateProps {
   title: string;

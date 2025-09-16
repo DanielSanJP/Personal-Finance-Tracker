@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { createClient } from "@/lib/supabase/client";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "./useAuth";
 import { queryKeys } from "@/lib/query-keys";
 
 // Goal functions moved from deleted data folder

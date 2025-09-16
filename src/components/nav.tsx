@@ -16,9 +16,7 @@ import {
 import Breadcrumbs from "@/components/breadcrumbs";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
-import { useState, useEffect } from "react";
-import type { User } from "@supabase/supabase-js";
-import { GUEST_USER_ID } from "@/lib/guest-protection";
+import { useAuth } from "@/hooks/queries/useAuth";
 
 // Routes that should NOT show dashboard tabs
 const NO_DASHBOARD_ROUTES = [
@@ -35,39 +33,7 @@ interface NavProps {
 export default function Nav({ showDashboardTabs }: NavProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const supabase = createClient();
-
-    // Get initial user
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
-    };
-
-    getUser();
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Simplified logic for when to show different nav elements
-  const hasUser = !!user && !loading;
-
-  // Check if current user is guest
-  const isGuestUser = user?.id === GUEST_USER_ID;
+  const { user, isLoading, isGuest, isAuthenticated } = useAuth();
 
   // Determine whether to show dashboard tabs automatically if not explicitly provided
   const shouldShowDashboardTabs =
@@ -75,13 +41,13 @@ export default function Nav({ showDashboardTabs }: NavProps) {
       ? showDashboardTabs
       : (() => {
           // Don't show dashboard tabs if loading
-          if (loading) return false;
+          if (isLoading) return false;
 
           // Don't show dashboard tabs on specific routes
           if (NO_DASHBOARD_ROUTES.includes(pathname)) return false;
 
           // Show dashboard tabs for authenticated users on other routes
-          return !!user;
+          return isAuthenticated;
         })();
 
   // Function to determine if a tab is active
@@ -101,13 +67,13 @@ export default function Nav({ showDashboardTabs }: NavProps) {
 
   // Create userData from user
   const userData =
-    hasUser && user
+    isAuthenticated && user
       ? {
           id: user.id,
-          displayName: isGuestUser
+          displayName: isGuest
             ? "Guest User (View Only)"
             : user.user_metadata?.display_name || user.email || "User",
-          initials: isGuestUser
+          initials: isGuest
             ? "G"
             : user.user_metadata?.initials ||
               `${user.user_metadata?.first_name?.[0] || ""}${
@@ -145,7 +111,7 @@ export default function Nav({ showDashboardTabs }: NavProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-b">
           <div className="flex justify-between h-16">
             <div className="flex items-center min-w-0 flex-1">
-              {hasUser ? (
+              {isAuthenticated ? (
                 <Link
                   href="/dashboard"
                   className="flex items-center gap-2 text-sm sm:text-xl font-bold text-foreground hover:opacity-80 transition-opacity min-w-0"

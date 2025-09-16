@@ -1,6 +1,5 @@
 "use client";
 
-import Nav from "@/components/nav";
 import { AccountsList } from "@/components/accounts";
 import { useAccounts } from "@/hooks/queries";
 import AccountsLoading from "./loading";
@@ -15,7 +14,6 @@ export default function AccountsPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Nav showDashboardTabs={true} />
         <AccountsList />
       </div>
     );
@@ -23,7 +21,6 @@ export default function AccountsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Nav showDashboardTabs={true} />
       <AccountsList />
     </div>
   );

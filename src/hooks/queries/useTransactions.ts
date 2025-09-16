@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Transaction } from '@/types';
 import { useAuth } from './useAuth';
 import { createClient } from '@/lib/supabase/client';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser } from './useAuth';
 import { queryKeys } from '@/lib/query-keys';
 
 // Type definitions
