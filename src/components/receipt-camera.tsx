@@ -29,6 +29,7 @@ export const ReceiptCamera = ({
     stream: MediaStream;
   } | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
   // Initialize camera when modal opens
   useEffect(() => {
@@ -36,6 +37,15 @@ export const ReceiptCamera = ({
       try {
         const stream = await onStartCamera();
         setVideoStream(stream);
+
+        // Wait for video to be ready
+        stream.video.addEventListener(
+          "loadeddata",
+          () => {
+            setIsVideoReady(true);
+          },
+          { once: true }
+        );
       } catch (error) {
         console.error("Failed to start camera:", error);
         onClose();
@@ -48,6 +58,7 @@ export const ReceiptCamera = ({
         setVideoStream(null);
       }
       setIsCapturing(false);
+      setIsVideoReady(false);
     };
 
     if (isOpen && !videoStream) {
@@ -68,9 +79,11 @@ export const ReceiptCamera = ({
   }, [isOpen, videoStream, onStartCamera, onClose]);
 
   const handleCapture = async () => {
-    if (videoStream && !isCapturing) {
+    if (videoStream && !isCapturing && isVideoReady) {
       try {
         setIsCapturing(true);
+
+        // Immediate capture without delay
         const file = await onCaptureFromVideo(videoStream.video);
         await onCapture(file);
         onClose();
@@ -128,6 +141,9 @@ export const ReceiptCamera = ({
             ref={(video) => {
               if (video && videoStream.video !== video) {
                 video.srcObject = videoStream.stream;
+                video.muted = true;
+                video.playsInline = true;
+                video.autoplay = true;
                 video.play();
               }
             }}
@@ -135,6 +151,9 @@ export const ReceiptCamera = ({
             autoPlay
             muted
             playsInline
+            style={{
+              transform: "scaleX(-1)", // Mirror for better UX
+            }}
           />
         )}
 
@@ -157,9 +176,9 @@ export const ReceiptCamera = ({
         <div className="flex justify-center mb-3 sm:mb-4">
           <Button
             onClick={handleCapture}
-            disabled={isProcessing || isCapturing}
+            disabled={isProcessing || isCapturing || !isVideoReady}
             size="lg"
-            className="rounded-full w-16 h-16 sm:w-20 sm:h-20"
+            className="rounded-full w-16 h-16 sm:w-20 sm:h-20 transition-all duration-150 active:scale-95"
             onMouseDown={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
             style={{
@@ -176,7 +195,9 @@ export const ReceiptCamera = ({
           <p className="text-foreground text-xs sm:text-sm mb-1">
             {isCapturing
               ? "Capturing..."
-              : "Position receipt in frame and tap to capture"}
+              : isVideoReady
+              ? "Tap to capture receipt"
+              : "Preparing camera..."}
           </p>
           {isProcessing && (
             <p className="text-muted-foreground text-xs">Processing image...</p>

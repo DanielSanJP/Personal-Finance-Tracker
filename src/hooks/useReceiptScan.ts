@@ -131,19 +131,43 @@ export const useReceiptScan = ({ onReceiptData, onError }: UseReceiptScanOptions
         throw new Error('Camera access is not supported in this browser');
       }
 
-      // Request camera permission
+      // Request camera permission with optimized settings
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           facingMode: 'environment', // Use back camera on mobile
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
+          width: { 
+            min: 640,
+            ideal: 1280,
+            max: 1920 
+          },
+          height: { 
+            min: 480,
+            ideal: 720,
+            max: 1080 
+          },
+          frameRate: { 
+            min: 15,
+            ideal: 30,
+            max: 30 
+          },
+          // Additional optimizations
+          aspectRatio: { ideal: 16/9 }
         } 
       });
 
-      // Create video element for preview
+      // Create video element for preview with optimizations
       const video = document.createElement('video');
       video.srcObject = stream;
-      video.play();
+      video.muted = true;
+      video.playsInline = true;
+      video.autoplay = true;
+      
+      // Pre-load video for faster capture
+      await new Promise<void>((resolve, reject) => {
+        video.addEventListener('loadedmetadata', () => resolve(), { once: true });
+        video.addEventListener('error', () => reject(new Error('Video failed to load')), { once: true });
+        video.play();
+      });
 
       // Return video element and stream for modal to handle
       return { video, stream };
@@ -173,35 +197,53 @@ export const useReceiptScan = ({ onReceiptData, onError }: UseReceiptScanOptions
 
   const captureFromVideo = useCallback(async (video: HTMLVideoElement): Promise<File> => {
     return new Promise((resolve, reject) => {
-      try {
-        // Create canvas and capture frame
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        
-        if (!context) {
-          throw new Error('Canvas context not available');
-        }
-
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        
-        context.drawImage(video, 0, 0);
-        
-        // Convert canvas to blob
-        canvas.toBlob((blob) => {
-          if (!blob) {
-            reject(new Error('Failed to capture image'));
+      // Use requestAnimationFrame to ensure we capture the latest frame
+      requestAnimationFrame(() => {
+        try {
+          // Ensure video is ready and playing
+          if (video.readyState < 2) {
+            reject(new Error('Video not ready for capture'));
             return;
           }
 
-          // Create file from blob
-          const file = new File([blob], 'receipt-capture.jpg', { type: 'image/jpeg' });
-          resolve(file);
-        }, 'image/jpeg', 0.9);
+          // Create canvas and capture frame (optimized)
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d', { 
+            alpha: false, // Disable alpha channel for better performance
+            willReadFrequently: false // Optimize for single capture
+          });
+          
+          if (!context) {
+            reject(new Error('Canvas context not available'));
+            return;
+          }
 
-      } catch (error) {
-        reject(error);
-      }
+          // Set canvas size to video dimensions
+          canvas.width = video.videoWidth || video.offsetWidth;
+          canvas.height = video.videoHeight || video.offsetHeight;
+          
+          // Draw current frame immediately
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          
+          // Convert to blob with optimized settings
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error('Failed to capture image'));
+              return;
+            }
+
+            // Create file from blob
+            const file = new File([blob], `receipt-${Date.now()}.jpg`, { 
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+            resolve(file);
+          }, 'image/jpeg', 0.95); // Higher quality for better OCR
+
+        } catch (error) {
+          reject(error);
+        }
+      });
     });
   }, []);
 
