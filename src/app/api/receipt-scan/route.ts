@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getCategoryFromBusiness } from '@/constants/business-mapping';
-import { getCategoryName } from '@/constants/categories';
+import { getCategoryName, EXPENSE_CATEGORIES } from '@/constants/categories';
 
 // Initialize the Gemini AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -27,6 +27,9 @@ export async function POST(req: NextRequest) {
     console.log('Received image type:', imageFile.type);
     console.log('Image size:', imageBytes.length, 'bytes');
 
+    // Get available categories for prompt
+    const categoryOptions = EXPENSE_CATEGORIES.map(cat => cat.name).join(', ');
+
     // Create the prompt for Gemini to analyze the receipt
     const prompt = `
     Analyze this receipt image and extract the following information in JSON format. Be very accurate and look for the most likely total amount (not individual items, taxes, or discounts):
@@ -36,7 +39,7 @@ export async function POST(req: NextRequest) {
       "amount": "final total amount as decimal number (e.g., 25.50)",
       "date": "date in YYYY-MM-DD format if found",
       "items": ["list of main purchased items if clearly visible"],
-      "category": "best matching category from: food-dining, groceries, gas-fuel, shopping, entertainment, transport, health-medical, utilities, other"
+      "category": "best matching category from: ${categoryOptions}"
     }
 
     Important rules:
@@ -45,7 +48,7 @@ export async function POST(req: NextRequest) {
     - If multiple amounts, choose the one most likely to be the final total the customer paid
     - For merchant: Use the main business name, clean up any store numbers or extra text
     - For date: Use the transaction date, not printed date
-    - For category: Choose the most appropriate category based on the merchant and items
+    - For category: Choose the most appropriate category based on the merchant and items. Use ONLY the exact category names from the list above.
 
     Return only valid JSON, no additional text.
     `;

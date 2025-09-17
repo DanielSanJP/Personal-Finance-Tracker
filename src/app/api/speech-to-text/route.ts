@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { EXPENSE_CATEGORIES } from '@/constants/categories';
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/constants/categories';
 
 // Initialize the Gemini AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get available categories for the specified type
-    const categories = type === 'expense' ? EXPENSE_CATEGORIES : EXPENSE_CATEGORIES; // Note: keeping EXPENSE_CATEGORIES for now since we removed INCOME_CATEGORIES import
+    const categories = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
     const categoryOptions = categories.map(cat => `${cat.name} (${cat.description})`).join('\n');
     
     // Create account options string
@@ -76,13 +76,14 @@ export async function POST(request: NextRequest) {
     5. Use business knowledge to categorize accurately
     6. Choose the best matching account if multiple available
     7. ALWAYS use today's date (${today}) unless user specifically mentions a different date like "yesterday" or "last week"
+    8. CRITICAL: For "category", use ONLY the exact category names from the Available Categories list above. Do not create new category names.
     
     Return ONLY a JSON object in this exact format:
     {
       "amount": "decimal_number_only",
       "description": "clear_transaction_description", 
       "merchant": "business_name_if_mentioned",
-      "category": "exact_category_name_from_list",
+      "category": "exact_category_name_from_Available_Categories_list",
       "account": "account_name_if_identifiable",
       "date": "YYYY-MM-DD",
       "confidence": confidence_score_0_to_100
