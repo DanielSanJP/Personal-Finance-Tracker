@@ -151,9 +151,6 @@ export const ReceiptCamera = ({
             autoPlay
             muted
             playsInline
-            style={{
-              transform: "scaleX(-1)", // Mirror for better UX
-            }}
           />
         )}
 
