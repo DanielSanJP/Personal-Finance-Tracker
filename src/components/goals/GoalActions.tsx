@@ -234,15 +234,15 @@ export default function GoalActions({
   };
 
   return (
-    <Card className="mb-4">
+    <Card>
       <CardHeader>
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="pb-4 flex flex-wrap gap-2 justify-center">
+        <div className="grid grid-cols-2 md:flex md:flex-wrap gap-3 pb-4 justify-center [&>*:last-child:nth-child(odd)]:col-span-2 [&>*:last-child:nth-child(odd)]:justify-self-center">
           <Dialog open={addGoalOpen} onOpenChange={setAddGoalOpen}>
             <DialogTrigger asChild>
-              <Button>Add New Goal</Button>
+              <Button className="min-w-[140px]">Add New Goal</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden">
               <DialogHeader>
@@ -358,6 +358,7 @@ export default function GoalActions({
             <DialogTrigger asChild>
               <Button
                 variant="outline"
+                className="min-w-[140px]"
                 onClick={() => {
                   // Initialize edit target dates with current goal dates
                   const initialDates: Record<string, Date | undefined> = {};
@@ -566,7 +567,9 @@ export default function GoalActions({
 
           <Dialog open={contributionOpen} onOpenChange={setContributionOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline">Make Contribution</Button>
+              <Button variant="outline" className="min-w-[140px]">
+                Make Contribution
+              </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>

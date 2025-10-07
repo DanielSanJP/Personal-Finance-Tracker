@@ -140,15 +140,15 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
   };
 
   return (
-    <Card className="mb-4">
+    <Card>
       <CardHeader>
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="pb-4 flex flex-wrap gap-2 justify-center">
+        <div className="grid grid-cols-2 md:flex md:flex-wrap gap-3 pb-4 justify-center [&>*:last-child:nth-child(odd)]:col-span-2 [&>*:last-child:nth-child(odd)]:justify-self-center">
           <Dialog open={addBudgetOpen} onOpenChange={setAddBudgetOpen}>
             <DialogTrigger asChild>
-              <Button>Add Budget</Button>
+              <Button className="min-w-[140px]">Add Budget</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -237,7 +237,9 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
 
           <Dialog open={editBudgetsOpen} onOpenChange={setEditBudgetsOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline">Edit Budgets</Button>
+              <Button variant="outline" className="min-w-[140px]">
+                Edit Budgets
+              </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[525px]">
               <DialogHeader>
@@ -334,7 +336,7 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
             </DialogContent>
           </Dialog>
 
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="min-w-[140px]">
             <Link href="/reports">View Reports</Link>
           </Button>
 

@@ -13,7 +13,7 @@ export default function DashboardContent() {
 
   if (error || !dashboardData) {
     return (
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Card>
           <CardContent className="p-8 text-center">
             <p className="text-gray-600 mb-4">Failed to load dashboard data</p>
@@ -27,20 +27,18 @@ export default function DashboardContent() {
   const { accounts, transactions, summary } = dashboardData;
 
   return (
-    <div className="max-w-7xl mx-auto p-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
       {/* Quick Actions */}
       <QuickActions />
 
       {/* Financial Summary Cards */}
       <FinancialSummaryCards summary={summary} />
 
-      <div className="space-y-4">
-        {/* Spending Overview */}
-        <SpendingChart transactions={transactions} />
+      {/* Spending Overview */}
+      <SpendingChart transactions={transactions} />
 
-        {/* Your Accounts */}
-        <AccountsOverview accounts={accounts} />
-      </div>
+      {/* Your Accounts */}
+      <AccountsOverview accounts={accounts} />
     </div>
   );
 }

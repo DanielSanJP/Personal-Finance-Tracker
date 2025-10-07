@@ -144,11 +144,12 @@ export function TransactionBulkEditModal({
       <DialogTrigger asChild>
         <Button
           variant="outline"
+          className="min-w-[140px]"
           onClick={async () => {
             if (await checkGuestAndWarn()) return;
           }}
         >
-          Edit Transactions
+          Edit
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px]">

@@ -136,16 +136,16 @@ export function TransactionsList({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
       {/* Quick Actions */}
       <Card>
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="pb-4 flex flex-wrap gap-2 justify-center">
-            <Button asChild>
-              <Link href="/transactions/add">Add Transaction</Link>
+          <div className="grid grid-cols-2 md:flex md:flex-wrap gap-3 pb-4 justify-center [&>*:last-child:nth-child(odd)]:col-span-2 [&>*:last-child:nth-child(odd)]:justify-self-center">
+            <Button asChild className="min-w-[140px]">
+              <Link href="/transactions/add">Add</Link>
             </Button>
 
             <TransactionBulkEditModal
@@ -154,11 +154,19 @@ export function TransactionsList({
               onOpenChange={setEditTransactionsOpen}
             />
 
-            <Button variant="outline" onClick={handleCSVExport}>
+            <Button
+              variant="outline"
+              onClick={handleCSVExport}
+              className="min-w-[140px]"
+            >
               Export to CSV
             </Button>
 
-            <Button variant="outline" onClick={handlePDFExport}>
+            <Button
+              variant="outline"
+              onClick={handlePDFExport}
+              className="min-w-[140px]"
+            >
               Export to PDF
             </Button>
           </div>
