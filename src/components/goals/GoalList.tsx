@@ -49,7 +49,7 @@ export default function GoalList({ goals, isLoading }: GoalListProps) {
   }
 
   return (
-    <>
+    <div className="space-y-6">
       {goals.map((goal, index) => {
         const progressWidth = getProgressWidth(
           goal.currentAmount,
@@ -97,6 +97,6 @@ export default function GoalList({ goals, isLoading }: GoalListProps) {
           </div>
         );
       })}
-    </>
+    </div>
   );
 }

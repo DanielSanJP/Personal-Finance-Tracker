@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -139,217 +140,233 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
   };
 
   return (
-    <div className="pb-4 flex flex-wrap gap-4 justify-center border-b">
-      <Dialog open={addBudgetOpen} onOpenChange={setAddBudgetOpen}>
-        <DialogTrigger asChild>
-          <Button>Add Budget</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add New Budget</DialogTitle>
-            <DialogDescription>
-              Create a new budget category with your desired spending limit.
-            </DialogDescription>
-          </DialogHeader>
+    <Card className="mb-4">
+      <CardHeader>
+        <CardTitle>Quick Actions</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="pb-4 flex flex-wrap gap-2 justify-center">
+          <Dialog open={addBudgetOpen} onOpenChange={setAddBudgetOpen}>
+            <DialogTrigger asChild>
+              <Button>Add Budget</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Budget</DialogTitle>
+                <DialogDescription>
+                  Create a new budget category with your desired spending limit.
+                </DialogDescription>
+              </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <CategorySelect
-                value={newBudget.category}
-                onValueChange={(value) =>
-                  setNewBudget({ ...newBudget, category: value })
-                }
-                placeholder="Select a category"
-                className="w-full"
-                existingCategories={budgets.map((budget) => budget.category)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="budgetAmount">Budget Amount</Label>
-              <Input
-                id="budgetAmount"
-                type="number"
-                placeholder="Enter budget amount"
-                value={newBudget.budgetAmount}
-                onChange={(e) =>
-                  setNewBudget({ ...newBudget, budgetAmount: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="period">Budget Period</Label>
-              <Select
-                value={newBudget.period}
-                onValueChange={(value) =>
-                  setNewBudget({ ...newBudget, period: value })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select period" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                  <SelectItem value="yearly">Yearly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setAddBudgetOpen(false);
-                setNewBudget({
-                  category: "",
-                  budgetAmount: "",
-                  period: "monthly",
-                });
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateBudget}
-              disabled={createBudgetMutation.isPending}
-            >
-              {createBudgetMutation.isPending ? "Creating..." : "Create Budget"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={editBudgetsOpen} onOpenChange={setEditBudgetsOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline">Edit Budgets</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[525px]">
-          <DialogHeader>
-            <DialogTitle>Edit Budget Categories</DialogTitle>
-            <DialogDescription>
-              Modify your existing budget amounts and categories.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
-            {budgets.map((budget) => {
-              const handleDeleteBudgetClick = () => {
-                setBudgetToDelete(budget);
-                setDeleteConfirmOpen(true);
-              };
-
-              return (
-                <div
-                  key={budget.id}
-                  className="grid gap-3 p-4 border rounded-lg"
-                >
-                  <div className="flex items-center justify-between">
-                    <Label className="text-base font-medium">
-                      {budget.category}
-                    </Label>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={handleDeleteBudgetClick}
-                      className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Delete budget</span>
-                    </Button>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor={`budget-${budget.id}`}>Budget Amount</Label>
-                    <Input
-                      id={`budget-${budget.id}`}
-                      type="number"
-                      defaultValue={budget.budgetAmount}
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Current spending: {formatCurrency(budget.spentAmount)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditBudgetsOpen(false);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              onClick={async () => {
-                try {
-                  setEditBudgetsOpen(false);
-
-                  const savePromises = budgets.map(async (budget) => {
-                    const budgetInput = document.getElementById(
-                      `budget-${budget.id}`
-                    ) as HTMLInputElement;
-
-                    if (budgetInput) {
-                      return updateBudget.mutateAsync({
-                        id: budget.id,
-                        budgetData: {
-                          budgetAmount: parseFloat(budgetInput.value) || 0,
-                        },
-                      });
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <CategorySelect
+                    value={newBudget.category}
+                    onValueChange={(value) =>
+                      setNewBudget({ ...newBudget, category: value })
                     }
-                  });
+                    placeholder="Select a category"
+                    className="w-full"
+                    existingCategories={budgets.map(
+                      (budget) => budget.category
+                    )}
+                  />
+                </div>
 
-                  await Promise.all(savePromises.filter(Boolean));
-                  toast.success("All budgets updated successfully!");
-                } catch (error) {
-                  console.error("Error saving budgets:", error);
-                  toast.error("Failed to save some changes");
-                }
-              }}
-            >
-              Save All Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                <div className="space-y-2">
+                  <Label htmlFor="budgetAmount">Budget Amount</Label>
+                  <Input
+                    id="budgetAmount"
+                    type="number"
+                    placeholder="Enter budget amount"
+                    value={newBudget.budgetAmount}
+                    onChange={(e) =>
+                      setNewBudget({
+                        ...newBudget,
+                        budgetAmount: e.target.value,
+                      })
+                    }
+                  />
+                </div>
 
-      <Button variant="outline" asChild>
-        <Link href="/reports">View Reports</Link>
-      </Button>
+                <div className="space-y-2">
+                  <Label htmlFor="period">Budget Period</Label>
+                  <Select
+                    value={newBudget.period}
+                    onValueChange={(value) =>
+                      setNewBudget({ ...newBudget, period: value })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select period" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="yearly">Yearly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Budget</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete the &ldquo;
-              {budgetToDelete?.category}&rdquo; budget? This action cannot be
-              undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDeleteConfirmOpen(false);
-                setBudgetToDelete(null);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleConfirmDelete}>
-              Delete Budget
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setAddBudgetOpen(false);
+                    setNewBudget({
+                      category: "",
+                      budgetAmount: "",
+                      period: "monthly",
+                    });
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCreateBudget}
+                  disabled={createBudgetMutation.isPending}
+                >
+                  {createBudgetMutation.isPending
+                    ? "Creating..."
+                    : "Create Budget"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={editBudgetsOpen} onOpenChange={setEditBudgetsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">Edit Budgets</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[525px]">
+              <DialogHeader>
+                <DialogTitle>Edit Budget Categories</DialogTitle>
+                <DialogDescription>
+                  Modify your existing budget amounts and categories.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
+                {budgets.map((budget) => {
+                  const handleDeleteBudgetClick = () => {
+                    setBudgetToDelete(budget);
+                    setDeleteConfirmOpen(true);
+                  };
+
+                  return (
+                    <div
+                      key={budget.id}
+                      className="grid gap-3 p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center justify-between">
+                        <Label className="text-base font-medium">
+                          {budget.category}
+                        </Label>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleDeleteBudgetClick}
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete budget</span>
+                        </Button>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor={`budget-${budget.id}`}>
+                          Budget Amount
+                        </Label>
+                        <Input
+                          id={`budget-${budget.id}`}
+                          type="number"
+                          defaultValue={budget.budgetAmount}
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Current spending: {formatCurrency(budget.spentAmount)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <DialogFooter className="gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditBudgetsOpen(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  onClick={async () => {
+                    try {
+                      setEditBudgetsOpen(false);
+
+                      const savePromises = budgets.map(async (budget) => {
+                        const budgetInput = document.getElementById(
+                          `budget-${budget.id}`
+                        ) as HTMLInputElement;
+
+                        if (budgetInput) {
+                          return updateBudget.mutateAsync({
+                            id: budget.id,
+                            budgetData: {
+                              budgetAmount: parseFloat(budgetInput.value) || 0,
+                            },
+                          });
+                        }
+                      });
+
+                      await Promise.all(savePromises.filter(Boolean));
+                      toast.success("All budgets updated successfully!");
+                    } catch (error) {
+                      console.error("Error saving budgets:", error);
+                      toast.error("Failed to save some changes");
+                    }
+                  }}
+                >
+                  Save All Changes
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Button variant="outline" asChild>
+            <Link href="/reports">View Reports</Link>
+          </Button>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Budget</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete the &ldquo;
+                  {budgetToDelete?.category}&rdquo; budget? This action cannot
+                  be undone.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setDeleteConfirmOpen(false);
+                    setBudgetToDelete(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button variant="destructive" onClick={handleConfirmDelete}>
+                  Delete Budget
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

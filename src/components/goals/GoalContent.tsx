@@ -50,29 +50,40 @@ export default function GoalContent() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl sm:text-2xl font-bold text-center">
-            Savings Goals
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          {goals.length === 0 ? (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      {goals.length === 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl sm:text-2xl font-bold text-center">
+              Savings Goals
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <EmptyGoals onRefresh={refetch} />
-          ) : (
-            <>
-              <GoalActions
-                goals={goals}
-                onGoalToDelete={setGoalToDelete}
-                onOpenDeleteConfirm={setDeleteConfirmOpen}
-              />
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Quick Actions */}
+          <GoalActions
+            goals={goals}
+            onGoalToDelete={setGoalToDelete}
+            onOpenDeleteConfirm={setDeleteConfirmOpen}
+          />
+
+          {/* Goals List */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl sm:text-2xl font-bold text-center">
+                Savings Goals
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <GoalList goals={goals} />
-            </>
-          )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>

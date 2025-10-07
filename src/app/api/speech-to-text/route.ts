@@ -4,7 +4,7 @@ import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/constants/categories';
 
 // Initialize the Gemini AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
 export async function POST(request: NextRequest) {
   try {

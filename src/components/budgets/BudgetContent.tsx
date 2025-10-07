@@ -14,31 +14,39 @@ interface BudgetContentProps {
 
 export function BudgetContent({ budgets = [], onRefresh }: BudgetContentProps) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl sm:text-2xl font-bold text-center">
-            Monthly Budget Overview
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          {budgets.length === 0 ? (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      {budgets.length === 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl sm:text-2xl font-bold text-center">
+              Monthly Budget Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <EmptyBudgets onRefresh={onRefresh} />
-          ) : (
-            <>
-              {/* Action Buttons - Show at top when there are budgets */}
-              <BudgetActions budgets={budgets} />
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Quick Actions */}
+          <BudgetActions budgets={budgets} />
 
-              {/* Budget List */}
+          {/* Budget List */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl sm:text-2xl font-bold text-center">
+                Budget Categories
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <BudgetList budgets={budgets} />
+            </CardContent>
+          </Card>
 
-              {/* Budget Summary */}
-              <BudgetSummary budgets={budgets} />
-            </>
-          )}
-        </CardContent>
-      </Card>
+          {/* Budget Summary */}
+          <BudgetSummary budgets={budgets} />
+        </>
+      )}
     </div>
   );
 }

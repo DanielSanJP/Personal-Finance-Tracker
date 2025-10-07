@@ -136,17 +136,14 @@ export function TransactionsList({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+      {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">
-            Transaction History
-          </CardTitle>
+          <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
-
-        <CardContent className="space-y-6">
-          {/* Action Buttons - Always visible */}
-          <div className="pb-4 flex flex-wrap gap-4 justify-center border-b">
+        <CardContent>
+          <div className="pb-4 flex flex-wrap gap-2 justify-center">
             <Button asChild>
               <Link href="/transactions/add">Add Transaction</Link>
             </Button>
@@ -165,9 +162,20 @@ export function TransactionsList({
               Export to PDF
             </Button>
           </div>
+        </CardContent>
+      </Card>
 
+      {/* Transaction History */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">
+            Transaction History
+          </CardTitle>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
           {/* Filter Controls - Always visible */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
             <div>
               <Select
                 value={selectedCategory}
@@ -385,9 +393,6 @@ export function TransactionsList({
                   ))}
                 </TableBody>
               </Table>
-
-              {/* Transaction Totals Summary */}
-              <TransactionSummary transactions={filteredTransactions} />
             </div>
           )}
 
@@ -405,6 +410,11 @@ export function TransactionsList({
           />
         </CardContent>
       </Card>
+
+      {/* Transaction Summary */}
+      {filteredTransactions.length > 0 && (
+        <TransactionSummary transactions={filteredTransactions} />
+      )}
     </div>
   );
 }

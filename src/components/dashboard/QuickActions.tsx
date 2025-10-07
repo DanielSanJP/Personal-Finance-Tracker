@@ -11,7 +11,7 @@ export default function QuickActions() {
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="pb-4 flex flex-wrap gap-2 justify-center border-b">
+        <div className="pb-4 flex flex-wrap gap-2 justify-center">
           <Link href="/income/add">
             <Button>Add Income</Button>
           </Link>

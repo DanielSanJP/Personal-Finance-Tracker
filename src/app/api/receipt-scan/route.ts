@@ -3,12 +3,38 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getCategoryFromBusiness } from '@/constants/business-mapping';
 import { getCategoryName, EXPENSE_CATEGORIES } from '@/constants/categories';
 
+// Validate environment variables at startup
+if (!process.env.GEMINI_API_KEY) {
+  console.error('❌ CRITICAL: GEMINI_API_KEY environment variable is not set!');
+}
+
 // Initialize the Gemini AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+// Constants for validation
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/jpg', 
+  'image/png',
+  'image/webp',
+  'image/heic'
+];
 
 export async function POST(req: NextRequest) {
   try {
+    // Check if API key is configured
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json(
+        { 
+          error: 'Server configuration error',
+          details: 'Gemini API key is not configured. Please contact support.'
+        },
+        { status: 500 }
+      );
+    }
+
     // Get image data from request
     const formData = await req.formData();
     const imageFile = formData.get('image') as File;
@@ -16,6 +42,30 @@ export async function POST(req: NextRequest) {
     if (!imageFile) {
       return NextResponse.json(
         { error: 'No image file provided' },
+        { status: 400 }
+      );
+    }
+
+    // Validate file type
+    if (!ALLOWED_MIME_TYPES.includes(imageFile.type.toLowerCase())) {
+      return NextResponse.json(
+        { 
+          error: 'Invalid image format',
+          details: `Supported formats: ${ALLOWED_MIME_TYPES.join(', ')}`,
+          receivedType: imageFile.type
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate file size
+    if (imageFile.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { 
+          error: 'Image file too large',
+          details: `Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB`,
+          receivedSize: `${(imageFile.size / 1024 / 1024).toFixed(2)}MB`
+        },
         { status: 400 }
       );
     }
@@ -61,10 +111,49 @@ export async function POST(req: NextRequest) {
       }
     };
 
-    // Call Gemini to analyze the receipt
+    // Call Gemini to analyze the receipt with comprehensive error handling
+    console.log('📤 Sending request to Gemini API...');
     const result = await model.generateContent([prompt, imagePart]);
     const response = await result.response;
+
+    // Check for safety blocks
+    if (response.candidates?.[0]?.finishReason === 'SAFETY') {
+      console.error('⚠️ Content blocked by safety filters');
+      return NextResponse.json(
+        { 
+          error: 'Image blocked by safety filters',
+          details: 'The image was flagged by content safety filters. Please try a different image.'
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check for other finish reasons
+    const finishReason = response.candidates?.[0]?.finishReason;
+    if (finishReason && finishReason !== 'STOP') {
+      console.error('⚠️ Unexpected finish reason:', finishReason);
+      return NextResponse.json(
+        { 
+          error: 'Receipt processing incomplete',
+          details: `API stopped with reason: ${finishReason}. Please try again.`
+        },
+        { status: 500 }
+      );
+    }
+
     const text = response.text();
+
+    // Check for empty response
+    if (!text || text.trim().length === 0) {
+      console.error('❌ Empty response from Gemini');
+      return NextResponse.json(
+        { 
+          error: 'No text extracted from image',
+          details: 'The image may be too blurry, dark, or unreadable. Please try a clearer image.'
+        },
+        { status: 400 }
+      );
+    }
 
     console.log('=== GEMINI RESPONSE ===');
     console.log(text);
@@ -118,12 +207,56 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Receipt scanning error:', error);
+    console.error('❌ Receipt scanning error:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      name: error instanceof Error ? error.name : 'UnknownError',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
+    // Provide helpful error messages based on error type
+    let errorMessage = 'Receipt scanning failed';
+    let errorDetails = error instanceof Error ? error.message : 'Unknown error';
+    const hints: string[] = [];
+
+    if (error instanceof Error) {
+      // Model not found error
+      if (error.message.includes('is not found for API version') || error.message.includes('404') && error.message.includes('model')) {
+        errorMessage = 'API model error';
+        errorDetails = 'The AI model is not available or has been updated';
+        hints.push('The model name may have changed', 'Check Gemini API documentation for available models');
+      }
+      // API quota exceeded
+      else if (error.message.includes('quota') || error.message.includes('RESOURCE_EXHAUSTED')) {
+        errorMessage = 'API quota exceeded';
+        errorDetails = 'Daily API limit reached. Please try again tomorrow.';
+        hints.push('Consider upgrading your Gemini API plan');
+      }
+      // Authentication errors
+      else if (error.message.includes('API key') || error.message.includes('401') || error.message.includes('403')) {
+        errorMessage = 'API authentication failed';
+        errorDetails = 'Invalid or expired API key';
+        hints.push('Check your GEMINI_API_KEY environment variable');
+      }
+      // Network errors
+      else if (error.message.includes('fetch') || error.message.includes('network')) {
+        errorMessage = 'Network error';
+        errorDetails = 'Failed to connect to Gemini API';
+        hints.push('Check your internet connection', 'Verify Gemini API is accessible');
+      }
+      // Rate limiting
+      else if (error.message.includes('rate limit') || error.message.includes('429')) {
+        errorMessage = 'Rate limit exceeded';
+        errorDetails = 'Too many requests. Please wait a moment and try again.';
+        hints.push('Wait 60 seconds before retrying');
+      }
+    }
     
     return NextResponse.json(
       { 
-        error: 'Receipt scanning failed',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: errorMessage,
+        details: errorDetails,
+        hints: hints.length > 0 ? hints : undefined,
+        timestamp: new Date().toISOString(),
       },
       { status: 500 }
     );
