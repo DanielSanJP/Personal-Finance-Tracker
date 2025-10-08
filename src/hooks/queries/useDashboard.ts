@@ -74,9 +74,11 @@ const getTransactionsByUserId = async (userId: string): Promise<Transaction[]> =
       date: transaction.date,
       description: transaction.description,
       amount: Number(transaction.amount),
-      category: transaction.category || '',
+      category: transaction.category || null,
       type: transaction.type,
-      merchant: transaction.merchant || '',
+      from_party: transaction.from_party || null,
+      to_party: transaction.to_party || null,
+      destination_account_id: transaction.destination_account_id || null,
       status: transaction.status || 'completed',
       created_at: transaction.created_at,
       updated_at: transaction.updated_at
