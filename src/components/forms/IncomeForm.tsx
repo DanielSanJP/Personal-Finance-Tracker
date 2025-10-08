@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DatePicker } from "@/components/ui/date-picker";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { CategorySelect } from "@/components/category-select";
 import { getIncomeCategoryNames } from "@/constants/categories";
 import { toast } from "sonner";
@@ -345,22 +345,19 @@ export default function IncomeForm() {
           </div>
 
           {/* Date */}
-          <div className="space-y-2">
-            <Label htmlFor="date">
-              Date <span className="text-red-500">*</span>
-            </Label>
-            <DatePicker
-              id="date"
-              date={formData.date}
-              onDateChange={(newDate) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  date: newDate || new Date(),
-                }))
-              }
-              placeholder="dd/mm/yyyy"
-            />
-          </div>
+          {/* Date & Time */}
+          <DateTimePicker
+            id="date"
+            date={formData.date}
+            onDateTimeChange={(newDate) =>
+              setFormData((prev) => ({
+                ...prev,
+                date: newDate || new Date(),
+              }))
+            }
+            placeholder="dd/mm/yyyy"
+            required
+          />
 
           {/* Quick Add */}
           <div className="space-y-3">

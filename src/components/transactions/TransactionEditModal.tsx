@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import {
   Select,
   SelectContent,
@@ -19,7 +20,7 @@ import {
 import { toast } from "sonner";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { useUpdateTransaction } from "@/hooks/queries/useTransactions";
-import { EXPENSE_CATEGORIES } from "@/constants/categories";
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/constants/categories";
 import { useState, useEffect } from "react";
 import type { Transaction } from "@/types";
 
@@ -40,24 +41,37 @@ export function TransactionEditModal({
   const [formData, setFormData] = useState({
     description: "",
     amount: 0,
-    type: "expense",
+    type: "expense" as "expense" | "income" | "transfer",
     category: "",
     status: "completed",
-    merchant: "",
-    date: "",
+    party: "", // Changed from merchant to party (represents to_party for expenses, from_party for income)
+    date: new Date(),
   });
 
   // Update form data when transaction changes
   useEffect(() => {
     if (transaction) {
+      // Determine which party to show based on transaction type
+      let partyValue = "";
+      if (transaction.type === "expense") {
+        partyValue = transaction.to_party || ""; // For expenses, show merchant (to_party)
+      } else if (transaction.type === "income") {
+        partyValue = transaction.from_party || ""; // For income, show source (from_party)
+      } else if (transaction.type === "transfer") {
+        partyValue = transaction.to_party || ""; // For transfers, show destination
+      }
+
       setFormData({
         description: transaction.description,
         amount: Math.abs(transaction.amount),
         type: transaction.type,
-        category: transaction.category || "",
+        category:
+          transaction.type === "transfer"
+            ? "Transfer"
+            : transaction.category || "",
         status: transaction.status,
-        merchant: transaction.merchant || "",
-        date: transaction.date,
+        party: partyValue,
+        date: new Date(transaction.date),
       });
     }
   }, [transaction]);
@@ -75,16 +89,33 @@ export function TransactionEditModal({
           ? -Math.abs(formData.amount)
           : Math.abs(formData.amount);
 
+      // Determine from_party and to_party based on transaction type
+      let from_party = "";
+      let to_party = "";
+
+      if (formData.type === "expense") {
+        from_party = transaction.from_party || "Account"; // Keep original account name
+        to_party = formData.party; // Merchant
+      } else if (formData.type === "income") {
+        from_party = formData.party; // Income source
+        to_party = transaction.to_party || "Account"; // Keep original account name
+      } else if (formData.type === "transfer") {
+        from_party = transaction.from_party || "Source Account";
+        to_party = formData.party; // Destination
+      }
+
       await updateTransactionMutation.mutateAsync({
         id: transaction.id,
         updates: {
           description: formData.description,
           amount: adjustedAmount,
-          type: formData.type as "expense" | "income",
-          category: formData.category,
+          type: formData.type,
+          category:
+            formData.type === "transfer" ? "Transfer" : formData.category,
           status: formData.status as "completed" | "pending" | "failed",
-          merchant: formData.merchant,
-          date: formData.date,
+          from_party,
+          to_party,
+          date: formData.date.toISOString(),
           updated_at: new Date().toISOString(),
         },
       });
@@ -97,11 +128,20 @@ export function TransactionEditModal({
     }
   };
 
-  const handleInputChange = (field: string, value: string | number) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+  const handleInputChange = (field: string, value: string | number | Date) => {
+    setFormData((prev) => {
+      const newData = {
+        ...prev,
+        [field]: value,
+      };
+
+      // Auto-set category to "Transfer" when type changes to transfer
+      if (field === "type" && value === "transfer") {
+        newData.category = "Transfer";
+      }
+
+      return newData;
+    });
   };
 
   if (!transaction) return null;
@@ -112,7 +152,8 @@ export function TransactionEditModal({
         <DialogHeader>
           <DialogTitle>Edit Transaction</DialogTitle>
           <DialogDescription>
-            Update the details of this transaction.
+            Update description, category, and other details. Amount and type
+            cannot be changed to maintain balance integrity.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -128,53 +169,71 @@ export function TransactionEditModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="edit-amount">Amount</Label>
+              <Label htmlFor="edit-amount">
+                Amount{" "}
+                <span className="text-xs text-gray-500">(read-only)</span>
+              </Label>
               <Input
                 id="edit-amount"
                 type="number"
                 step="0.01"
                 value={formData.amount}
-                onChange={(e) =>
-                  handleInputChange("amount", parseFloat(e.target.value) || 0)
-                }
-                className="w-full"
+                disabled
+                className="w-full bg-gray-50 cursor-not-allowed"
+                title="Amount cannot be edited. Delete and recreate the transaction if needed."
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-type">Type</Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value) => handleInputChange("type", value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="expense">Expense</SelectItem>
-                  <SelectItem value="income">Income</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="edit-type">
+                Type <span className="text-xs text-gray-500">(read-only)</span>
+              </Label>
+              <Input
+                id="edit-type"
+                value={
+                  formData.type.charAt(0).toUpperCase() + formData.type.slice(1)
+                }
+                disabled
+                className="w-full bg-gray-50 cursor-not-allowed"
+                title="Type cannot be edited. Delete and recreate the transaction if needed."
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="edit-category">Category</Label>
-              <Select
-                value={formData.category}
-                onValueChange={(value) => handleInputChange("category", value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EXPENSE_CATEGORIES.map((category) => (
-                    <SelectItem key={category.id} value={category.name}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {formData.type === "transfer" ? (
+                <Input
+                  id="edit-category"
+                  value="Transfer"
+                  disabled
+                  className="w-full bg-gray-50"
+                />
+              ) : (
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) =>
+                    handleInputChange("category", value)
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {formData.type === "income"
+                      ? INCOME_CATEGORIES.map((category) => (
+                          <SelectItem key={category.id} value={category.name}>
+                            {category.icon} {category.name}
+                          </SelectItem>
+                        ))
+                      : EXPENSE_CATEGORIES.map((category) => (
+                          <SelectItem key={category.id} value={category.name}>
+                            {category.icon} {category.name}
+                          </SelectItem>
+                        ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-status">Status</Label>
@@ -195,25 +254,37 @@ export function TransactionEditModal({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="edit-merchant">Merchant</Label>
+            <Label htmlFor="edit-party">
+              {formData.type === "expense"
+                ? "Merchant"
+                : formData.type === "income"
+                ? "Income Source"
+                : "Transfer Destination"}
+            </Label>
             <Input
-              id="edit-merchant"
-              value={formData.merchant}
-              onChange={(e) => handleInputChange("merchant", e.target.value)}
+              id="edit-party"
+              value={formData.party}
+              onChange={(e) => handleInputChange("party", e.target.value)}
+              placeholder={
+                formData.type === "expense"
+                  ? "e.g., Starbucks, BP Petrol"
+                  : formData.type === "income"
+                  ? "e.g., Tech Corp Inc, Freelance Client"
+                  : "Destination account or note"
+              }
               className="w-full"
             />
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="edit-date">Date</Label>
-            <Input
-              id="edit-date"
-              type="date"
-              value={formData.date}
-              onChange={(e) => handleInputChange("date", e.target.value)}
-              className="w-full"
-            />
-          </div>
+          <DateTimePicker
+            id="edit-date"
+            date={formData.date}
+            onDateTimeChange={(date) =>
+              handleInputChange("date", date || new Date())
+            }
+            required
+            showLabel
+          />
         </div>
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>

@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -654,15 +655,14 @@ export default function GoalActions({
                     }
                   />
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="contribution-date">Contribution Date</Label>
-                  <DatePicker
-                    id="contribution-date"
-                    date={contributionDate}
-                    onDateChange={setContributionDate}
-                    placeholder="Select contribution date"
-                  />
-                </div>
+                <DateTimePicker
+                  id="contribution-date"
+                  date={contributionDate}
+                  onDateTimeChange={setContributionDate}
+                  placeholder="Select contribution date"
+                  required
+                  showLabel
+                />
                 <div className="grid gap-2">
                   <Label htmlFor="notes">Notes (Optional)</Label>
                   <Input

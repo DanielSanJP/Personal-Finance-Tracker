@@ -86,7 +86,6 @@ CREATE TABLE public.transactions (
             ARRAY ['income'::text, 'expense'::text, 'transfer'::text]
         )
     ),
-    merchant character varying,
     status text DEFAULT 'completed'::text CHECK (
         status = ANY (
             ARRAY ['pending'::text, 'completed'::text, 'cancelled'::text, 'failed'::text]
@@ -94,6 +93,9 @@ CREATE TABLE public.transactions (
     ),
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now(),
+    from_party text NOT NULL,
+    to_party text NOT NULL,
+    destination_account_id text,
     CONSTRAINT transactions_pkey PRIMARY KEY (id),
     CONSTRAINT transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
     CONSTRAINT transactions_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id)

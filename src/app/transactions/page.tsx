@@ -6,6 +6,7 @@ import {
   useTransactionFilterOptions,
   TransactionFilters,
 } from "@/hooks/queries/useTransactions";
+import { formatCurrency } from "@/lib/utils";
 import { useState } from "react";
 import TransactionsLoading from "./loading";
 
@@ -13,23 +14,23 @@ export default function TransactionsPage() {
   // Filter states - Start with "This Month" to show current month transactions by default
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedPeriod, setSelectedPeriod] = useState("This Month");
-  const [selectedMerchant, setSelectedMerchant] = useState("All Merchants");
+  const [selectedParty, setSelectedParty] = useState("All Parties");
   const [selectedType, setSelectedType] = useState("All Types");
 
-  // Build filters object
-  const filters: TransactionFilters = {
+  // Build filters object WITHOUT party filter first (to get all parties from filtered transactions)
+  const preFilters: TransactionFilters = {
     category: selectedCategory,
     period: selectedPeriod,
-    merchant: selectedMerchant,
+    party: "All Parties", // Don't apply party filter yet
     type: selectedType,
   };
 
-  // Fetch filtered transactions using RPC (database-side filtering)
+  // Fetch pre-filtered transactions (without party filter)
   const {
-    data: filteredTransactions = [],
+    data: preFilteredTransactions = [],
     isLoading: transactionsLoading,
     error: transactionsError,
-  } = useFilteredTransactions(filters);
+  } = useFilteredTransactions(preFilters);
 
   // Get filter options using RPC
   const {
@@ -44,7 +45,6 @@ export default function TransactionsPage() {
 
   // Extract filter options with defaults
   const categories = filterOptions?.categories || ["All Categories"];
-  const merchants = filterOptions?.merchants || ["All Merchants"];
   const types = filterOptions?.types || ["All Types"];
   const periods = filterOptions?.periods || [
     "This Month",
@@ -53,6 +53,72 @@ export default function TransactionsPage() {
     "This Year",
     "All Time",
   ];
+
+  // Calculate party spending/earnings from pre-filtered transactions
+  const partyAmounts = new Map<string, { amount: number; type: string }>();
+  preFilteredTransactions.forEach((t) => {
+    const parties = [t.from_party, t.to_party].filter(Boolean);
+    parties.forEach((party) => {
+      if (party) {
+        const current = partyAmounts.get(party) || { amount: 0, type: "" };
+        // For expenses, to_party gets negative (money out)
+        // For income, from_party gets positive (money in)
+        // For transfers, track separately with special symbol
+        if (t.type === "expense" && party === t.to_party) {
+          partyAmounts.set(party, {
+            amount: current.amount + Number(t.amount), // Store as positive, will negate in display
+            type: "expense",
+          });
+        } else if (t.type === "income" && party === t.from_party) {
+          partyAmounts.set(party, {
+            amount: current.amount + Number(t.amount),
+            type: "income",
+          });
+        } else if (t.type === "transfer" && party === t.to_party) {
+          partyAmounts.set(party, {
+            amount: current.amount + Number(t.amount),
+            type: "transfer",
+          });
+        }
+      }
+    });
+  });
+
+  // Sort parties by amount (highest spending/earning first)
+  const sortedPartyEntries = Array.from(partyAmounts.entries()).sort(
+    (a, b) => b[1].amount - a[1].amount
+  );
+
+  // Format party list with amounts
+  const parties = [
+    "All Parties",
+    ...sortedPartyEntries.map(([party, { amount, type }]) => {
+      // Use absolute value to avoid doubling minus signs
+      const formattedAmount = formatCurrency(Math.abs(amount));
+      // Use different symbols based on transaction type
+      let displayAmount = "";
+      if (type === "expense") {
+        displayAmount = `-${formattedAmount}`; // Expenses are money out
+      } else if (type === "income") {
+        displayAmount = `+${formattedAmount}`; // Income is money in
+      } else if (type === "transfer") {
+        displayAmount = `→${formattedAmount}`; // Transfers use arrow symbol
+      }
+      return `${party} (${displayAmount})`;
+    }),
+  ];
+
+  // Apply party filter to get final filtered transactions
+  const filteredTransactions =
+    selectedParty === "All Parties"
+      ? preFilteredTransactions
+      : preFilteredTransactions.filter((t) => {
+          // Extract party name from formatted string like "BP (-$100.00)"
+          const partyName = selectedParty.includes(" (")
+            ? selectedParty.substring(0, selectedParty.indexOf(" ("))
+            : selectedParty;
+          return t.from_party === partyName || t.to_party === partyName;
+        });
 
   // Handle loading state
   if (isLoading) {
@@ -79,13 +145,13 @@ export default function TransactionsPage() {
     <div className="min-h-screen bg-gray-50">
       <TransactionsList
         transactions={filteredTransactions}
-        filterOptions={{ categories, merchants, types, periods }}
+        filterOptions={{ categories, parties, types, periods }}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
         selectedPeriod={selectedPeriod}
         setSelectedPeriod={setSelectedPeriod}
-        selectedMerchant={selectedMerchant}
-        setSelectedMerchant={setSelectedMerchant}
+        selectedParty={selectedParty}
+        setSelectedParty={setSelectedParty}
         selectedType={selectedType}
         setSelectedType={setSelectedType}
       />

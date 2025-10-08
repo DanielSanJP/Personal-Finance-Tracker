@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useGoals } from "@/hooks/queries/useGoals";
 import {
   Select,
   SelectContent,
@@ -11,6 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -45,7 +53,7 @@ interface TransactionsListProps {
   transactions: Transaction[];
   filterOptions: {
     categories: string[];
-    merchants: string[];
+    parties: string[]; // Changed from merchants to parties
     types: string[];
     periods: string[];
   };
@@ -53,8 +61,8 @@ interface TransactionsListProps {
   setSelectedCategory: (category: string) => void;
   selectedPeriod: string;
   setSelectedPeriod: (period: string) => void;
-  selectedMerchant: string;
-  setSelectedMerchant: (merchant: string) => void;
+  selectedParty: string; // Changed from selectedMerchant
+  setSelectedParty: (party: string) => void; // Changed from setSelectedMerchant
   selectedType: string;
   setSelectedType: (type: string) => void;
 }
@@ -66,25 +74,31 @@ export function TransactionsList({
   setSelectedCategory,
   selectedPeriod,
   setSelectedPeriod,
-  selectedMerchant,
-  setSelectedMerchant,
+  selectedParty,
+  setSelectedParty,
   selectedType,
   setSelectedType,
 }: TransactionsListProps) {
   // Mutations
   const deleteTransactionMutation = useDeleteTransaction();
 
+  // Fetch goals for displaying goal names in transfers
+  const { data: goals = [] } = useGoals();
+
   // Modal states
   const [selectedTransaction, setSelectedTransaction] =
     useState<Transaction | null>(null);
+  const [partyDialogOpen, setPartyDialogOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<"amount" | "name" | "date" | "none">(
+    "none"
+  );
+  const [sortDirection, setSortDirection] = useState<"desc" | "asc">("desc");
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [editTransactionsOpen, setEditTransactionsOpen] = useState(false);
   const [editSingleTransactionOpen, setEditSingleTransactionOpen] =
     useState(false);
 
-  // Use props instead of local state and data fetching
-  const filteredTransactions = transactions;
-  const { categories, merchants, types, periods } = filterOptions;
+  const { categories, parties, types, periods } = filterOptions;
 
   const handleTransactionClick = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
@@ -120,11 +134,53 @@ export function TransactionsList({
     return type.charAt(0).toUpperCase() + type.slice(1);
   };
 
-  // Helper function to truncate long merchant names
-  const truncateMerchant = (merchant: string, maxLength: number = 30) => {
-    if (merchant.length <= maxLength) return merchant;
-    return merchant.substring(0, maxLength) + "...";
+  // Helper function to get goal name from destination_account_id
+  const getGoalName = (goalId: string | null | undefined): string | null => {
+    if (!goalId) return null;
+    const goal = goals.find((g) => g.id === goalId);
+    return goal?.name || null;
   };
+
+  // Helper function to get the relevant party to display
+  const getDisplayParty = (transaction: Transaction): string => {
+    if (transaction.type === "expense") {
+      return transaction.to_party || "N/A"; // Show merchant
+    } else if (transaction.type === "income") {
+      return transaction.from_party || "N/A"; // Show income source
+    } else if (transaction.type === "transfer") {
+      // Check if it's a goal contribution (has destination_account_id)
+      const goalName = getGoalName(transaction.destination_account_id);
+      if (goalName) {
+        return `To Goal: ${goalName}`;
+      }
+      return `To: ${transaction.to_party || "N/A"}`; // Show destination
+    }
+    return "N/A";
+  };
+
+  // Apply sorting to transactions
+  const filteredTransactions =
+    sortBy === "none"
+      ? transactions
+      : [...transactions].sort((a, b) => {
+          if (sortBy === "date") {
+            const dateA = new Date(a.date).getTime();
+            const dateB = new Date(b.date).getTime();
+            const comparison = dateB - dateA; // Default newest first
+            return sortDirection === "desc" ? comparison : -comparison;
+          } else if (sortBy === "amount") {
+            const comparison = Math.abs(b.amount) - Math.abs(a.amount);
+            return sortDirection === "desc" ? comparison : -comparison;
+          } else if (sortBy === "name") {
+            // Sort by party name
+            const partyA = getDisplayParty(a).trim().toLowerCase();
+            const partyB = getDisplayParty(b).trim().toLowerCase();
+            const comparison = partyA.localeCompare(partyB);
+            return sortDirection === "desc" ? comparison : -comparison;
+          }
+          // Fallback
+          return 0;
+        });
 
   // Export handlers
   const handleCSVExport = () => {
@@ -145,7 +201,7 @@ export function TransactionsList({
         <CardContent>
           <div className="grid grid-cols-2 md:flex md:flex-wrap gap-3 pb-4 justify-center [&>*:last-child:nth-child(odd)]:col-span-2 [&>*:last-child:nth-child(odd)]:justify-self-center">
             <Button asChild className="min-w-[140px]">
-              <Link href="/transactions/add">Add</Link>
+              <Link href="/transactions/add">Add Expense</Link>
             </Button>
 
             <TransactionBulkEditModal
@@ -218,35 +274,102 @@ export function TransactionsList({
             </div>
 
             <div>
-              <Select
-                value={selectedMerchant}
-                onValueChange={setSelectedMerchant}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Filter by merchant">
-                    {selectedMerchant &&
-                    selectedMerchant !== "All Merchants" ? (
-                      <div
-                        className="truncate max-w-[150px]"
-                        title={selectedMerchant}
-                      >
-                        {truncateMerchant(selectedMerchant)}
-                      </div>
-                    ) : (
-                      selectedMerchant || "Filter by merchant"
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {merchants.map((merchant) => (
-                    <SelectItem key={merchant} value={merchant}>
-                      <div className="truncate max-w-[200px]" title={merchant}>
-                        {truncateMerchant(merchant)}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Dialog open={partyDialogOpen} onOpenChange={setPartyDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal h-10"
+                  >
+                    <span className="truncate">
+                      {selectedParty || "Filter by party"}
+                    </span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl max-h-[80vh]">
+                  <DialogHeader>
+                    <DialogTitle>Select Party</DialogTitle>
+                  </DialogHeader>
+                  <div className="overflow-y-auto max-h-[60vh] pr-4">
+                    <div className="space-y-2">
+                      {(() => {
+                        // Sort parties based on selection (only for amount/name, date doesn't apply to parties)
+                        const sortedParties = [...parties];
+                        if (sortBy === "name") {
+                          sortedParties.sort((a, b) => {
+                            // Keep "All Parties" at the top
+                            if (a === "All Parties") return -1;
+                            if (b === "All Parties") return 1;
+                            // Extract party name before the amount in parentheses and trim whitespace
+                            const nameA = a.includes(" (")
+                              ? a
+                                  .substring(0, a.indexOf(" ("))
+                                  .trim()
+                                  .toLowerCase()
+                              : a.trim().toLowerCase();
+                            const nameB = b.includes(" (")
+                              ? b
+                                  .substring(0, b.indexOf(" ("))
+                                  .trim()
+                                  .toLowerCase()
+                              : b.trim().toLowerCase();
+                            const comparison = nameA.localeCompare(nameB);
+                            return sortDirection === "desc"
+                              ? comparison
+                              : -comparison;
+                          });
+                        } else if (sortBy === "amount") {
+                          // For amount sort, reverse if ascending but keep "All Parties" at top
+                          if (sortDirection === "asc") {
+                            // Remove "All Parties" temporarily
+                            const allPartiesIndex =
+                              sortedParties.indexOf("All Parties");
+                            let allPartiesItem = null;
+                            if (allPartiesIndex !== -1) {
+                              allPartiesItem = sortedParties.splice(
+                                allPartiesIndex,
+                                1
+                              )[0];
+                            }
+                            // Reverse the rest
+                            sortedParties.reverse();
+                            // Put "All Parties" back at the top
+                            if (allPartiesItem) {
+                              sortedParties.unshift(allPartiesItem);
+                            }
+                          }
+                        }
+                        // Note: date sort doesn't affect party list
+                        return sortedParties.map((party) => {
+                          const isSelected = selectedParty === party;
+                          return (
+                            <button
+                              key={party}
+                              onClick={() => {
+                                setSelectedParty(party);
+                                setPartyDialogOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
+                                isSelected
+                                  ? "bg-blue-50 border-blue-500 text-blue-700 font-medium"
+                                  : "bg-white border-gray-200 hover:bg-gray-50"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm">{party}</span>
+                                {isSelected && (
+                                  <span className="text-blue-600 font-bold">
+                                    ✓
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
 
             <div>
@@ -267,6 +390,34 @@ export function TransactionsList({
             </div>
           </div>
 
+          {/* Sort Control */}
+          <div className="flex justify-center">
+            <Select
+              value={`${sortBy}-${sortDirection}`}
+              onValueChange={(value) => {
+                const [newSortBy, newSortDirection] = value.split("-") as [
+                  "amount" | "name" | "date" | "none",
+                  "desc" | "asc"
+                ];
+                setSortBy(newSortBy);
+                setSortDirection(newSortDirection);
+              }}
+            >
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none-desc">Sort By</SelectItem>
+                <SelectItem value="date-desc">Newest-Oldest</SelectItem>
+                <SelectItem value="date-asc">Oldest-Newest</SelectItem>
+                <SelectItem value="name-desc">A-Z</SelectItem>
+                <SelectItem value="name-asc">Z-A</SelectItem>
+                <SelectItem value="amount-desc">High-Low</SelectItem>
+                <SelectItem value="amount-asc">Low-High</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Clear Filters Button - Always visible */}
           <div className="flex justify-center">
             <Button
@@ -274,7 +425,7 @@ export function TransactionsList({
               onClick={() => {
                 setSelectedCategory("All Categories");
                 setSelectedPeriod("This Month");
-                setSelectedMerchant("All Merchants");
+                setSelectedParty("All Parties");
                 setSelectedType("All Types");
               }}
               className="w-auto"
@@ -315,9 +466,9 @@ export function TransactionsList({
                           </div>
                           <div
                             className="text-sm text-gray-500 truncate max-w-[200px]"
-                            title={transaction.merchant || undefined}
+                            title={getDisplayParty(transaction)}
                           >
-                            {transaction.merchant || "N/A"}
+                            {getDisplayParty(transaction)}
                           </div>
                         </div>
                       </TableCell>

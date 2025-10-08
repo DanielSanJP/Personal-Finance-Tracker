@@ -106,7 +106,9 @@ export function useCreateTransaction() {
           amount: newTransaction.amount,
           category: newTransaction.category || null,
           type: newTransaction.type,
-          merchant: newTransaction.merchant || null,
+          from_party: newTransaction.type === 'expense' ? 'Account' : (newTransaction.merchant || 'Source'),
+          to_party: newTransaction.type === 'expense' ? (newTransaction.merchant || 'Merchant') : 'Account',
+          destination_account_id: null,
           status: newTransaction.status || 'completed',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()

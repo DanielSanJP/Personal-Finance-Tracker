@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DatePicker } from "@/components/ui/date-picker";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { CategorySelect } from "@/components/category-select";
 import { toast } from "sonner";
 import { useAccounts } from "@/hooks/queries/useAccounts";
@@ -432,24 +432,20 @@ export default function TransactionForm() {
             )}
           </div>
 
-          {/* Date */}
-          <div className="space-y-2">
-            <Label htmlFor="date">
-              Date <span className="text-red-500">*</span>
-            </Label>
-            <DatePicker
-              id="date"
-              date={
-                formData.date instanceof Date && !isNaN(formData.date.getTime())
-                  ? formData.date
-                  : new Date()
-              }
-              onDateChange={(date) =>
-                setFormData({ ...formData, date: date || new Date() })
-              }
-              placeholder="dd/mm/yyyy"
-            />
-          </div>
+          {/* Date & Time */}
+          <DateTimePicker
+            id="date"
+            date={
+              formData.date instanceof Date && !isNaN(formData.date.getTime())
+                ? formData.date
+                : new Date()
+            }
+            onDateTimeChange={(date) =>
+              setFormData({ ...formData, date: date || new Date() })
+            }
+            placeholder="dd/mm/yyyy"
+            required
+          />
 
           {/* Action Buttons */}
           <div className="pt-4 space-y-3">

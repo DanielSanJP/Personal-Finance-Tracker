@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import {
   Select,
   SelectContent,
@@ -48,7 +49,7 @@ export function TransactionBulkEditModal({
         category: string;
         status: string;
         merchant: string;
-        date: string;
+        date: Date;
       }
     >
   >({});
@@ -63,8 +64,8 @@ export function TransactionBulkEditModal({
         type: transaction.type,
         category: transaction.category || "",
         status: transaction.status,
-        merchant: transaction.merchant || "",
-        date: transaction.date,
+        merchant: transaction.to_party || transaction.from_party || "",
+        date: new Date(transaction.date),
       };
     });
     setTransactionForms(initialForms);
@@ -73,7 +74,7 @@ export function TransactionBulkEditModal({
   const handleInputChange = (
     transactionId: string,
     field: string,
-    value: string | number
+    value: string | number | Date
   ) => {
     setTransactionForms((prev) => ({
       ...prev,
@@ -117,7 +118,7 @@ export function TransactionBulkEditModal({
               category: formData.category,
               status: formData.status as "completed" | "pending" | "failed",
               merchant: formData.merchant,
-              date: formData.date,
+              date: formData.date.toISOString(),
               updated_at: new Date().toISOString(),
             },
           };
@@ -156,7 +157,8 @@ export function TransactionBulkEditModal({
         <DialogHeader>
           <DialogTitle>Edit All Transactions</DialogTitle>
           <DialogDescription>
-            Modify your existing transactions and their details.
+            Update description, category, and other details. Amount and type
+            cannot be changed to maintain balance integrity.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
@@ -194,20 +196,18 @@ export function TransactionBulkEditModal({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor={`amount-${transaction.id}`}>Amount</Label>
+                    <Label htmlFor={`amount-${transaction.id}`}>
+                      Amount{" "}
+                      <span className="text-xs text-gray-500">(locked)</span>
+                    </Label>
                     <Input
                       id={`amount-${transaction.id}`}
                       type="number"
                       step="0.01"
                       value={formData.amount || 0}
-                      onChange={(e) =>
-                        handleInputChange(
-                          transaction.id,
-                          "amount",
-                          parseFloat(e.target.value) || 0
-                        )
-                      }
-                      className="w-full"
+                      disabled
+                      className="w-full bg-gray-50 cursor-not-allowed"
+                      title="Amount cannot be edited"
                     />
                   </div>
                 </div>
@@ -235,21 +235,22 @@ export function TransactionBulkEditModal({
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor={`type-${transaction.id}`}>Type</Label>
-                    <Select
-                      value={formData.type || "expense"}
-                      onValueChange={(value) =>
-                        handleInputChange(transaction.id, "type", value)
+                    <Label htmlFor={`type-${transaction.id}`}>
+                      Type{" "}
+                      <span className="text-xs text-gray-500">(locked)</span>
+                    </Label>
+                    <Input
+                      id={`type-${transaction.id}`}
+                      value={
+                        formData.type
+                          ? formData.type.charAt(0).toUpperCase() +
+                            formData.type.slice(1)
+                          : "Expense"
                       }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="expense">Expense</SelectItem>
-                        <SelectItem value="income">Income</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      disabled
+                      className="w-full bg-gray-50 cursor-not-allowed"
+                      title="Type cannot be edited"
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -289,18 +290,19 @@ export function TransactionBulkEditModal({
                     </Select>
                   </div>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor={`date-${transaction.id}`}>Date</Label>
-                  <Input
-                    id={`date-${transaction.id}`}
-                    type="date"
-                    value={formData.date || ""}
-                    onChange={(e) =>
-                      handleInputChange(transaction.id, "date", e.target.value)
-                    }
-                    className="w-full"
-                  />
-                </div>
+                <DateTimePicker
+                  id={`date-${transaction.id}`}
+                  date={formData.date}
+                  onDateTimeChange={(date) =>
+                    handleInputChange(
+                      transaction.id,
+                      "date",
+                      date || new Date()
+                    )
+                  }
+                  required
+                  showLabel
+                />
               </div>
             );
           })}

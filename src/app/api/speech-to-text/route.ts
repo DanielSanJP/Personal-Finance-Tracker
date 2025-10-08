@@ -42,19 +42,29 @@ export async function POST(request: NextRequest) {
     const accountOptions = accounts.map((acc: {name: string, type: string}) => `${acc.name} (${acc.type})`).join('\n');
 
     // Let Gemini handle ALL the intelligence
-    const today = new Date().toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
+    const now = new Date();
+    const today = now.toISOString().split('T')[0]; // Current date in YYYY-MM-DD format
+    const currentTime = now.toTimeString().split(' ')[0].substring(0, 5); // HH:MM format
     
     const comprehensivePrompt = `
     You are an AI assistant that extracts financial transaction details from natural speech. 
     
     User said: "${rawTranscript}"
     Transaction type: ${type}
-    Today's date: ${today}
+    Current date: ${today}
+    Current time: ${currentTime}
     
     Available Categories:
     ${categoryOptions}
     
     ${accounts.length > 0 ? `Available Accounts:\n${accountOptions}` : ''}
+    
+    IMPORTANT SYSTEM CONTEXT:
+    - Our app uses a universal party system for transactions
+    - For EXPENSES: from_party = account name, to_party = merchant/business name
+    - For INCOME: from_party = income source/payer, to_party = account name
+    - Date field stores full timestamp including time (YYYY-MM-DDTHH:MM:SS format)
+    - If user mentions a specific time, extract it; otherwise use current time (${currentTime})
     
     BUSINESS KNOWLEDGE (Critical for accurate categorization):
     - BP, Shell, Z Energy, Mobil, Caltex, Gull, Challenge = "Transportation" 
@@ -76,7 +86,8 @@ export async function POST(request: NextRequest) {
     5. Use business knowledge to categorize accurately
     6. Choose the best matching account if multiple available
     7. ALWAYS use today's date (${today}) unless user specifically mentions a different date like "yesterday" or "last week"
-    8. CRITICAL: For "category", use ONLY the exact category names from the Available Categories list above. Do not create new category names.
+    8. Extract time if mentioned (e.g., "at 2pm", "this morning"), otherwise use current time (${currentTime})
+    9. CRITICAL: For "category", use ONLY the exact category names from the Available Categories list above. Do not create new category names.
     
     Return ONLY a JSON object in this exact format:
     {
@@ -86,12 +97,13 @@ export async function POST(request: NextRequest) {
       "category": "exact_category_name_from_Available_Categories_list",
       "account": "account_name_if_identifiable",
       "date": "YYYY-MM-DD",
+      "time": "HH:MM in 24-hour format (extract if mentioned, else use ${currentTime})",
       "confidence": confidence_score_0_to_100
     }
     
     Example responses:
-    - "fifty dollars petrol at BP" → {"amount": "50.00", "description": "Petrol purchase", "merchant": "BP", "category": "Transportation", "account": "", "date": "${today}", "confidence": 95}
-    - "lunch at McDonald's twenty five" → {"amount": "25.00", "description": "Lunch", "merchant": "McDonald's", "category": "Food & Dining", "account": "", "date": "${today}", "confidence": 90}
+    - "fifty dollars petrol at BP" → {"amount": "50.00", "description": "Petrol purchase", "merchant": "BP", "category": "Transportation", "account": "", "date": "${today}", "time": "${currentTime}", "confidence": 95}
+    - "lunch at McDonald's twenty five at 1pm" → {"amount": "25.00", "description": "Lunch", "merchant": "McDonald's", "category": "Food & Dining", "account": "", "date": "${today}", "time": "13:00", "confidence": 90}
     `;
 
     // Call Gemini for comprehensive parsing
@@ -121,13 +133,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate and clean the parsed data
+    // Combine date and time into ISO timestamp
+    const dateStr = parsedData.date || today;
+    const timeStr = parsedData.time || currentTime;
+    const fullDateTime = `${dateStr}T${timeStr}:00`; // Add seconds for full ISO format
+
     const validatedData = {
       amount: parsedData.amount || '',
       description: parsedData.description || '',
       merchant: parsedData.merchant || '',
       category: parsedData.category || '',
       account: parsedData.account || '',
-      date: parsedData.date || today, // Use the today variable from above
+      date: fullDateTime, // Full ISO timestamp with date and time
       confidence: Math.min(Math.max(parsedData.confidence || 80, 0), 100)
     };
 
