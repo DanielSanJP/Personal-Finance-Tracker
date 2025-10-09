@@ -65,10 +65,8 @@ export function TransactionEditModal({
         description: transaction.description,
         amount: Math.abs(transaction.amount),
         type: transaction.type,
-        category:
-          transaction.type === "transfer"
-            ? "Transfer"
-            : transaction.category || "",
+        // Preserve the exact category from DB, including special ones like "Goal Contribution" and "Transfer"
+        category: transaction.category || "",
         status: transaction.status,
         party: partyValue,
         date: new Date(transaction.date),
@@ -202,38 +200,59 @@ export function TransactionEditModal({
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="edit-category">Category</Label>
-              {formData.type === "transfer" ? (
-                <Input
-                  id="edit-category"
-                  value="Transfer"
-                  disabled
-                  className="w-full bg-gray-50"
-                />
-              ) : (
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) =>
-                    handleInputChange("category", value)
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {formData.type === "income"
-                      ? INCOME_CATEGORIES.map((category) => (
-                          <SelectItem key={category.id} value={category.name}>
-                            {category.icon} {category.name}
-                          </SelectItem>
-                        ))
-                      : EXPENSE_CATEGORIES.map((category) => (
-                          <SelectItem key={category.id} value={category.name}>
-                            {category.icon} {category.name}
-                          </SelectItem>
-                        ))}
-                  </SelectContent>
-                </Select>
-              )}
+              {/* Special/legacy categories that aren't in predefined lists are shown as read-only */}
+              {(() => {
+                const isSpecialCategory =
+                  formData.category === "Transfer" ||
+                  formData.category === "Goal Contribution";
+
+                const categories =
+                  formData.type === "income"
+                    ? INCOME_CATEGORIES
+                    : EXPENSE_CATEGORIES;
+
+                const isInPredefinedList = categories.some(
+                  (cat) => cat.name === formData.category
+                );
+
+                const isLegacyOrSpecial =
+                  !isInPredefinedList && formData.category;
+
+                return isSpecialCategory || isLegacyOrSpecial ? (
+                  <Input
+                    id="edit-category"
+                    value={formData.category}
+                    disabled
+                    className="w-full bg-gray-50 cursor-not-allowed"
+                    title={
+                      isSpecialCategory
+                        ? "Special categories cannot be edited"
+                        : "Legacy category - cannot be edited. You can change to a standard category by selecting from the dropdown after deleting this value."
+                    }
+                  />
+                ) : (
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) =>
+                      handleInputChange("category", value)
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent
+                      side="bottom"
+                      className="max-h-[300px] overflow-y-auto"
+                    >
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.name}>
+                          {category.icon} {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                );
+              })()}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-status">Status</Label>
@@ -253,28 +272,38 @@ export function TransactionEditModal({
             </div>
           </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="edit-party">
-              {formData.type === "expense"
-                ? "Merchant"
-                : formData.type === "income"
-                ? "Income Source"
-                : "Transfer Destination"}
-            </Label>
-            <Input
-              id="edit-party"
-              value={formData.party}
-              onChange={(e) => handleInputChange("party", e.target.value)}
-              placeholder={
-                formData.type === "expense"
-                  ? "e.g., Starbucks, BP Petrol"
-                  : formData.type === "income"
-                  ? "e.g., Tech Corp Inc, Freelance Client"
-                  : "Destination account or note"
-              }
-              className="w-full"
-            />
-          </div>
+          {/* Paid To / Received From / Transfer Destination field */}
+          {formData.type !== "transfer" && (
+            <div className="grid gap-2">
+              <Label htmlFor="edit-party">
+                {formData.type === "expense" ? "Paid To" : "Received From"}
+              </Label>
+              <Input
+                id="edit-party"
+                value={formData.party}
+                onChange={(e) => handleInputChange("party", e.target.value)}
+                placeholder={
+                  formData.type === "expense"
+                    ? "Who or where did you pay?"
+                    : "Who sent you this payment?"
+                }
+                className="w-full"
+              />
+            </div>
+          )}
+
+          {formData.type === "transfer" && (
+            <div className="grid gap-2">
+              <Label htmlFor="edit-party">Transfer Destination</Label>
+              <Input
+                id="edit-party"
+                value={formData.party}
+                onChange={(e) => handleInputChange("party", e.target.value)}
+                placeholder="Destination account or note"
+                className="w-full"
+              />
+            </div>
+          )}
 
           <DateTimePicker
             id="edit-date"

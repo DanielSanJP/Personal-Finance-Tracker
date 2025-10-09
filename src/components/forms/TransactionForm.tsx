@@ -84,11 +84,13 @@ export default function TransactionForm() {
     if (
       !formData.amount ||
       !formData.description ||
+      !formData.merchant ||
       !formData.account ||
       !formData.date
     ) {
       toast.error("Please fill in all required fields", {
-        description: "Amount, description, account, and date are required.",
+        description:
+          "Amount, description, paid to, account, and date are required.",
       });
       return;
     }
@@ -353,13 +355,15 @@ export default function TransactionForm() {
             className="w-full"
           />
 
-          {/* Merchant (Optional) */}
+          {/* Paid To */}
           <div className="space-y-2">
-            <Label htmlFor="merchant">Merchant (Optional)</Label>
+            <Label htmlFor="merchant">
+              Paid To <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="merchant"
               type="text"
-              placeholder="Where was this transaction made?"
+              placeholder="Who or where did you pay?"
               value={formData.merchant}
               onChange={(e) =>
                 setFormData({ ...formData, merchant: e.target.value })

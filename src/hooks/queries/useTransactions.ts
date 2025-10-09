@@ -464,7 +464,8 @@ export async function createExpenseTransaction(expenseData: {
 export async function createIncomeTransaction(incomeData: {
   amount: number;
   description: string;
-  source: string; // Income source (Salary, Freelance, etc.)
+  category?: string; // Income category (Salary, Freelance, etc.) from INCOME_CATEGORIES
+  source: string; // Actual income source name (employer, client name, etc.)
   accountId: string;
   date: Date;
 }): Promise<Transaction> {
@@ -494,7 +495,7 @@ export async function createIncomeTransaction(incomeData: {
       type: 'income',
       amount: Math.abs(incomeData.amount), // Income is positive
       description: incomeData.description,
-      category: incomeData.source, // Keep source in category for consistency
+      category: incomeData.category || incomeData.source, // Use category if provided, fallback to source for backward compatibility
       from_party: incomeData.source, // Money comes FROM income source (employer, client, etc.)
       to_party: accountName, // Money goes TO user's account
       date: incomeData.date.toISOString(), // Full timestamp with time

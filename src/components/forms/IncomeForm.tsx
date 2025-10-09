@@ -33,7 +33,8 @@ export default function IncomeForm() {
   const [formData, setFormData] = useState({
     amount: "",
     description: "",
-    incomeSource: "",
+    category: "", // Category from INCOME_CATEGORIES (e.g., "Salary", "Freelance")
+    incomeSource: "", // Actual company/person name (e.g., "Tech Corp Inc")
     account: "",
     date: new Date() as Date,
   });
@@ -156,6 +157,7 @@ export default function IncomeForm() {
     if (
       !formData.amount ||
       !formData.description ||
+      !formData.category ||
       !formData.incomeSource ||
       !formData.account ||
       !formData.date
@@ -177,6 +179,7 @@ export default function IncomeForm() {
       await createIncomeMutation.mutateAsync({
         amount: Number(formData.amount),
         description: formData.description,
+        category: formData.category,
         source: formData.incomeSource,
         accountId: formData.account,
         date: formData.date,
@@ -195,6 +198,7 @@ export default function IncomeForm() {
       setFormData({
         amount: "",
         description: "",
+        category: "",
         incomeSource: "",
         account: userAccounts.length > 0 ? userAccounts[0].id : "",
         date: new Date(),
@@ -278,7 +282,7 @@ export default function IncomeForm() {
             </Label>
             <Input
               id="description"
-              placeholder="Source of income..."
+              placeholder="e.g., Monthly salary, Freelance project..."
               value={formData.description}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -289,17 +293,35 @@ export default function IncomeForm() {
             />
           </div>
 
-          {/* Income Source */}
+          {/* Category */}
           <CategorySelect
-            value={formData.incomeSource}
+            value={formData.category}
             onValueChange={(value) =>
-              setFormData((prev) => ({ ...prev, incomeSource: value }))
+              setFormData((prev) => ({ ...prev, category: value }))
             }
             type="income"
-            label="Income Source"
+            label="Category"
             required
             className="w-full"
           />
+
+          {/* Received From */}
+          <div className="space-y-2">
+            <Label htmlFor="incomeSource">
+              Received From <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="incomeSource"
+              placeholder="Who sent you this payment?"
+              value={formData.incomeSource}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  incomeSource: e.target.value,
+                }))
+              }
+            />
+          </div>
 
           {/* Deposit to Account */}
           <div className="space-y-2">

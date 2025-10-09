@@ -21,7 +21,7 @@ import {
 import { toast } from "sonner";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { useUpdateTransaction } from "@/hooks/queries/useTransactions";
-import { EXPENSE_CATEGORIES } from "@/constants/categories";
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "@/constants/categories";
 import { useState, useEffect } from "react";
 import type { Transaction } from "@/types";
 
@@ -58,13 +58,23 @@ export function TransactionBulkEditModal({
   useEffect(() => {
     const initialForms: typeof transactionForms = {};
     transactions.forEach((transaction) => {
+      // Determine which party to show based on transaction type
+      let merchantValue = "";
+      if (transaction.type === "expense") {
+        merchantValue = transaction.to_party || ""; // For expenses, show merchant (to_party)
+      } else if (transaction.type === "income") {
+        merchantValue = transaction.from_party || ""; // For income, show source (from_party)
+      } else if (transaction.type === "transfer") {
+        merchantValue = transaction.to_party || ""; // For transfers, show destination
+      }
+
       initialForms[transaction.id] = {
         description: transaction.description,
         amount: Math.abs(transaction.amount),
         type: transaction.type,
         category: transaction.category || "",
         status: transaction.status,
-        merchant: transaction.to_party || transaction.from_party || "",
+        merchant: merchantValue,
         date: new Date(transaction.date),
       };
     });
@@ -109,15 +119,31 @@ export function TransactionBulkEditModal({
               ? -Math.abs(formData.amount)
               : Math.abs(formData.amount);
 
+          // Determine from_party and to_party based on transaction type
+          let from_party = "";
+          let to_party = "";
+
+          if (formData.type === "expense") {
+            from_party = transaction.from_party || "Account"; // Keep original account name
+            to_party = formData.merchant; // Merchant
+          } else if (formData.type === "income") {
+            from_party = formData.merchant; // Income source
+            to_party = transaction.to_party || "Account"; // Keep original account name
+          } else if (formData.type === "transfer") {
+            from_party = transaction.from_party || "Source Account";
+            to_party = formData.merchant; // Destination
+          }
+
           return {
             id: transaction.id,
             updates: {
               description: formData.description,
               amount: adjustedAmount,
-              type: formData.type as "expense" | "income",
+              type: formData.type as "expense" | "income" | "transfer",
               category: formData.category,
               status: formData.status as "completed" | "pending" | "failed",
-              merchant: formData.merchant,
+              from_party,
+              to_party,
               date: formData.date.toISOString(),
               updated_at: new Date().toISOString(),
             },
@@ -216,23 +242,62 @@ export function TransactionBulkEditModal({
                     <Label htmlFor={`category-${transaction.id}`}>
                       Category
                     </Label>
-                    <Select
-                      value={formData.category || ""}
-                      onValueChange={(value) =>
-                        handleInputChange(transaction.id, "category", value)
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {EXPENSE_CATEGORIES.map((category) => (
-                          <SelectItem key={category.id} value={category.name}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {/* Special/legacy categories that aren't in predefined lists are shown as read-only */}
+                    {(() => {
+                      const isSpecialCategory =
+                        formData.category === "Transfer" ||
+                        formData.category === "Goal Contribution";
+
+                      const categories =
+                        formData.type === "income"
+                          ? INCOME_CATEGORIES
+                          : EXPENSE_CATEGORIES;
+
+                      const isInPredefinedList = categories.some(
+                        (cat) => cat.name === formData.category
+                      );
+
+                      const isLegacyOrSpecial =
+                        !isInPredefinedList && formData.category;
+
+                      return isSpecialCategory || isLegacyOrSpecial ? (
+                        <Input
+                          id={`category-${transaction.id}`}
+                          value={formData.category}
+                          disabled
+                          className="w-full bg-gray-50 cursor-not-allowed"
+                          title={
+                            isSpecialCategory
+                              ? "Special categories cannot be edited"
+                              : "Legacy category - cannot be edited"
+                          }
+                        />
+                      ) : (
+                        <Select
+                          value={formData.category || ""}
+                          onValueChange={(value) =>
+                            handleInputChange(transaction.id, "category", value)
+                          }
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent
+                            side="bottom"
+                            className="max-h-[300px] overflow-y-auto"
+                          >
+                            {categories.map((category) => (
+                              <SelectItem
+                                key={category.id}
+                                value={category.name}
+                              >
+                                {category.icon} {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      );
+                    })()}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor={`type-${transaction.id}`}>
@@ -256,7 +321,11 @@ export function TransactionBulkEditModal({
                 <div className="grid grid-cols-2 gap-2">
                   <div className="grid gap-2">
                     <Label htmlFor={`merchant-${transaction.id}`}>
-                      Merchant
+                      {formData.type === "expense"
+                        ? "Paid To"
+                        : formData.type === "income"
+                        ? "Received From"
+                        : "Transfer Destination"}
                     </Label>
                     <Input
                       id={`merchant-${transaction.id}`}
@@ -267,6 +336,13 @@ export function TransactionBulkEditModal({
                           "merchant",
                           e.target.value
                         )
+                      }
+                      placeholder={
+                        formData.type === "expense"
+                          ? "Who or where did you pay?"
+                          : formData.type === "income"
+                          ? "Who sent you this payment?"
+                          : "Destination account or note"
                       }
                       className="w-full"
                     />

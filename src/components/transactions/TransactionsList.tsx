@@ -248,7 +248,10 @@ export function TransactionsList({
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Filter by category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent
+                  side="bottom"
+                  className="max-h-[300px] overflow-y-auto"
+                >
                   {categories.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}

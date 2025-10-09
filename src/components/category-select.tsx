@@ -101,7 +101,7 @@ export function CategorySelect({
         <SelectTrigger className={className}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent side="bottom" className="max-h-[300px] overflow-y-auto">
           {categories.map((category) => {
             const isAlreadyAdded = existingCategories.includes(category.name);
             return (

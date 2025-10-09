@@ -24,6 +24,7 @@ import {
 import { DatePicker } from "@/components/ui/date-picker";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import {
   useCreateGoal,
@@ -133,48 +134,6 @@ export default function GoalActions({
       });
       setTargetDate(undefined);
       setAddGoalOpen(false);
-    } catch {
-      // Error handling is done in the mutation
-    }
-  };
-
-  // Handle updating a goal
-  const handleUpdateGoal = async (
-    goalId: string,
-    goalData: {
-      name?: string;
-      targetAmount?: number;
-      currentAmount?: number;
-      targetDate?: string | null;
-      category?: string | null;
-      priority?: string | null;
-      status?: string;
-    },
-    closeModal = false
-  ) => {
-    // Validate target date is in the future (if provided)
-    if (goalData.targetDate) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const selectedDate = new Date(goalData.targetDate);
-      selectedDate.setHours(0, 0, 0, 0);
-
-      if (selectedDate <= today) {
-        toast.error("Target date must be in the future");
-        return;
-      }
-    }
-
-    try {
-      await updateGoalMutation.mutateAsync({
-        goalId,
-        goalData,
-      });
-
-      if (closeModal) {
-        setEditGoalsOpen(false);
-        setEditTargetDates({});
-      }
     } catch {
       // Error handling is done in the mutation
     }
@@ -376,41 +335,13 @@ export default function GoalActions({
             </DialogTrigger>
             <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden">
               <DialogHeader>
-                <DialogTitle>Edit Savings Goals</DialogTitle>
+                <DialogTitle>Edit Goals</DialogTitle>
                 <DialogDescription>
-                  Modify your existing savings goals and target amounts.
+                  Modify your existing goals and target amounts.
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
                 {goals.map((goal) => {
-                  const handleSaveGoal = () => {
-                    const nameInput = document.getElementById(
-                      `goal-name-${goal.id}`
-                    ) as HTMLInputElement;
-                    const targetInput = document.getElementById(
-                      `target-${goal.id}`
-                    ) as HTMLInputElement;
-                    const currentInput = document.getElementById(
-                      `current-${goal.id}`
-                    ) as HTMLInputElement;
-
-                    if (nameInput && targetInput && currentInput) {
-                      const editDate = editTargetDates[goal.id];
-                      handleUpdateGoal(
-                        goal.id,
-                        {
-                          name: nameInput.value,
-                          targetAmount: parseFloat(targetInput.value) || 0,
-                          currentAmount: parseFloat(currentInput.value) || 0,
-                          targetDate: editDate
-                            ? editDate.toISOString().split("T")[0]
-                            : goal.targetDate,
-                        },
-                        true
-                      );
-                    }
-                  };
-
                   const handleDeleteGoalClick = () => {
                     onGoalToDelete(goal);
                     onOpenDeleteConfirm(true);
@@ -425,18 +356,15 @@ export default function GoalActions({
                         <Label className="text-base font-medium">
                           {goal.name}
                         </Label>
-                        <div className="flex gap-2">
-                          <Button size="sm" onClick={handleSaveGoal}>
-                            Save
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={handleDeleteGoalClick}
-                          >
-                            Delete
-                          </Button>
-                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleDeleteGoalClick}
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete goal</span>
+                        </Button>
                       </div>
                       <div className="grid gap-2">
                         <Label htmlFor={`goal-name-${goal.id}`}>
