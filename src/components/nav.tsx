@@ -197,6 +197,11 @@ export default function Nav({ showDashboardTabs }: NavProps) {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
+                      <Link href="/guides" className="cursor-pointer">
+                        User Guides
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link href="/help" className="cursor-pointer">
                         Help & Support
                       </Link>

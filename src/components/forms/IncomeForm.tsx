@@ -33,7 +33,7 @@ export default function IncomeForm() {
   const [formData, setFormData] = useState({
     amount: "",
     description: "",
-    category: "", // Category from INCOME_CATEGORIES (e.g., "Salary", "Freelance")
+    category: "__select_category__", // Category from INCOME_CATEGORIES (e.g., "Salary", "Freelance")
     incomeSource: "", // Actual company/person name (e.g., "Tech Corp Inc")
     account: "",
     date: new Date() as Date,
@@ -179,7 +179,10 @@ export default function IncomeForm() {
       await createIncomeMutation.mutateAsync({
         amount: Number(formData.amount),
         description: formData.description,
-        category: formData.category,
+        category:
+          formData.category === "__select_category__"
+            ? undefined
+            : formData.category || undefined,
         source: formData.incomeSource,
         accountId: formData.account,
         date: formData.date,
@@ -198,7 +201,7 @@ export default function IncomeForm() {
       setFormData({
         amount: "",
         description: "",
-        category: "",
+        category: "__select_category__",
         incomeSource: "",
         account: userAccounts.length > 0 ? userAccounts[0].id : "",
         date: new Date(),

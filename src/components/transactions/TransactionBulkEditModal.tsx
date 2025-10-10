@@ -179,7 +179,7 @@ export function TransactionBulkEditModal({
           Edit
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Edit All Transactions</DialogTitle>
           <DialogDescription>
@@ -187,7 +187,7 @@ export function TransactionBulkEditModal({
             cannot be changed to maintain balance integrity.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
+        <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
           {transactions.map((transaction) => {
             const formData = transactionForms[transaction.id] || {};
             return (

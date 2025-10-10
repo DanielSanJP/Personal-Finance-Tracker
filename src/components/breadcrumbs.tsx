@@ -26,16 +26,34 @@ export default function Breadcrumbs({ className }: BreadcrumbsProps) {
   // Split the pathname into segments
   const pathSegments = pathname.split("/").filter(Boolean);
 
+  // Helper function to get label for "add" segment based on parent context
+  const getAddLabel = (parentSegment: string | undefined) => {
+    switch (parentSegment) {
+      case "accounts":
+        return "Add Account";
+      case "income":
+        return "Add Income";
+      case "budgets":
+        return "Add Budget";
+      case "goals":
+        return "Add Goal";
+      case "transactions":
+      default:
+        return "Add Transaction";
+    }
+  };
+
   // Map of path segments to display names
   const segmentLabels: Record<string, string> = {
     dashboard: "Dashboard",
     transactions: "Transactions",
+    accounts: "Accounts",
+    income: "Income",
     budgets: "Budgets",
     goals: "Goals",
     reports: "Reports",
     "budget-report": "Budget Report",
     "spending-report": "Spending Report",
-    add: "Add Transaction",
   };
 
   // Build breadcrumb items
@@ -66,9 +84,17 @@ export default function Breadcrumbs({ className }: BreadcrumbsProps) {
       pathSegments.forEach((segment, index) => {
         currentPath += `/${segment}`;
         const isLast = index === pathSegments.length - 1;
-        const label =
-          segmentLabels[segment] ||
-          segment.charAt(0).toUpperCase() + segment.slice(1);
+
+        // Special handling for "add" segment - get label based on parent context
+        let label: string;
+        if (segment === "add") {
+          const parentSegment = index > 0 ? pathSegments[index - 1] : undefined;
+          label = getAddLabel(parentSegment);
+        } else {
+          label =
+            segmentLabels[segment] ||
+            segment.charAt(0).toUpperCase() + segment.slice(1);
+        }
 
         // Skip dashboard since we already added it
         if (segment === "dashboard") return;

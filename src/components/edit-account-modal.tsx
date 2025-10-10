@@ -12,10 +12,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
-import { updateAccount } from "@/hooks/queries/useAccounts";
+import { useUpdateAccount, useDeleteAccount } from "@/hooks/mutations";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
-import { useAuth } from "@/hooks/queries/useAuth";
+import { Trash2 } from "lucide-react";
 
 interface Account {
   id: string;
@@ -40,7 +47,8 @@ export function EditAccountModal({
   onClose,
   onAccountUpdated,
 }: EditAccountModalProps) {
-  const { user } = useAuth();
+  const updateAccountMutation = useUpdateAccount();
+  const deleteAccountMutation = useDeleteAccount();
   const [formData, setFormData] = useState({
     name: "",
     type: "",
@@ -49,6 +57,7 @@ export function EditAccountModal({
     isActive: true,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const accountTypes = ["checking", "savings", "credit", "investment"];
 
@@ -104,14 +113,8 @@ export function EditAccountModal({
     setIsLoading(true);
 
     try {
-      if (!user) {
-        toast.error("Authentication required", {
-          description: "Please log in to update the account.",
-        });
-        return;
-      }
-
-      await updateAccount(user.id, account.id, {
+      await updateAccountMutation.mutateAsync({
+        accountId: account.id,
         name: formData.name,
         type: formData.type,
         balance: Number(formData.balance),
@@ -119,17 +122,40 @@ export function EditAccountModal({
         isActive: formData.isActive,
       });
 
-      toast.success("Account updated successfully!", {
-        description: `${formData.name} has been updated.`,
-      });
-
+      // Toast is handled by the mutation hook
       onAccountUpdated();
       onClose();
     } catch (error) {
+      // Error toast is handled by the mutation hook
       console.error("Error updating account:", error);
-      toast.error("Error updating account", {
-        description: "Please try again later.",
-      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!account) return;
+
+    // Check if user is guest first
+    const isGuest = await checkGuestAndWarn("delete accounts");
+    if (isGuest) {
+      setShowDeleteConfirm(false);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await deleteAccountMutation.mutateAsync(account.id);
+
+      // Toast is handled by the mutation hook
+      setShowDeleteConfirm(false);
+      onAccountUpdated();
+      onClose();
+    } catch (error) {
+      // Error toast is handled by the mutation hook
+      console.error("Error deleting account:", error);
+      setShowDeleteConfirm(false);
     } finally {
       setIsLoading(false);
     }
@@ -171,22 +197,23 @@ export function EditAccountModal({
             <Label htmlFor="edit-type" className="text-right">
               Type <span className="text-red-500">*</span>
             </Label>
-            <select
-              id="edit-type"
+            <Select
               value={formData.type}
-              onChange={(e) =>
-                setFormData({ ...formData, type: e.target.value })
+              onValueChange={(value) =>
+                setFormData({ ...formData, type: value })
               }
-              aria-label="Select account type"
-              className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="">Select account type...</option>
-              {accountTypes.map((type) => (
-                <option key={type} value={type}>
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Select account type..." />
+              </SelectTrigger>
+              <SelectContent>
+                {accountTypes.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Balance */}
@@ -249,15 +276,62 @@ export function EditAccountModal({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-            Cancel
+        <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-between">
+          <Button
+            variant="destructive"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={isLoading}
+            className="sm:mr-auto"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete Account
           </Button>
-          <Button onClick={handleSave} disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save Changes"}
-          </Button>
+          <div className="flex flex-col-reverse gap-2 sm:flex-row">
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Account</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete &quot;{account.name}&quot;? This
+                action cannot be undone and will permanently remove this account
+                and all associated data.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={isLoading}
+              >
+                {isLoading ? "Deleting..." : "Delete Account"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </Dialog>
   );
 }

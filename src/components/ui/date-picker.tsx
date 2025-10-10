@@ -23,6 +23,7 @@ interface DatePickerProps {
   toDate?: Date;
   fromYear?: number;
   toYear?: number;
+  modal?: boolean;
 }
 
 export function DatePicker({
@@ -36,11 +37,12 @@ export function DatePicker({
   toDate,
   fromYear,
   toYear,
+  modal = true,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} modal={modal}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"

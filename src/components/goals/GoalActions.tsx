@@ -204,7 +204,16 @@ export default function GoalActions({
             <DialogTrigger asChild>
               <Button className="min-w-[140px]">Add New Goal</Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-hidden">
+            <DialogContent
+              className="sm:max-w-[425px] max-h-[90vh] overflow-hidden"
+              onInteractOutside={(e) => {
+                // Prevent closing when clicking inside a popover (date picker)
+                const target = e.target as Element;
+                if (target.closest('[data-slot="popover-content"]')) {
+                  e.preventDefault();
+                }
+              }}
+            >
               <DialogHeader>
                 <DialogTitle>Add New Savings Goal</DialogTitle>
                 <DialogDescription>
@@ -333,7 +342,16 @@ export default function GoalActions({
                 Edit Goals
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-hidden">
+            <DialogContent
+              className="sm:max-w-[700px] max-h-[90vh] overflow-hidden"
+              onInteractOutside={(e) => {
+                // Prevent closing when clicking inside a popover (date picker)
+                const target = e.target as Element;
+                if (target.closest('[data-slot="popover-content"]')) {
+                  e.preventDefault();
+                }
+              }}
+            >
               <DialogHeader>
                 <DialogTitle>Edit Goals</DialogTitle>
                 <DialogDescription>
@@ -500,7 +518,16 @@ export default function GoalActions({
                 Make Contribution
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent
+              className="sm:max-w-[425px]"
+              onInteractOutside={(e) => {
+                // Prevent closing when clicking inside a popover (date picker)
+                const target = e.target as Element;
+                if (target.closest('[data-slot="popover-content"]')) {
+                  e.preventDefault();
+                }
+              }}
+            >
               <DialogHeader>
                 <DialogTitle>Make a Contribution</DialogTitle>
                 <DialogDescription>

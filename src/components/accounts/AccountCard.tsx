@@ -27,7 +27,11 @@ export function AccountCard({ account, onEdit }: AccountCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card
+      className={`hover:shadow-lg transition-shadow ${
+        !account.isActive ? "opacity-60" : ""
+      }`}
+    >
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg font-semibold">

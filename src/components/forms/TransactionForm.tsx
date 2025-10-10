@@ -39,7 +39,7 @@ export default function TransactionForm() {
   const [formData, setFormData] = useState({
     amount: "",
     description: "",
-    category: "",
+    category: "__select_category__",
     merchant: "",
     account: "",
     status: "completed",
@@ -106,7 +106,10 @@ export default function TransactionForm() {
       await createExpenseMutation.mutateAsync({
         amount: Number(formData.amount),
         description: formData.description,
-        category: formData.category || undefined,
+        category:
+          formData.category === "__select_category__"
+            ? undefined
+            : formData.category || undefined,
         merchant: formData.merchant || undefined,
         accountId: formData.account,
         status: formData.status,
@@ -126,7 +129,7 @@ export default function TransactionForm() {
       setFormData({
         amount: "",
         description: "",
-        category: "",
+        category: "__select_category__",
         merchant: "",
         account: userAccounts.length > 0 ? userAccounts[0].id : "",
         status: "completed",

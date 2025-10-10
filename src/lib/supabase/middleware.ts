@@ -51,7 +51,8 @@ export async function updateSession(request: NextRequest) {
         request.nextUrl.pathname === '/' ||
         request.nextUrl.pathname.startsWith('/login') ||
         request.nextUrl.pathname.startsWith('/register') ||
-        request.nextUrl.pathname.startsWith('/error')
+        request.nextUrl.pathname.startsWith('/error') ||
+        request.nextUrl.pathname.startsWith('/guides') // Allow public access to documentation
       
       if (!isPublicRoute) {
         const url = request.nextUrl.clone()
@@ -73,6 +74,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/register') ||
     request.nextUrl.pathname.startsWith('/auth') ||
     request.nextUrl.pathname.startsWith('/error') ||
+    request.nextUrl.pathname.startsWith('/guides') || // Allow public access to documentation
     request.nextUrl.pathname.startsWith('/api/') // Allow API routes for auth
 
   // If user is not authenticated and trying to access a protected route

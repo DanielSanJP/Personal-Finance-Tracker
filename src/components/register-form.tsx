@@ -21,36 +21,32 @@ export function RegisterForm({
 
   const handleSubmit = async (formData: FormData) => {
     // Basic client-side validation
-    const firstName = formData.get('firstName') as string;
-    const lastName = formData.get('lastName') as string;
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const confirmPassword = formData.get('confirmPassword') as string;
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
 
     if (!firstName || !lastName || !email || !password || !confirmPassword) {
-      alert('Please fill in all fields');
+      alert("Please fill in all fields");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      alert("Passwords do not match");
       return;
     }
 
     if (password.length < 6) {
-      alert('Password must be at least 6 characters long');
+      alert("Password must be at least 6 characters long");
       return;
     }
 
     setLoading(true);
-    try {
-      await signupAction(formData);
-    } catch (error) {
-      console.error('Registration failed:', error);
-      alert('Registration failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    // DO NOT wrap redirect() in try/catch - it throws a special error that should not be caught
+    // This allows Next.js to properly handle the redirect to /login
+    await signupAction(formData);
+    // Note: setLoading(false) will never be reached because redirect() throws
   };
 
   return (

@@ -229,6 +229,11 @@ export function TransactionsList({
         </CardContent>
       </Card>
 
+      {/* Transaction Summary */}
+      {filteredTransactions.length > 0 && (
+        <TransactionSummary transactions={filteredTransactions} />
+      )}
+
       {/* Transaction History */}
       <Card>
         <CardHeader>
@@ -572,11 +577,6 @@ export function TransactionsList({
           />
         </CardContent>
       </Card>
-
-      {/* Transaction Summary */}
-      {filteredTransactions.length > 0 && (
-        <TransactionSummary transactions={filteredTransactions} />
-      )}
     </div>
   );
 }

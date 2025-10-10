@@ -65,14 +65,18 @@ export async function signup(formData: FormData) {
     },
   }
 
-  const { error } = await supabase.auth.signUp(data)
+  const { data: authData, error } = await supabase.auth.signUp(data)
 
   if (error) {
+    console.error('Signup error:', error)
     redirect('/error')
   }
 
+  console.log('✅ Signup successful for:', authData.user?.email)
+
   revalidatePath('/', 'layout')
-  redirect('/login')
+  // Redirect to login with a success message
+  redirect('/login?message=Account created successfully! Please check your email to verify your account.')
 }
 
 export async function logout() {

@@ -20,12 +20,14 @@ import { loginAsGuest } from "@/app/login/actions";
 interface LoginFormProps extends React.ComponentProps<"div"> {
   loginAction?: (formData: FormData) => Promise<{ error?: string } | void>;
   guestLoginAction?: (formData: FormData) => Promise<{ error?: string } | void>;
+  successMessage?: string;
 }
 
 export function LoginForm({
   className,
   loginAction,
   guestLoginAction = loginAsGuest,
+  successMessage,
   ...props
 }: LoginFormProps) {
   // Wrapper function to match useActionState signature
@@ -68,6 +70,13 @@ export function LoginForm({
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-6">
+            {successMessage && (
+              <Alert className="bg-green-50 text-green-900 border-green-200">
+                <AlertCircle className="h-4 w-4 text-green-600" />
+                <AlertDescription>{successMessage}</AlertDescription>
+              </Alert>
+            )}
+
             {(state?.error || guestState?.error) && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />

@@ -325,9 +325,9 @@ export default function SettingsContent() {
                     onClick={() => togglePasswordVisibility("new")}
                   >
                     {showPasswords.new ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
                       <Eye className="h-4 w-4" />
+                    ) : (
+                      <EyeOff className="h-4 w-4" />
                     )}
                   </Button>
                 </div>
@@ -357,9 +357,9 @@ export default function SettingsContent() {
                     onClick={() => togglePasswordVisibility("confirm")}
                   >
                     {showPasswords.confirm ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
                       <Eye className="h-4 w-4" />
+                    ) : (
+                      <EyeOff className="h-4 w-4" />
                     )}
                   </Button>
                 </div>

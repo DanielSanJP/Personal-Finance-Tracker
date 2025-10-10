@@ -16,7 +16,7 @@ async function getCurrentUserAccounts(userId: string): Promise<Account[]> {
       .from('accounts')
       .select('*')
       .eq('user_id', userId)
-      .eq('is_active', true);
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching accounts:', error);
@@ -46,7 +46,7 @@ async function getAccountsByUserId(userId: string): Promise<Account[]> {
       .from('accounts')
       .select('*')
       .eq('user_id', userId)
-      .eq('is_active', true);
+      .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Error fetching accounts by user ID:', error);
@@ -167,6 +167,29 @@ export async function updateAccount(userId: string, accountId: string, accountDa
     };
   } catch (error) {
     console.error('Error updating account:', error);
+    throw error;
+  }
+}
+
+export async function deleteAccount(userId: string, accountId: string): Promise<void> {
+  if (!userId) {
+    throw new Error('User not authenticated');
+  }
+
+  try {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('accounts')
+      .delete()
+      .eq('id', accountId)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error deleting account:', error);
+      throw new Error(`Failed to delete account: ${error.message}`);
+    }
+  } catch (error) {
+    console.error('Error deleting account:', error);
     throw error;
   }
 }
