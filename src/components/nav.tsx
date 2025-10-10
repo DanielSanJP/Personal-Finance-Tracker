@@ -147,6 +147,9 @@ export default function Nav({ showDashboardTabs }: NavProps) {
             </div>
             {!shouldShowDashboardTabs && (
               <div className="flex flex-wrap items-center gap-2 md:flex-row flex-shrink-0">
+                <Button asChild variant="outline">
+                  <Link href="/guides">User Guide</Link>
+                </Button>
                 <Button asChild>
                   <Link href="/login">Login</Link>
                 </Button>
