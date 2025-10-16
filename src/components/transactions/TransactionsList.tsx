@@ -35,6 +35,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
@@ -97,6 +106,10 @@ export function TransactionsList({
   const [editTransactionsOpen, setEditTransactionsOpen] = useState(false);
   const [editSingleTransactionOpen, setEditSingleTransactionOpen] =
     useState(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20; // Show 20 transactions per page
 
   const { categories, parties, types, periods } = filterOptions;
 
@@ -181,6 +194,16 @@ export function TransactionsList({
           // Fallback
           return 0;
         });
+
+  // Calculate pagination
+  const totalTransactions = filteredTransactions.length;
+  const totalPages = Math.ceil(totalTransactions / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedTransactions = filteredTransactions.slice(
+    startIndex,
+    endIndex
+  );
 
   // Export handlers
   const handleCSVExport = () => {
@@ -446,121 +469,216 @@ export function TransactionsList({
           {filteredTransactions.length === 0 ? (
             <EmptyTransactions />
           ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTransactions.map((transaction) => (
-                    <TableRow
-                      key={transaction.id}
-                      className="cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleTransactionClick(transaction)}
-                    >
-                      <TableCell className="font-medium">
-                        <div>
-                          <div
-                            className="font-semibold text-gray-900 truncate max-w-[200px]"
-                            title={transaction.description}
-                          >
-                            {transaction.description}
-                          </div>
-                          <div
-                            className="text-sm text-gray-500 truncate max-w-[200px]"
-                            title={getDisplayParty(transaction)}
-                          >
-                            {getDisplayParty(transaction)}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div
-                          className="text-sm truncate max-w-[120px]"
-                          title={transaction.category || undefined}
-                        >
-                          {transaction.category || "Other"}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          {formatDate(transaction.date)}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div
-                          className={`font-bold ${getAmountColor(
-                            transaction.type
-                          )}`}
-                        >
-                          {transaction.type === "income" ? "+" : "-"}
-                          {formatCurrency(Math.abs(transaction.amount))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <span className="sr-only">Open menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleTransactionClick(transaction);
-                              }}
-                            >
-                              View details
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigator.clipboard.writeText(transaction.id);
-                              }}
-                            >
-                              Copy transaction ID
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                if (await checkGuestAndWarn()) return;
-                                setSelectedTransaction(transaction);
-                                setEditSingleTransactionOpen(true);
-                              }}
-                            >
-                              Edit transaction
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                await handleDeleteTransaction(transaction);
-                              }}
-                              className="text-red-600"
-                            >
-                              Delete transaction
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+            <>
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Description</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedTransactions.map((transaction) => (
+                      <TableRow
+                        key={transaction.id}
+                        className="cursor-pointer hover:bg-gray-50"
+                        onClick={() => handleTransactionClick(transaction)}
+                      >
+                        <TableCell className="font-medium">
+                          <div>
+                            <div
+                              className="font-semibold text-gray-900 truncate max-w-[200px]"
+                              title={transaction.description}
+                            >
+                              {transaction.description}
+                            </div>
+                            <div
+                              className="text-sm text-gray-500 truncate max-w-[200px]"
+                              title={getDisplayParty(transaction)}
+                            >
+                              {getDisplayParty(transaction)}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div
+                            className="text-sm truncate max-w-[120px]"
+                            title={transaction.category || undefined}
+                          >
+                            {transaction.category || "Other"}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            {formatDate(transaction.date)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div
+                            className={`font-bold ${getAmountColor(
+                              transaction.type
+                            )}`}
+                          >
+                            {transaction.type === "income" ? "+" : "-"}
+                            {formatCurrency(Math.abs(transaction.amount))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleTransactionClick(transaction);
+                                }}
+                              >
+                                View details
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(transaction.id);
+                                }}
+                              >
+                                Copy transaction ID
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (await checkGuestAndWarn()) return;
+                                  setSelectedTransaction(transaction);
+                                  setEditSingleTransactionOpen(true);
+                                }}
+                              >
+                                Edit transaction
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  await handleDeleteTransaction(transaction);
+                                }}
+                                className="text-red-600"
+                              >
+                                Delete transaction
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-4 flex justify-center">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (currentPage > 1) {
+                              setCurrentPage(currentPage - 1);
+                            }
+                          }}
+                          className={
+                            currentPage === 1
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+
+                      {/* Page numbers */}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => {
+                          // Show first page, last page, current page, and pages around current
+                          const showPage =
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 &&
+                              page <= currentPage + 1);
+
+                          // Show ellipsis
+                          const showEllipsisBefore =
+                            page === currentPage - 2 && currentPage > 3;
+                          const showEllipsisAfter =
+                            page === currentPage + 2 &&
+                            currentPage < totalPages - 2;
+
+                          if (showEllipsisBefore || showEllipsisAfter) {
+                            return (
+                              <PaginationItem key={page}>
+                                <PaginationEllipsis />
+                              </PaginationItem>
+                            );
+                          }
+
+                          if (!showPage) return null;
+
+                          return (
+                            <PaginationItem key={page}>
+                              <PaginationLink
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setCurrentPage(page);
+                                }}
+                                isActive={currentPage === page}
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        }
+                      )}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (currentPage < totalPages) {
+                              setCurrentPage(currentPage + 1);
+                            }
+                          }}
+                          className={
+                            currentPage === totalPages
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+
+              {/* Page info */}
+              <div className="mt-2 text-center text-sm text-muted-foreground">
+                Showing {startIndex + 1}-{Math.min(endIndex, totalTransactions)}{" "}
+                of {totalTransactions} transactions
+              </div>
+            </>
           )}
 
           {/* Modals - Always available */}

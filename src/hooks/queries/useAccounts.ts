@@ -178,15 +178,41 @@ export async function deleteAccount(userId: string, accountId: string): Promise<
 
   try {
     const supabase = createClient();
-    const { error } = await supabase
+    
+    // Step 1: Check if account has a non-zero balance
+    const { data: account, error: fetchError } = await supabase
+      .from('accounts')
+      .select('balance, name')
+      .eq('id', accountId)
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching account:', fetchError);
+      throw new Error(`Failed to fetch account: ${fetchError.message}`);
+    }
+
+    if (!account) {
+      throw new Error('Account not found');
+    }
+
+    // Step 2: Prevent deletion if balance is not zero
+    if (account.balance !== 0) {
+      throw new Error(
+        `Cannot delete account "${account.name}" with a balance of ${account.balance}. Please transfer all funds to another account first.`
+      );
+    }
+
+    // Step 3: Delete the account (only if balance is zero)
+    const { error: deleteError } = await supabase
       .from('accounts')
       .delete()
       .eq('id', accountId)
       .eq('user_id', userId);
 
-    if (error) {
-      console.error('Error deleting account:', error);
-      throw new Error(`Failed to delete account: ${error.message}`);
+    if (deleteError) {
+      console.error('Error deleting account:', deleteError);
+      throw new Error(`Failed to delete account: ${deleteError.message}`);
     }
   } catch (error) {
     console.error('Error deleting account:', error);

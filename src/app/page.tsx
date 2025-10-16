@@ -34,7 +34,7 @@ export default function Home() {
     <div className="min-h-screen">
       <div className="font-sans flex items-center justify-center min-h-[calc(100vh-4rem)] p-8">
         <div className="flex flex-col items-center gap-4">
-          <p className="text-lg text-center">
+          <p className="text-2xl text-center font-semibold">
             Welcome to your personal finance tracker
           </p>
         </div>

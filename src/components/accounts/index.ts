@@ -3,3 +3,4 @@ export { AccountsList } from './AccountsList';
 export { AccountCard } from './AccountCard';
 export { AccountsHeader } from './AccountsHeader';
 export { AccountsEmptyState } from './AccountsEmptyState';
+export { TransferModal } from './TransferModal';

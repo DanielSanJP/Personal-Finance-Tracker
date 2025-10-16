@@ -23,7 +23,7 @@ export default function AccountForm() {
   const [formData, setFormData] = useState({
     name: "",
     type: "",
-    balance: "",
+    balance: "0",
     accountNumber: "",
   });
 
@@ -39,14 +39,18 @@ export default function AccountForm() {
     if (isGuest) return;
 
     // Validate form data
-    if (!formData.name || !formData.type || !formData.balance) {
+    if (!formData.name || !formData.type) {
       toast.error("Please fill in all required fields", {
-        description: "Name, type, and balance are required.",
+        description: "Name and type are required.",
       });
       return;
     }
 
-    if (isNaN(Number(formData.balance))) {
+    // Use 0 as default if balance is empty
+    const balanceValue =
+      formData.balance.trim() === "" ? "0" : formData.balance;
+
+    if (isNaN(Number(balanceValue))) {
       toast.error("Invalid balance amount", {
         description: "Please enter a valid number for the balance.",
       });
@@ -57,7 +61,7 @@ export default function AccountForm() {
       await createAccountMutation.mutateAsync({
         name: formData.name,
         type: formData.type,
-        balance: Number(formData.balance),
+        balance: Number(balanceValue),
         accountNumber: formData.accountNumber || undefined,
       });
 
@@ -68,7 +72,7 @@ export default function AccountForm() {
       setFormData({
         name: "",
         type: "",
-        balance: "",
+        balance: "0",
         accountNumber: "",
       });
 

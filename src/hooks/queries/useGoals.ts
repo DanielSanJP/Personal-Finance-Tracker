@@ -199,15 +199,31 @@ export const deleteGoal = async (goalId: string) => {
   try {
     const supabase = createClient();
     
-    const { error } = await supabase
+    // Step 1: Delete all contribution transactions for this goal
+    // The database trigger will automatically reverse the account balances
+    // and update the goal's current_amount (though we're deleting the goal anyway)
+    const { error: transactionError } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('destination_account_id', goalId)
+      .eq('user_id', user.id)
+      .eq('type', 'transfer');
+
+    if (transactionError) {
+      console.error('Error deleting goal contributions:', transactionError);
+      throw new Error('Failed to delete goal contributions: ' + transactionError.message);
+    }
+
+    // Step 2: Now delete the goal itself
+    const { error: goalError } = await supabase
       .from('goals')
       .delete()
       .eq('id', goalId)
       .eq('user_id', user.id);
 
-    if (error) {
-      console.error('Error deleting goal:', error);
-      throw new Error('Failed to delete goal');
+    if (goalError) {
+      console.error('Error deleting goal:', goalError);
+      throw new Error('Failed to delete goal: ' + goalError.message);
     }
 
     return { success: true };
@@ -285,35 +301,12 @@ export const makeGoalContribution = async (contributionData: {
       throw new Error(`Failed to create transaction: ${transactionError.message}`);
     }
 
-    // Step 5: Update account balance
-    const { error: updateAccountError } = await supabase
-      .from('accounts')
-      .update({ 
-        balance: account.balance - contributionData.amount,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', contributionData.accountId);
-
-    if (updateAccountError) {
-      console.error('Account update error:', updateAccountError);
-      throw new Error('Failed to update account balance');
-    }
-
-    // Step 6: Update goal current amount
-    const newGoalAmount = goal.current_amount + contributionData.amount;
-    const { error: updateGoalError } = await supabase
-      .from('goals')
-      .update({ 
-        current_amount: newGoalAmount,
-        status: newGoalAmount >= goal.target_amount ? 'completed' : 'active',
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', contributionData.goalId);
-
-    if (updateGoalError) {
-      console.error('Goal update error:', updateGoalError);
-      throw new Error('Failed to update goal');
-    }
+    // Note: Account balance and goal amount are automatically updated by database trigger
+    // See migrations/001_account_balance_triggers.sql
+    // The trigger handles:
+    // - Subtracting amount from account balance
+    // - Adding amount to goal current_amount
+    // - Updating goal status (active/completed) based on target_amount
 
     return {
       success: true,
@@ -465,6 +458,8 @@ export function useDeleteGoal() {
       // Invalidate goals and dashboard data
       queryClient.invalidateQueries({ queryKey: queryKeys.goals.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.accounts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.transactions.all });
       // Legacy compatibility
       queryClient.invalidateQueries({ queryKey: GOAL_QUERY_KEYS.goals });
     },

@@ -1,16 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit } from "lucide-react";
+import { Edit, ArrowRightLeft } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import type { Account } from "@/types";
 
 interface AccountCardProps {
   account: Account;
   onEdit: (account: Account) => void;
+  onTransfer?: (account: Account) => void;
 }
 
-export function AccountCard({ account, onEdit }: AccountCardProps) {
+export function AccountCard({ account, onEdit, onTransfer }: AccountCardProps) {
   const getAccountTypeColor = (type: string) => {
     switch (type) {
       case "checking":
@@ -62,15 +63,29 @@ export function AccountCard({ account, onEdit }: AccountCardProps) {
             >
               {account.isActive ? "Active" : "Inactive"}
             </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onEdit(account)}
-              className="h-8 w-8 p-0"
-            >
-              <Edit className="h-4 w-4" />
-              <span className="sr-only">Edit account</span>
-            </Button>
+            <div className="flex gap-2">
+              {onTransfer && account.isActive && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onTransfer(account)}
+                  className="h-8 w-8 p-0"
+                  title="Transfer funds"
+                >
+                  <ArrowRightLeft className="h-4 w-4" />
+                  <span className="sr-only">Transfer funds</span>
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onEdit(account)}
+                className="h-8 w-8 p-0"
+              >
+                <Edit className="h-4 w-4" />
+                <span className="sr-only">Edit account</span>
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>

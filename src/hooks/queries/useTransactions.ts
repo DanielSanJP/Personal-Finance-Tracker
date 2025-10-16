@@ -413,42 +413,8 @@ export async function createExpenseTransaction(expenseData: {
     throw new Error(`Failed to create expense transaction: ${error.message}`);
   }
 
-  // Update account balance (subtract expense amount)
-  const { error: accountError } = await supabase.rpc('update_account_balance', {
-    account_id_param: expenseData.accountId,
-    amount_change: -Math.abs(expenseData.amount)
-  });
-
-  if (accountError) {
-    // Try direct update if RPC doesn't exist
-    const { data: accountData, error: fetchError } = await supabase
-      .from('accounts')
-      .select('balance')
-      .eq('id', expenseData.accountId)
-      .eq('user_id', user.id)
-      .single();
-
-    if (fetchError) {
-      console.error('Error fetching account for balance update:', fetchError);
-      throw new Error(`Failed to fetch account for balance update: ${fetchError.message}`);
-    }
-
-    const newBalance = Number(accountData.balance) - Math.abs(expenseData.amount);
-    
-    const { error: updateError } = await supabase
-      .from('accounts')
-      .update({
-        balance: newBalance,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', expenseData.accountId)
-      .eq('user_id', user.id);
-
-    if (updateError) {
-      console.error('Error updating account balance:', updateError);
-      throw new Error(`Failed to update account balance: ${updateError.message}`);
-    }
-  }
+  // Note: Account balance is automatically updated by database trigger
+  // See migrations/001_account_balance_triggers.sql
 
   // Transform the data to match our interface
   return {
@@ -509,42 +475,8 @@ export async function createIncomeTransaction(incomeData: {
     throw new Error(`Failed to create income transaction: ${error.message}`);
   }
 
-  // Update account balance (add income amount)
-  const { error: accountError } = await supabase.rpc('update_account_balance', {
-    account_id_param: incomeData.accountId,
-    amount_change: Math.abs(incomeData.amount)
-  });
-
-  if (accountError) {
-    // Try direct update if RPC doesn't exist
-    const { data: accountData, error: fetchError } = await supabase
-      .from('accounts')
-      .select('balance')
-      .eq('id', incomeData.accountId)
-      .eq('user_id', user.id)
-      .single();
-
-    if (fetchError) {
-      console.error('Error fetching account for balance update:', fetchError);
-      throw new Error(`Failed to fetch account for balance update: ${fetchError.message}`);
-    }
-
-    const newBalance = Number(accountData.balance) + Math.abs(incomeData.amount);
-    
-    const { error: updateError } = await supabase
-      .from('accounts')
-      .update({
-        balance: newBalance,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', incomeData.accountId)
-      .eq('user_id', user.id);
-
-    if (updateError) {
-      console.error('Error updating account balance:', updateError);
-      throw new Error(`Failed to update account balance: ${updateError.message}`);
-    }
-  }
+  // Note: Account balance is automatically updated by database trigger
+  // See migrations/001_account_balance_triggers.sql
 
   // Transform the data to match our interface
   return {

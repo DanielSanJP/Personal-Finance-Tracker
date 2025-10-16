@@ -6,17 +6,27 @@ import { EditAccountModal } from "@/components/edit-account-modal";
 import { AccountCard } from "./AccountCard";
 import { AccountsHeader } from "./AccountsHeader";
 import { AccountsEmptyState } from "./AccountsEmptyState";
+import { TransferModal } from "./TransferModal";
 import type { Account } from "@/types";
 
 export function AccountsList() {
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [transferSourceAccount, setTransferSourceAccount] = useState<
+    Account | undefined
+  >(undefined);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
   const { data: accounts = [], isError, error, refetch } = useAccounts();
 
   const handleEditAccount = (account: Account) => {
     setEditingAccount(account);
     setIsEditModalOpen(true);
+  };
+
+  const handleTransferAccount = (account: Account) => {
+    setTransferSourceAccount(account);
+    setIsTransferModalOpen(true);
   };
 
   const handleCloseEditModal = () => {
@@ -56,6 +66,7 @@ export function AccountsList() {
               key={account.id}
               account={account}
               onEdit={handleEditAccount}
+              onTransfer={handleTransferAccount}
             />
           ))}
         </div>
@@ -67,6 +78,13 @@ export function AccountsList() {
         isOpen={isEditModalOpen}
         onClose={handleCloseEditModal}
         onAccountUpdated={handleAccountUpdated}
+      />
+
+      {/* Transfer Modal */}
+      <TransferModal
+        open={isTransferModalOpen}
+        onOpenChange={setIsTransferModalOpen}
+        sourceAccount={transferSourceAccount}
       />
     </div>
   );
