@@ -202,7 +202,7 @@ export default function GoalActions({
         <div className="grid grid-cols-2 md:flex md:flex-wrap gap-3 pb-4 justify-center [&>*:last-child:nth-child(odd)]:col-span-2 [&>*:last-child:nth-child(odd)]:justify-self-center">
           <Dialog open={addGoalOpen} onOpenChange={setAddGoalOpen}>
             <DialogTrigger asChild>
-              <Button className="min-w-[140px]">Add New Goal</Button>
+              <Button className="min-w-[140px]">Add Goal</Button>
             </DialogTrigger>
             <DialogContent
               className="sm:max-w-[425px] max-h-[90vh] overflow-hidden"

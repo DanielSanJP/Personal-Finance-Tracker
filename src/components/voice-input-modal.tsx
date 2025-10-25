@@ -62,7 +62,7 @@ export const VoiceInputModal = ({
   if (!isSupported) {
     return (
       <Button
-        className="w-40 min-w-32"
+        className="w-full"
         type="button"
         variant="outline"
         disabled
@@ -78,7 +78,7 @@ export const VoiceInputModal = ({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button
-          className="w-40 min-w-32"
+          className="w-full"
           type="button"
           variant="outline"
           onClick={handleStart}
@@ -124,7 +124,9 @@ export const VoiceInputModal = ({
               {/* Parsed Data Preview */}
               {parsedData && Object.keys(parsedData).length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground">Detected:</p>
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Detected:
+                  </p>
                   <div className="flex flex-wrap gap-1">
                     {parsedData.amount && (
                       <Badge variant="secondary" className="text-xs">

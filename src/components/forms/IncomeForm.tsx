@@ -404,45 +404,40 @@ export default function IncomeForm() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap gap-4 pt-4 justify-center">
+          <div className="grid grid-cols-2 gap-3 pt-4 max-w-md mx-auto">
             <Button
               type="button"
               variant="outline"
               onClick={() => router.back()}
-              className="w-40 min-w-32"
             >
               Cancel
             </Button>
-            <Button type="submit" className="w-40 min-w-32">
-              Save
-            </Button>
-          </div>
-
-          {/* Voice Input Options */}
-          <div className="flex flex-wrap gap-4 justify-center mt-4">
-            <VoiceInputModal
-              isRecording={isContinuousRecording}
-              isProcessing={isContinuousProcessing}
-              isSupported={isVoiceSupported}
-              parsedData={
-                parsedData
-                  ? {
-                      amount: parsedData.amount,
-                      description: parsedData.description,
-                      merchant: parsedData.merchant,
-                      category: parsedData.category,
-                      account: parsedData.account,
-                      date: parsedData.date
-                        ? new Date(parsedData.date)
-                        : undefined,
-                    }
-                  : undefined
-              }
-              confidence={confidence}
-              onStartListening={startVoiceInput}
-              onStopListening={stopVoiceInput}
-              type="income"
-            />
+            <Button type="submit">Save</Button>
+            <div className="col-span-2">
+              <VoiceInputModal
+                isRecording={isContinuousRecording}
+                isProcessing={isContinuousProcessing}
+                isSupported={isVoiceSupported}
+                parsedData={
+                  parsedData
+                    ? {
+                        amount: parsedData.amount,
+                        description: parsedData.description,
+                        merchant: parsedData.merchant,
+                        category: parsedData.category,
+                        account: parsedData.account,
+                        date: parsedData.date
+                          ? new Date(parsedData.date)
+                          : undefined,
+                      }
+                    : undefined
+                }
+                confidence={confidence}
+                onStartListening={startVoiceInput}
+                onStopListening={stopVoiceInput}
+                type="income"
+              />
+            </div>
           </div>
         </form>
       </CardContent>

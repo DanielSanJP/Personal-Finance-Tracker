@@ -157,7 +157,7 @@ export default function GuidesPage() {
                           key={guide}
                           className="text-sm text-muted-foreground flex items-center"
                         >
-                          <span className="mr-2">â€¢</span>
+                          <span className="mr-2">•</span>
                           {guide}
                         </li>
                       ))}

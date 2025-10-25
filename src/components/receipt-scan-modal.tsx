@@ -96,7 +96,7 @@ export const ReceiptScanModal = ({
   if (!isSupported) {
     return (
       <Button
-        className="w-40 min-w-32"
+        className="w-full"
         type="button"
         variant="outline"
         disabled
@@ -122,7 +122,7 @@ export const ReceiptScanModal = ({
 
       <Dialog open={isOpen} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>
-          <Button className="w-40 min-w-32" type="button" variant="outline">
+          <Button className="w-full" type="button" variant="outline">
             <Camera className="w-4 h-4 mr-2" />
             Scan Receipt
           </Button>

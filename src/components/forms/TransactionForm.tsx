@@ -455,57 +455,51 @@ export default function TransactionForm() {
           />
 
           {/* Action Buttons */}
-          <div className="pt-4 space-y-3">
-            {/* Save and Cancel Buttons */}
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Button
-                onClick={handleCancel}
-                variant="outline"
-                className="w-40 min-w-32"
-              >
+          <div className="pt-4">
+            {/* 2x2 Button Grid */}
+            <div className="grid grid-cols-2 gap-3 max-w-md mx-auto">
+              <Button onClick={handleCancel} variant="outline">
                 Cancel
               </Button>
-              <Button onClick={handleSave} className="w-40 min-w-32">
-                Save
-              </Button>
-            </div>
-
-            {/* Voice Input and Scan Receipt */}
-            <div className="flex flex-wrap gap-4 justify-center">
-              <VoiceInputModal
-                isRecording={isContinuousRecording}
-                isProcessing={isContinuousProcessing}
-                isSupported={isVoiceSupported}
-                parsedData={
-                  parsedData
-                    ? {
-                        amount: parsedData.amount,
-                        description: parsedData.description,
-                        merchant: parsedData.merchant,
-                        category: parsedData.category,
-                        account: parsedData.account,
-                        date: parsedData.date
-                          ? new Date(parsedData.date)
-                          : undefined,
-                      }
-                    : undefined
-                }
-                confidence={confidence}
-                onStartListening={startVoiceInput}
-                onStopListening={stopVoiceInput}
-              />
-              <ReceiptScanModal
-                isProcessing={isReceiptProcessing}
-                isSupported={isReceiptSupported}
-                parsedData={receiptParsedData}
-                confidence={receiptConfidence}
-                previewUrl={previewUrl}
-                onScanFromFile={scanFromFile}
-                onScanFromCamera={scanFromCamera}
-                onCaptureFromVideo={captureFromVideo}
-                onClearPreview={clearPreview}
-                autoOpen={shouldAutoScanReceipt}
-              />
+              <Button onClick={handleSave}>Save</Button>
+              <div className="col-span-1">
+                <VoiceInputModal
+                  isRecording={isContinuousRecording}
+                  isProcessing={isContinuousProcessing}
+                  isSupported={isVoiceSupported}
+                  parsedData={
+                    parsedData
+                      ? {
+                          amount: parsedData.amount,
+                          description: parsedData.description,
+                          merchant: parsedData.merchant,
+                          category: parsedData.category,
+                          account: parsedData.account,
+                          date: parsedData.date
+                            ? new Date(parsedData.date)
+                            : undefined,
+                        }
+                      : undefined
+                  }
+                  confidence={confidence}
+                  onStartListening={startVoiceInput}
+                  onStopListening={stopVoiceInput}
+                />
+              </div>
+              <div className="col-span-1">
+                <ReceiptScanModal
+                  isProcessing={isReceiptProcessing}
+                  isSupported={isReceiptSupported}
+                  parsedData={receiptParsedData}
+                  confidence={receiptConfidence}
+                  previewUrl={previewUrl}
+                  onScanFromFile={scanFromFile}
+                  onScanFromCamera={scanFromCamera}
+                  onCaptureFromVideo={captureFromVideo}
+                  onClearPreview={clearPreview}
+                  autoOpen={shouldAutoScanReceipt}
+                />
+              </div>
             </div>
           </div>
         </div>
