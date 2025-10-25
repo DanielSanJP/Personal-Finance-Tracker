@@ -314,39 +314,59 @@ export function GuideLayout({
             <Card className="p-6 sm:p-8">{children}</Card>
 
             {/* Navigation Footer */}
-            <div className="flex justify-between items-center mt-8 pt-8 border-t">
+            <div className="flex flex-wrap justify-between items-stretch gap-4 mt-8 pt-8 border-t pb-20 sm:pb-8">
               {prevPage ? (
-                <Link href={prevPage.href}>
-                  <Button variant="outline" className="gap-2">
-                    <ChevronLeft className="h-4 w-4" />
-                    <div className="text-left">
-                      <div className="text-xs text-muted-foreground">
+                <Link
+                  href={prevPage.href}
+                  className="flex-1 sm:flex-initial max-w-[calc(50%-0.5rem)] sm:max-w-none"
+                >
+                  <Button
+                    variant="outline"
+                    className="gap-2 w-full sm:w-auto h-full justify-start"
+                  >
+                    <ChevronLeft className="h-4 w-4 flex-shrink-0" />
+                    <div className="text-left min-w-0 flex flex-col justify-center">
+                      <div className="text-xs text-muted-foreground sm:hidden">
                         Previous
                       </div>
-                      <div className="text-sm font-medium">
+                      <div className="text-xs text-muted-foreground hidden sm:block">
+                        Previous
+                      </div>
+                      <div className="text-sm font-medium hidden sm:block">
                         {prevPage.title}
                       </div>
                     </div>
                   </Button>
                 </Link>
               ) : (
-                <div />
+                <div className="flex-1 sm:flex-initial" />
               )}
 
               {nextPage ? (
-                <Link href={nextPage.href}>
-                  <Button variant="outline" className="gap-2" size="lg">
-                    <div className="text-right">
-                      <div className="text-xs text-muted-foreground">Next</div>
-                      <div className="text-sm font-medium">
+                <Link
+                  href={nextPage.href}
+                  className="flex-1 sm:flex-initial max-w-[calc(50%-0.5rem)] sm:max-w-none"
+                >
+                  <Button
+                    variant="outline"
+                    className="gap-2 w-full sm:w-auto h-full justify-end"
+                  >
+                    <div className="text-right min-w-0 flex flex-col justify-center">
+                      <div className="text-xs text-muted-foreground sm:hidden">
+                        Next
+                      </div>
+                      <div className="text-xs text-muted-foreground hidden sm:block">
+                        Next
+                      </div>
+                      <div className="text-sm font-medium hidden sm:block">
                         {nextPage.title}
                       </div>
                     </div>
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronRight className="h-4 w-4 flex-shrink-0" />
                   </Button>
                 </Link>
               ) : (
-                <div />
+                <div className="flex-1 sm:flex-initial" />
               )}
             </div>
           </div>
