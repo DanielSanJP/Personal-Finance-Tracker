@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 import { AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -29,7 +29,7 @@ export default function BudgetAlertsPage() {
         </p>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
-            <div className="mt-1 h-3 w-16 rounded bg-gray-900 flex-shrink-0" />
+            <div className="mt-1 h-3 w-16 rounded bg-foreground flex-shrink-0" />
             <div>
               <p className="text-sm font-medium text-foreground">
                 Dark Gray - Safe Zone (Under 80%)
@@ -202,9 +202,9 @@ export default function BudgetAlertsPage() {
           </p>
         </div>
 
-        <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg">
-          <h3 className="font-semibold text-amber-900 mb-2">Remember</h3>
-          <p className="text-sm text-amber-800">
+        <div className="p-6 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+          <h3 className="font-semibold text-foreground mb-2">Remember</h3>
+          <p className="text-sm text-foreground">
             Budget alerts are tools to help you, not criticisms. Going over
             budget occasionally is normal. The important thing is to be aware of
             it, understand why it happened, and make adjustments for the future.

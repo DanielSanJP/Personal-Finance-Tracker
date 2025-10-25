@@ -82,3 +82,23 @@ export interface Summary {
   categorySpending: Record<string, unknown>;
   lastUpdated?: string;
 }
+
+export interface UserPreferences {
+  id: string;
+  user_id: string;
+  // Appearance Settings
+  currency: 'USD' | 'EUR' | 'GBP' | 'CAD' | 'AUD' | 'NZD';
+  language: 'English' | 'Español' | 'Français' | 'Deutsch' | 'Italiano';
+  // Notification Settings
+  email_notifications: boolean;
+  budget_alerts: boolean;
+  goal_reminders: boolean;
+  weekly_reports: boolean;
+  // Display Options
+  show_account_numbers: boolean;
+  compact_view: boolean;
+  show_cents: boolean;
+  // Metadata
+  created_at: string;
+  updated_at: string;
+}

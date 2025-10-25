@@ -32,15 +32,15 @@ export function GuideStep({
     <div className="mb-8 last:mb-0">
       {/* Step Header */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-black text-white font-bold text-sm">
+        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-bold text-sm">
           {stepNumber}
         </div>
-        <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-xl font-semibold text-foreground">{title}</h3>
       </div>
 
       {/* Step Content */}
       <div className="ml-11 space-y-4">
-        <div className="text-gray-700 leading-relaxed">{children}</div>
+        <div className="text-muted-foreground leading-relaxed">{children}</div>
 
         {/* Real Image */}
         {image && (
@@ -76,15 +76,15 @@ export function GuideStep({
 
         {/* Image Placeholder */}
         {!image && imagePlaceholder && (
-          <Card className="overflow-hidden bg-gray-100 py-0">
+          <Card className="overflow-hidden bg-muted py-0">
             <CardContent className="p-0">
-              <div className="relative w-full aspect-video flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
+              <div className="relative w-full aspect-video flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
                 <div className="text-center p-8">
                   <div className="text-4xl mb-2">🖼️</div>
-                  <p className="text-sm font-medium text-gray-600">
+                  <p className="text-sm font-medium text-muted-foreground">
                     {imagePlaceholder}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground/70 mt-1">
                     Screenshot placeholder
                   </p>
                 </div>
@@ -95,13 +95,13 @@ export function GuideStep({
 
         {/* Tip */}
         {tip && (
-          <Card className="bg-blue-50 border-blue-200">
+          <Card className="bg-primary/5 border-primary/20">
             <CardContent className="p-4">
               <div className="flex gap-3">
-                <Badge className="bg-blue-600 hover:bg-blue-700 h-fit">
+                <Badge className="bg-primary hover:bg-primary/90 h-fit">
                   💡 Tip
                 </Badge>
-                <p className="text-sm text-blue-900">{tip}</p>
+                <p className="text-sm text-foreground">{tip}</p>
               </div>
             </CardContent>
           </Card>
@@ -109,13 +109,13 @@ export function GuideStep({
 
         {/* Warning */}
         {warning && (
-          <Card className="bg-amber-50 border-amber-200">
+          <Card className="bg-amber-500/10 border-amber-500/30">
             <CardContent className="p-4">
               <div className="flex gap-3">
                 <Badge className="bg-amber-600 hover:bg-amber-700 h-fit">
                   ⚠️ Note
                 </Badge>
-                <p className="text-sm text-amber-900">{warning}</p>
+                <p className="text-sm text-foreground">{warning}</p>
               </div>
             </CardContent>
           </Card>

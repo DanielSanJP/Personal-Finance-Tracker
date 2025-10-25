@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -285,7 +285,7 @@ export default function BudgetActions({ budgets }: BudgetActionsProps) {
                           className="w-full"
                         />
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-muted-foreground">
                         Current spending: {formatCurrency(budget.spentAmount)}
                       </div>
                     </div>

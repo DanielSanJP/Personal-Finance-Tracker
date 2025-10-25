@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -149,7 +149,7 @@ export const ReceiptScanModal = ({
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="relative bg-gray-100 rounded-lg overflow-hidden">
+                  <div className="relative bg-muted/50 rounded-lg overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={previewUrl}
@@ -182,7 +182,7 @@ export const ReceiptScanModal = ({
                 {/* Parsed Data Preview */}
                 {Object.keys(parsedData).length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-xs font-medium text-gray-700">
+                    <p className="text-xs font-medium text-muted-foreground">
                       Detected:
                     </p>
                     <div className="flex flex-wrap gap-1">
@@ -261,13 +261,13 @@ export const ReceiptScanModal = ({
             </Card>
 
             {/* Examples */}
-            <div className="text-xs text-gray-500 space-y-1">
+            <div className="text-xs text-muted-foreground space-y-1">
               <p>
                 <strong>Tips:</strong>
               </p>
-              <p>• Ensure receipt is well-lit and flat</p>
-              <p>• Include the total amount in the image</p>
-              <p>• Works best with printed receipts</p>
+              <p>â€¢ Ensure receipt is well-lit and flat</p>
+              <p>â€¢ Include the total amount in the image</p>
+              <p>â€¢ Works best with printed receipts</p>
             </div>
           </div>
         </DialogContent>

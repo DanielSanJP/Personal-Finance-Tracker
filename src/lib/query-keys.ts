@@ -76,6 +76,13 @@ export const queryKeys = {
     current: () => [...queryKeys.profile.all, 'current'] as const,
     details: (userId: string) => [...queryKeys.profile.all, userId] as const,
   },
+
+  // Preferences queries
+  preferences: {
+    all: ['preferences'] as const,
+    current: () => [...queryKeys.preferences.all, 'current'] as const,
+    details: (userId: string) => [...queryKeys.preferences.all, userId] as const,
+  },
 } as const;
 
 // Type helpers for query keys

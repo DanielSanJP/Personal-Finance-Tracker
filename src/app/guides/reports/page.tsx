@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -39,7 +39,7 @@ export default function ReportsOverviewPage() {
     >
       <div className="space-y-8">
         {/* Introduction */}
-        <p className="text-gray-700 leading-relaxed">
+        <p className="text-foreground leading-relaxed">
           Reports and analytics transform your transaction data into actionable
           insights. Visualize spending patterns, identify trends, and make
           informed decisions about your finances. Whether you need a quick
@@ -48,24 +48,24 @@ export default function ReportsOverviewPage() {
 
         {/* All Guides */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
             In This Section
           </h2>
           <div className="grid gap-4">
             {reportsGuides.map((guide) => (
               <Link key={guide.href} href={guide.href}>
-                <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer border-2 hover:border-purple-200">
+                <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer border-2 hover:border-primary">
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                        <h3 className="text-lg font-semibold text-foreground mb-1">
                           {guide.title}
                         </h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           {guide.description}
                         </p>
                       </div>
-                      <ArrowRight className="ml-4 h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />
+                      <ArrowRight className="ml-4 h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
                     </div>
                   </CardContent>
                 </Card>
@@ -77,12 +77,12 @@ export default function ReportsOverviewPage() {
         {/* Best Practices */}
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl font-bold text-foreground mb-4">
               Getting the Most from Reports
             </h2>
             <div className="grid gap-6 md:grid-cols-2">
               <div className="flex gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                <div className="flex-shrink-0 w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -100,7 +100,7 @@ export default function ReportsOverviewPage() {
                   <h3 className="font-semibold text-lg mb-2">
                     Review Regularly
                   </h3>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-foreground">
                     Check your reports weekly or monthly to spot trends early
                     and adjust your budget before overspending.
                   </p>
@@ -125,7 +125,7 @@ export default function ReportsOverviewPage() {
                   <h3 className="font-semibold text-lg mb-2">
                     Compare Periods
                   </h3>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-foreground">
                     Look at month-over-month or year-over-year comparisons to
                     understand if you&apos;re improving your finances.
                   </p>
@@ -146,14 +146,14 @@ export default function ReportsOverviewPage() {
                   <h3 className="font-semibold text-lg mb-2">
                     Focus on Categories
                   </h3>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-foreground">
                     Use category breakdowns to identify where most of your money
                     goes and find opportunities to save.
                   </p>
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center">
+                <div className="flex-shrink-0 w-10 h-10 bg-amber-500/10 text-amber-600 rounded-lg flex items-center justify-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -169,7 +169,7 @@ export default function ReportsOverviewPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Export Data</h3>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-foreground">
                     Download reports for tax preparation, budget planning, or
                     sharing with financial advisors.
                   </p>
@@ -180,41 +180,41 @@ export default function ReportsOverviewPage() {
         </Card>
 
         {/* Related Topics */}
-        <Card className="bg-gray-50 border-2">
+        <Card className="bg-muted border-2">
           <CardContent className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
               Related Topics
             </h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               Reports work best when combined with these features
             </p>
             <div className="grid gap-4 md:grid-cols-3">
               <Link
                 href="/guides/transactions"
-                className="p-4 bg-white rounded-lg hover:shadow-md transition-shadow border"
+                className="p-4 bg-card rounded-lg hover:shadow-md transition-shadow border"
               >
-                <h3 className="font-semibold text-gray-900 mb-1">
+                <h3 className="font-semibold text-foreground mb-1">
                   Transactions
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Reports analyze your transaction history
                 </p>
               </Link>
               <Link
                 href="/guides/budgets"
-                className="p-4 bg-white rounded-lg hover:shadow-md transition-shadow border"
+                className="p-4 bg-card rounded-lg hover:shadow-md transition-shadow border"
               >
-                <h3 className="font-semibold text-gray-900 mb-1">Budgets</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-semibold text-foreground mb-1">Budgets</h3>
+                <p className="text-sm text-muted-foreground">
                   Compare spending against budget limits
                 </p>
               </Link>
               <Link
                 href="/guides/goals"
-                className="p-4 bg-white rounded-lg hover:shadow-md transition-shadow border"
+                className="p-4 bg-card rounded-lg hover:shadow-md transition-shadow border"
               >
-                <h3 className="font-semibold text-gray-900 mb-1">Goals</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-semibold text-foreground mb-1">Goals</h3>
+                <p className="text-sm text-muted-foreground">
                   Track progress toward financial goals
                 </p>
               </Link>

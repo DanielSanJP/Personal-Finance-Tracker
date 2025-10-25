@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function CustomizingPreferencesGuide() {
@@ -80,8 +80,8 @@ export default function CustomizingPreferencesGuide() {
             successfully&quot;
           </li>
         </ol>
-        <div className="border-l-4 border-amber-500 pl-4 mt-3 bg-amber-50 p-3 rounded">
-          <p className="text-sm text-amber-900">
+        <div className="border-l-4 border-amber-600 pl-4 mt-3 bg-amber-500/10 p-3 rounded">
+          <p className="text-sm text-foreground">
             <strong>Important:</strong> You must click Save Preferences for your
             changes to take effect. If you navigate away without saving, changes
             will be lost.

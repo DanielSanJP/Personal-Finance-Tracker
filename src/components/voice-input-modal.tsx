@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -97,7 +97,7 @@ export const VoiceInputModal = ({
           {/* Recording Status */}
           <Card
             className={
-              isRecording ? "border-red-300 bg-red-50" : "border-gray-200"
+              isRecording ? "border-red-300 bg-red-50" : "border-border"
             }
           >
             <CardHeader className="pb-3">
@@ -124,7 +124,7 @@ export const VoiceInputModal = ({
               {/* Parsed Data Preview */}
               {parsedData && Object.keys(parsedData).length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-medium text-gray-700">Detected:</p>
+                  <p className="text-xs font-medium text-muted-foreground">Detected:</p>
                   <div className="flex flex-wrap gap-1">
                     {parsedData.amount && (
                       <Badge variant="secondary" className="text-xs">
@@ -193,21 +193,21 @@ export const VoiceInputModal = ({
           </Card>
 
           {/* Examples */}
-          <div className="text-xs text-gray-500 space-y-1">
+          <div className="text-xs text-muted-foreground space-y-1">
             <p>
               <strong>Examples:</strong>
             </p>
             {type === "income" ? (
               <>
-                <p>• &quot;50 dollars for salary&quot;</p>
-                <p>• &quot;1500 freelance payment&quot;</p>
-                <p>• &quot;200 gift from family&quot;</p>
+                <p>â€¢ &quot;50 dollars for salary&quot;</p>
+                <p>â€¢ &quot;1500 freelance payment&quot;</p>
+                <p>â€¢ &quot;200 gift from family&quot;</p>
               </>
             ) : (
               <>
-                <p>• &quot;25 dollars for lunch at Chipotle&quot;</p>
-                <p>• &quot;50 dollars petrol at BP&quot;</p>
-                <p>• &quot;15 coffee&quot;</p>
+                <p>â€¢ &quot;25 dollars for lunch at Chipotle&quot;</p>
+                <p>â€¢ &quot;50 dollars petrol at BP&quot;</p>
+                <p>â€¢ &quot;15 coffee&quot;</p>
               </>
             )}
           </div>

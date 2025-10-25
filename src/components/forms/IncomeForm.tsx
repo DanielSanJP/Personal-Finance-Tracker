@@ -356,11 +356,11 @@ export default function IncomeForm() {
               </SelectContent>
             </Select>
             {userAccounts.length === 0 && !accountsLoading && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 No accounts found.{" "}
                 <a
                   href="/accounts/add"
-                  className="text-blue-600 hover:underline"
+                  className="text-primary hover:underline"
                 >
                   Create one first
                 </a>

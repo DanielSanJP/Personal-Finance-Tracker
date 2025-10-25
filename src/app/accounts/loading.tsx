@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AccountsLoading() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Main content skeleton */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header skeleton */}

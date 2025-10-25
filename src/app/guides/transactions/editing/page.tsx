@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function EditingTransactionsPage() {
@@ -21,7 +21,7 @@ export default function EditingTransactionsPage() {
         >
           <p>
             On the Transactions page, find the transaction you want to edit.
-            Click the <strong>three-dot menu icon</strong> (⋮) in the Actions
+            Click the <strong>three-dot menu icon</strong> (â‹®) in the Actions
             column of the transaction row to open the actions menu.
           </p>
         </GuideStep>

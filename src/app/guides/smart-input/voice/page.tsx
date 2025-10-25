@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -10,17 +10,17 @@ export default function VoiceInputPage() {
     >
       <div className="space-y-6">
         {/* Introduction */}
-        <p className="text-gray-700 leading-relaxed">
+        <p className="text-foreground leading-relaxed">
           Voice input is a powerful feature that allows you to add transactions
           without typing. Simply speak naturally about your transaction, and our
           AI will automatically extract the amount, description, merchant, and
           category.
         </p>
 
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-primary/5 border-primary/20">
           <CardContent className="p-6">
-            <p className="text-sm text-blue-900">
-              <strong>💡 Works Best When:</strong> You speak clearly and include
+            <p className="text-sm text-foreground">
+              <strong>ðŸ’¡ Works Best When:</strong> You speak clearly and include
               key information like the amount, what you bought, and where. For
               example: &quot;Fifty dollars for dinner at Olive Garden&quot;
             </p>
@@ -29,7 +29,7 @@ export default function VoiceInputPage() {
 
         {/* Using Voice Input */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl font-bold text-foreground mb-6">
             Using Voice Input
           </h2>
 
@@ -124,7 +124,7 @@ export default function VoiceInputPage() {
               <li>Identifies merchant and description</li>
               <li>Suggests an appropriate category</li>
             </ul>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-muted-foreground">
               This typically takes 2-3 seconds.
             </p>
           </GuideStep>
@@ -169,7 +169,7 @@ export default function VoiceInputPage() {
 
         {/* Tips & Examples */}
         <div className="pt-8 border-t">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl font-bold text-foreground mb-6">
             Tips & Examples
           </h2>
 
@@ -178,28 +178,28 @@ export default function VoiceInputPage() {
               <h3 className="font-semibold mb-3">Best Practices</h3>
               <ul className="space-y-2 text-sm text-green-900">
                 <li className="flex gap-2">
-                  <span>✓</span>
+                  <span>âœ“</span>
                   <span>
                     <strong>Start with the amount:</strong> &quot;Forty-five
                     dollars for groceries at Whole Foods&quot;
                   </span>
                 </li>
                 <li className="flex gap-2">
-                  <span>✓</span>
+                  <span>âœ“</span>
                   <span>
                     <strong>Include the merchant:</strong> Helps with automatic
                     categorization
                   </span>
                 </li>
                 <li className="flex gap-2">
-                  <span>✓</span>
+                  <span>âœ“</span>
                   <span>
                     <strong>Speak clearly:</strong> Find a quiet place and use a
                     normal pace
                   </span>
                 </li>
                 <li className="flex gap-2">
-                  <span>✓</span>
+                  <span>âœ“</span>
                   <span>
                     <strong>Use natural language:</strong> Say &quot;fifteen
                     bucks&quot; or &quot;$15&quot; - both work
@@ -213,9 +213,9 @@ export default function VoiceInputPage() {
             <Card>
               <CardContent className="p-6">
                 <h3 className="font-semibold mb-3 text-green-700">
-                  ✅ Good Examples
+                  âœ… Good Examples
                 </h3>
-                <ul className="space-y-3 text-sm text-gray-700">
+                <ul className="space-y-3 text-sm text-foreground">
                   <li>
                     <strong>
                       &quot;$45.50 for groceries at Whole Foods&quot;
@@ -231,17 +231,17 @@ export default function VoiceInputPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-amber-200 bg-amber-50">
+            <Card className="border-amber-500/30 bg-amber-50">
               <CardContent className="p-6">
-                <h3 className="font-semibold mb-3 text-amber-700">⚠️ Avoid</h3>
-                <ul className="space-y-3 text-sm text-amber-900">
+                <h3 className="font-semibold mb-3 text-amber-600">âš ï¸ Avoid</h3>
+                <ul className="space-y-3 text-sm text-foreground">
                   <li>
-                    ❌ <strong>&quot;I spent some money on stuff&quot;</strong>
+                    âŒ <strong>&quot;I spent some money on stuff&quot;</strong>
                     <br />
                     <span className="text-xs">Too vague - no amount!</span>
                   </li>
                   <li>
-                    ❌{" "}
+                    âŒ{" "}
                     <strong>
                       &quot;Bought a thing at the place yesterday&quot;
                     </strong>

@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { DollarSign, TrendingUp, AlertTriangle, Target } from "lucide-react";
 

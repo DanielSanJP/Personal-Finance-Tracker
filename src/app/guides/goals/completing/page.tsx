@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function CompletingGoalsPage() {
@@ -21,7 +21,7 @@ export default function CompletingGoalsPage() {
             Progress bar fills to 100% (or beyond if you exceeded the target)
           </li>
           <li>
-            A <strong className="text-foreground">🎉 Goal Achieved!</strong>{" "}
+            A <strong className="text-foreground">ðŸŽ‰ Goal Achieved!</strong>{" "}
             message appears below the progress bar
           </li>
         </ul>

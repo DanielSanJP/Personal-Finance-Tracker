@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function ContributingToGoalsPage() {
@@ -149,9 +149,9 @@ export default function ContributingToGoalsPage() {
           </p>
         </div>
 
-        <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg">
-          <h3 className="font-semibold text-amber-900 mb-2">Important</h3>
-          <p className="text-sm text-amber-800">
+        <div className="p-6 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+          <h3 className="font-semibold text-foreground mb-2">Important</h3>
+          <p className="text-sm text-foreground">
             Contributions directly affect your account balance. Make sure you
             have enough money in the account to cover expenses before making
             large goal contributions. Your emergency fund goal should be

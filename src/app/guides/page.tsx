@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import {
@@ -126,7 +126,7 @@ export default function GuidesPage() {
     >
       <div className="space-y-8">
         {/* Introduction */}
-        <p className="text-gray-700 leading-relaxed text-center max-w-3xl mx-auto">
+        <p className="text-muted-foreground leading-relaxed text-center max-w-3xl mx-auto">
           Learn how to track expenses, manage budgets, set goals, and gain
           insights into your spending habits. Choose a category below to get
           started.
@@ -138,26 +138,26 @@ export default function GuidesPage() {
             const Icon = category.icon;
             return (
               <Link key={category.title} href={category.href}>
-                <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer border-2 hover:border-gray-300">
+                <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer border-2 hover:border-primary/50">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="p-2 bg-black text-white rounded-lg">
+                      <div className="p-2 bg-primary text-primary-foreground rounded-lg">
                         <Icon className="h-6 w-6" />
                       </div>
-                      <h3 className="text-xl font-semibold text-gray-900">
+                      <h3 className="text-xl font-semibold text-foreground">
                         {category.title}
                       </h3>
                     </div>
-                    <p className="text-sm text-gray-600 mb-4">
+                    <p className="text-sm text-muted-foreground mb-4">
                       {category.description}
                     </p>
                     <ul className="space-y-2">
                       {category.guides.map((guide) => (
                         <li
                           key={guide}
-                          className="text-sm text-gray-600 flex items-center"
+                          className="text-sm text-muted-foreground flex items-center"
                         >
-                          <span className="mr-2">•</span>
+                          <span className="mr-2">â€¢</span>
                           {guide}
                         </li>
                       ))}
@@ -170,28 +170,28 @@ export default function GuidesPage() {
         </div>
 
         {/* Quick Help Section */}
-        <Card className="bg-gradient-to-r from-gray-50 to-gray-100 border-2">
+        <Card className="bg-gradient-to-r from-muted/50 to-muted border-2">
           <CardContent className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
+            <h2 className="text-2xl font-bold text-foreground mb-2 text-center">
               Need Quick Help?
             </h2>
-            <p className="text-gray-600 mb-6 text-center">
+            <p className="text-muted-foreground mb-6 text-center">
               Can&apos;t find what you&apos;re looking for? Here are some quick
               links
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link href="/guides/overview">
-                <button className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
+                <button className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
                   Quick Start Guide
                 </button>
               </Link>
               <Link href="/guides/transactions/adding-expense">
-                <button className="px-6 py-2 border-2 border-gray-300 rounded-lg hover:bg-white transition-colors">
+                <button className="px-6 py-2 border-2 border-border rounded-lg hover:bg-accent transition-colors">
                   Add Your First Transaction
                 </button>
               </Link>
               <Link href="/guides/smart-input/receipt-scanning">
-                <button className="px-6 py-2 border-2 border-gray-300 rounded-lg hover:bg-white transition-colors">
+                <button className="px-6 py-2 border-2 border-border rounded-lg hover:bg-accent transition-colors">
                   Try Receipt Scanning
                 </button>
               </Link>

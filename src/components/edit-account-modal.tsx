@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -265,9 +265,9 @@ export function EditAccountModal({
                   setFormData({ ...formData, isActive: e.target.checked })
                 }
                 aria-label="Account active status"
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="h-4 w-4 rounded border-border text-primary focus:ring-blue-500"
               />
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted-foreground">
                 {formData.isActive
                   ? "Account is active"
                   : "Account is inactive"}

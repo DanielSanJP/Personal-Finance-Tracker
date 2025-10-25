@@ -26,33 +26,37 @@ export function TransactionSummary({ transactions }: TransactionSummaryProps) {
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
           <div className="space-y-2">
-            <div className="text-sm text-gray-600 font-medium">
+            <div className="text-sm text-foreground font-semibold">
               Total Income
             </div>
             <Badge
               variant="default"
-              className="text-base sm:text-lg font-bold px-3 py-1 bg-green-600 hover:bg-green-700"
+              className="text-base sm:text-lg font-bold px-3 py-1 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white"
             >
               +{formatCurrency(totalIncome)}
             </Badge>
           </div>
           <div className="space-y-2">
-            <div className="text-sm text-gray-600 font-medium">
+            <div className="text-sm text-foreground font-semibold">
               Total Expenses
             </div>
             <Badge
               variant="destructive"
-              className="text-base sm:text-lg font-bold px-3 py-1"
+              className="text-base sm:text-lg font-bold px-3 py-1 text-white"
             >
               {formatCurrency(totalExpenses)}
             </Badge>
           </div>
           <div className="space-y-2">
-            <div className="text-sm text-gray-600 font-medium">Net Total</div>
+            <div className="text-sm text-foreground font-semibold">
+              Net Total
+            </div>
             <Badge
               variant={netTotal >= 0 ? "default" : "destructive"}
-              className={`text-base sm:text-lg font-bold px-3 py-1 ${
-                netTotal >= 0 ? "bg-green-600 hover:bg-green-700" : ""
+              className={`text-base sm:text-lg font-bold px-3 py-1 text-white ${
+                netTotal >= 0
+                  ? "bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+                  : ""
               }`}
             >
               {formatCurrency(netTotal)}

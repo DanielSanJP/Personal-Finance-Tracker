@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Breadcrumbs from "@/components/breadcrumbs";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/queries/useAuth";
@@ -59,9 +60,9 @@ export default function Nav({ showDashboardTabs }: NavProps) {
       "flex-1 font-medium py-2 px-2 sm:px-4 rounded-lg flex justify-center items-center cursor-pointer text-xs sm:text-sm";
 
     if (isActiveTab(path)) {
-      return `${baseStyles} bg-white text-black border border-gray-200 hover:bg-gray-50 data-[state=open]:bg-white`;
+      return `${baseStyles} bg-card text-foreground border border-border hover:bg-card/80 data-[state=open]:bg-card`;
     } else {
-      return `${baseStyles} bg-transparent text-zinc-500 hover:bg-white hover:text-black data-[state=open]:bg-white data-[state=open]:text-black`;
+      return `${baseStyles} bg-transparent text-muted-foreground hover:bg-card hover:text-foreground data-[state=open]:bg-card data-[state=open]:text-foreground`;
     }
   };
 
@@ -147,6 +148,7 @@ export default function Nav({ showDashboardTabs }: NavProps) {
             </div>
             {!shouldShowDashboardTabs && (
               <div className="flex flex-wrap items-center gap-2 md:flex-row flex-shrink-0">
+                <ThemeToggle />
                 <Button asChild variant="outline">
                   <Link href="/guides">User Guide</Link>
                 </Button>
@@ -157,15 +159,16 @@ export default function Nav({ showDashboardTabs }: NavProps) {
             )}
             {shouldShowDashboardTabs && userData && (
               <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
+                <ThemeToggle />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <div className="flex items-center gap-1 sm:gap-3 cursor-pointer hover:bg-gray-100 rounded-lg p-1 sm:p-2 transition-colors">
-                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm font-medium text-gray-600">
+                    <div className="flex items-center gap-1 sm:gap-3 cursor-pointer hover:bg-accent rounded-lg p-1 sm:p-2 transition-colors">
+                      <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm font-medium text-muted-foreground">
                           {userData.initials}
                         </span>
                       </div>
-                      <span className="text-xs sm:text-sm text-gray-600 truncate">
+                      <span className="text-xs sm:text-sm text-muted-foreground truncate">
                         {userData.displayName}
                       </span>
                     </div>
@@ -225,7 +228,7 @@ export default function Nav({ showDashboardTabs }: NavProps) {
 
       {shouldShowDashboardTabs && (
         <>
-          <div className="bg-zinc-100 border-b border-gray-200">
+          <div className="bg-muted/50 border-b border-border">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1">
               <Menubar className="w-full justify-evenly border-none bg-transparent gap-1 sm:gap-2 h-auto p-0">
                 <MenubarMenu>
@@ -259,7 +262,7 @@ export default function Nav({ showDashboardTabs }: NavProps) {
           </div>
 
           {/* Breadcrumbs */}
-          <div className="bg-gray-50 border-b border-gray-200">
+          <div className="bg-muted/30 border-b border-border">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
               <Breadcrumbs />
             </div>

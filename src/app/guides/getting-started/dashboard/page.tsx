@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 import { Card, CardContent } from "@/components/ui/card";
 import { DollarSign, CreditCard, BarChart3, Zap } from "lucide-react";

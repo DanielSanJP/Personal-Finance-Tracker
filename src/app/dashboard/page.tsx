@@ -13,14 +13,14 @@ export default function Dashboard() {
 
   if (error || !dashboardData) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <DashboardContent />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <DashboardContent />
     </div>
   );

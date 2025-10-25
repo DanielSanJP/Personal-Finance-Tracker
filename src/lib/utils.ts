@@ -7,10 +7,23 @@ export function cn(...inputs: ClassValue[]) {
 
 // Utility functions for the personal finance tracker
 
-export const formatCurrency = (amount: number) => {
+/**
+ * Format currency with customizable currency code and decimal places
+ * @param amount - The amount to format
+ * @param currencyCode - ISO currency code (USD, EUR, GBP, CAD, AUD)
+ * @param showCents - Whether to show decimal places
+ * @returns Formatted currency string
+ */
+export const formatCurrency = (
+  amount: number,
+  currencyCode: string = 'USD',
+  showCents: boolean = true
+) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: currencyCode,
+    minimumFractionDigits: showCents ? 2 : 0,
+    maximumFractionDigits: showCents ? 2 : 0,
   }).format(amount);
 };
 

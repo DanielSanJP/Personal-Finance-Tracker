@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { formatCurrency } from "@/lib/utils";
 import { Budget } from "@/types";
 
@@ -32,27 +33,31 @@ export default function BudgetSummary({ budgets }: BudgetSummaryProps) {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-3 gap-2 sm:gap-4">
           <div className="flex flex-col items-center gap-2">
-            <div className="text-xs sm:text-sm text-gray-600 font-medium text-center">
+            <div className="text-xs sm:text-sm text-muted-foreground font-medium text-center">
               Total Budget
             </div>
-            <div className="bg-gray-100 px-2 py-1 rounded-full min-w-[80px]">
-              <div className="text-sm sm:text-base font-bold text-gray-900 text-center">
+            <div className="bg-muted px-2 py-1 rounded-full min-w-[80px]">
+              <div className="text-sm sm:text-base font-bold text-foreground text-center">
                 {formatCurrency(totalBudget)}
               </div>
             </div>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <div className="text-xs sm:text-sm text-gray-600 font-medium text-center">
+            <div className="text-xs sm:text-sm text-muted-foreground font-medium text-center">
               Total Spent
             </div>
             <div
               className={`px-2 py-1 rounded-full min-w-[80px] ${
-                totalSpent > totalBudget ? "bg-red-100" : "bg-gray-100"
+                totalSpent > totalBudget
+                  ? "bg-red-100 dark:bg-red-900/30"
+                  : "bg-muted"
               }`}
             >
               <div
                 className={`text-sm sm:text-base font-bold text-center ${
-                  totalSpent > totalBudget ? "text-red-800" : "text-gray-900"
+                  totalSpent > totalBudget
+                    ? "text-red-800 dark:text-red-300"
+                    : "text-foreground"
                 }`}
               >
                 {formatCurrency(totalSpent)}
@@ -60,12 +65,14 @@ export default function BudgetSummary({ budgets }: BudgetSummaryProps) {
             </div>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <div className="text-xs sm:text-sm text-gray-600 font-medium text-center">
+            <div className="text-xs sm:text-sm text-muted-foreground font-medium text-center">
               Remaining
             </div>
             <div
               className={`px-2 py-1 rounded-full min-w-[80px] ${
-                totalRemaining < 0 ? "bg-red-100" : "bg-green-100"
+                totalRemaining < 0
+                  ? "bg-red-100 dark:bg-red-900/30"
+                  : "bg-green-100 dark:bg-green-900/30"
               }`}
             >
               <div
@@ -83,30 +90,26 @@ export default function BudgetSummary({ budgets }: BudgetSummaryProps) {
         <div className="space-y-2">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
             <span className="text-sm font-medium">Overall Budget Progress</span>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-muted-foreground">
               {totalBudget > 0
                 ? ((totalSpent / totalBudget) * 100).toFixed(1)
                 : 0}
               %
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-            <div
-              className={`h-3 rounded-full transition-all ${
-                totalSpent > totalBudget
-                  ? "bg-red-500"
-                  : totalBudget > 0 && (totalSpent / totalBudget) * 100 > 80
-                  ? "bg-orange-500"
-                  : "bg-gray-900"
-              }`}
-              style={{
-                width: `${Math.min(
-                  totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0,
-                  100
-                )}%`,
-              }}
-            />
-          </div>
+          <Progress
+            value={Math.min(
+              totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0,
+              100
+            )}
+            className={`h-3 ${
+              totalSpent > totalBudget
+                ? "bg-red-100 dark:bg-red-950 [&>div]:bg-red-500 dark:[&>div]:bg-red-600"
+                : totalBudget > 0 && (totalSpent / totalBudget) * 100 > 80
+                ? "bg-orange-100 dark:bg-orange-950 [&>div]:bg-orange-500 dark:[&>div]:bg-orange-600"
+                : "bg-primary/20 [&>div]:bg-primary"
+            }`}
+          />
         </div>
       </CardContent>
     </Card>

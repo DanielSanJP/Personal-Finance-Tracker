@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function TrackingGoalProgressPage() {
@@ -29,7 +29,7 @@ export default function TrackingGoalProgressPage() {
         </p>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
-            <div className="mt-1 h-3 w-16 rounded bg-gray-900 flex-shrink-0" />
+            <div className="mt-1 h-3 w-16 rounded bg-foreground flex-shrink-0" />
             <div>
               <p className="text-sm font-medium text-foreground">
                 Dark Gray - In Progress
@@ -101,7 +101,7 @@ export default function TrackingGoalProgressPage() {
         </p>
         <div className="my-4 p-3 border border-green-200 rounded-lg bg-green-50">
           <p className="text-sm text-green-600 font-medium">
-            🎉 Goal Achieved!
+            ðŸŽ‰ Goal Achieved!
           </p>
         </div>
         <p className="text-muted-foreground leading-relaxed">
@@ -165,9 +165,9 @@ export default function TrackingGoalProgressPage() {
           </p>
         </div>
 
-        <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg">
-          <h3 className="font-semibold text-amber-900 mb-2">Stay Realistic</h3>
-          <p className="text-sm text-amber-800">
+        <div className="p-6 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+          <h3 className="font-semibold text-foreground mb-2">Stay Realistic</h3>
+          <p className="text-sm text-foreground">
             If you&apos;re consistently falling behind your target date,
             don&apos;t get discouraged. Either adjust your target date to be
             more realistic, increase your monthly contributions if possible, or

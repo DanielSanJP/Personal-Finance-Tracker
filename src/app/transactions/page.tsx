@@ -128,7 +128,7 @@ export default function TransactionsPage() {
   // Handle error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="text-center text-red-600">
             <p>Error loading transactions:</p>
@@ -142,7 +142,7 @@ export default function TransactionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <TransactionsList
         transactions={filteredTransactions}
         filterOptions={{ categories, parties, types, periods }}

@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -34,7 +34,7 @@ export default function AccountsOverviewPage() {
     >
       <div className="space-y-8">
         {/* Introduction */}
-        <p className="text-gray-700 leading-relaxed">
+        <p className="text-foreground leading-relaxed">
           Bank accounts are the foundation of your financial tracking. Add all
           your checking, savings, and credit card accounts to get a complete
           picture of your finances. Track balances, monitor transactions, and
@@ -43,7 +43,7 @@ export default function AccountsOverviewPage() {
 
         {/* All Guides */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
             In This Section
           </h2>
           <div className="grid gap-4">
@@ -53,14 +53,14 @@ export default function AccountsOverviewPage() {
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                        <h3 className="text-lg font-semibold text-foreground mb-1">
                           {guide.title}
                         </h3>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                           {guide.description}
                         </p>
                       </div>
-                      <ArrowRight className="ml-4 h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />
+                      <ArrowRight className="ml-4 h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
                     </div>
                   </CardContent>
                 </Card>
@@ -83,13 +83,13 @@ export default function AccountsOverviewPage() {
                   <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4.002z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-foreground">
                 Account Management Tips
               </h2>
             </div>
             <div className="grid gap-6 md:grid-cols-2">
               <div className="flex gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                <div className="flex-shrink-0 w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -107,7 +107,7 @@ export default function AccountsOverviewPage() {
                   <h3 className="font-semibold text-lg mb-2">
                     Add All Accounts
                   </h3>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-foreground">
                     Include checking, savings, credit cards, and any other
                     accounts you use regularly for a complete financial picture.
                   </p>
@@ -132,7 +132,7 @@ export default function AccountsOverviewPage() {
                   <h3 className="font-semibold text-lg mb-2">
                     Update Balances Regularly
                   </h3>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-foreground">
                     Keep your account balances current by updating them weekly
                     or after major transactions.
                   </p>
@@ -157,7 +157,7 @@ export default function AccountsOverviewPage() {
                   <h3 className="font-semibold text-lg mb-2">
                     Use Clear Names
                   </h3>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-foreground">
                     Name your accounts clearly (e.g., &quot;Chase
                     Checking&quot;, &quot;Emergency Savings&quot;) so you can
                     quickly identify them.
@@ -165,7 +165,7 @@ export default function AccountsOverviewPage() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center">
+                <div className="flex-shrink-0 w-10 h-10 bg-amber-500/10 text-amber-600 rounded-lg flex items-center justify-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-5 w-5"
@@ -179,7 +179,7 @@ export default function AccountsOverviewPage() {
                   <h3 className="font-semibold text-lg mb-2">
                     Track Different Types
                   </h3>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-sm text-foreground">
                     Separate accounts by type (checking, savings, credit) to
                     better understand where your money is held.
                   </p>
@@ -190,41 +190,41 @@ export default function AccountsOverviewPage() {
         </Card>
 
         {/* Related Topics */}
-        <Card className="bg-gray-50 border-2">
+        <Card className="bg-muted border-2">
           <CardContent className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
               Related Topics
             </h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               Accounts work best when combined with these features
             </p>
             <div className="grid gap-4 md:grid-cols-3">
               <Link
                 href="/guides/transactions"
-                className="p-4 bg-white rounded-lg hover:shadow-md transition-shadow border"
+                className="p-4 bg-card rounded-lg hover:shadow-md transition-shadow border"
               >
-                <h3 className="font-semibold text-gray-900 mb-1">
+                <h3 className="font-semibold text-foreground mb-1">
                   Transactions
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Record transactions for each account
                 </p>
               </Link>
               <Link
                 href="/guides/getting-started/dashboard"
-                className="p-4 bg-white rounded-lg hover:shadow-md transition-shadow border"
+                className="p-4 bg-card rounded-lg hover:shadow-md transition-shadow border"
               >
-                <h3 className="font-semibold text-gray-900 mb-1">Dashboard</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-semibold text-foreground mb-1">Dashboard</h3>
+                <p className="text-sm text-muted-foreground">
                   View all account balances at a glance
                 </p>
               </Link>
               <Link
                 href="/guides/reports"
-                className="p-4 bg-white rounded-lg hover:shadow-md transition-shadow border"
+                className="p-4 bg-card rounded-lg hover:shadow-md transition-shadow border"
               >
-                <h3 className="font-semibold text-gray-900 mb-1">Reports</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="font-semibold text-foreground mb-1">Reports</h3>
+                <p className="text-sm text-muted-foreground">
                   Analyze spending across all accounts
                 </p>
               </Link>

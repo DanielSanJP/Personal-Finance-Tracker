@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function EditingBudgetsPage() {
@@ -114,27 +114,27 @@ export default function EditingBudgetsPage() {
           </h3>
           <ul className="text-sm text-muted-foreground space-y-1">
             <li>
-              • <strong>You consistently go over</strong> - Increase the budget
+              â€¢ <strong>You consistently go over</strong> - Increase the budget
               amount to a more realistic level
             </li>
             <li>
-              • <strong>You have money left over every month</strong> - Decrease
+              â€¢ <strong>You have money left over every month</strong> - Decrease
               the budget and reallocate to savings or other categories
             </li>
             <li>
-              • <strong>Your spending patterns change</strong> - Adjust
+              â€¢ <strong>Your spending patterns change</strong> - Adjust
               categories or amounts to match your current lifestyle
             </li>
             <li>
-              • <strong>You want to try a different time period</strong> -
+              â€¢ <strong>You want to try a different time period</strong> -
               Switch from monthly to weekly or yearly tracking
             </li>
           </ul>
         </div>
 
-        <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg">
-          <h3 className="font-semibold text-amber-900 mb-2">Important Note</h3>
-          <p className="text-sm text-amber-800">
+        <div className="p-6 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+          <h3 className="font-semibold text-foreground mb-2">Important Note</h3>
+          <p className="text-sm text-foreground">
             When you change the budget amount, the amount you&apos;ve already
             spent doesn&apos;t change - only the progress percentage
             recalculates. For example, if you&apos;ve spent $400 of a $500

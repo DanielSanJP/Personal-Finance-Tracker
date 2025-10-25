@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/utils";
@@ -45,7 +45,7 @@ export default function GoalList({ goals, isLoading }: GoalListProps) {
   };
 
   if (isLoading) {
-    return <div className="text-center text-gray-500">Loading goals...</div>;
+    return <div className="text-center text-muted-foreground">Loading goals...</div>;
   }
 
   return (
@@ -67,28 +67,28 @@ export default function GoalList({ goals, isLoading }: GoalListProps) {
                 <span className="text-sm sm:text-base font-medium">
                   {goal.name}
                 </span>
-                <span className="text-sm sm:text-base text-gray-600">
+                <span className="text-sm sm:text-base text-muted-foreground">
                   {formatCurrency(goal.currentAmount)} /{" "}
                   {formatCurrency(goal.targetAmount)}
                 </span>
               </div>
 
-              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                 <div
                   className={`h-2 rounded-full transition-all ${
-                    goalAchieved ? "bg-green-600" : "bg-gray-900"
+                    goalAchieved ? "bg-green-600" : "bg-foreground"
                   }`}
                   style={{ width: `${progressWidth}%` }}
                 />
               </div>
 
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-muted-foreground">
                 <span>Target: {formatDate(goal.targetDate)}</span>
               </div>
 
               {goalAchieved && (
                 <div className="text-sm font-medium text-green-600">
-                  🎉 Goal Achieved!
+                  ðŸŽ‰ Goal Achieved!
                 </div>
               )}
             </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -437,7 +437,7 @@ export default function GoalActions({
                           placeholder="Select target date"
                         />
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-muted-foreground">
                         Progress: {formatCurrency(goal.currentAmount)} of{" "}
                         {formatCurrency(goal.targetAmount)} (
                         {Math.round(
@@ -554,7 +554,7 @@ export default function GoalActions({
                         <SelectItem key={goal.id} value={goal.id}>
                           <div className="flex flex-col">
                             <span>{goal.name}</span>
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-muted-foreground">
                               {formatCurrency(goal.currentAmount)} /{" "}
                               {formatCurrency(goal.targetAmount)}
                             </span>
@@ -583,7 +583,7 @@ export default function GoalActions({
                         <SelectItem key={account.id} value={account.id}>
                           <div className="flex flex-col">
                             <span>{account.name}</span>
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-muted-foreground">
                               Balance: {formatCurrency(account.balance)}
                             </span>
                           </div>

@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function GoalSettingStrategiesGuide() {
@@ -12,15 +12,15 @@ export default function GoalSettingStrategiesGuide() {
           Make goals Specific, Measurable, Achievable, Relevant, and Time-bound:
         </p>
         <div className="space-y-3">
-          <div className="border-l-4 border-blue-500 pl-4">
+          <div className="border-l-4 border-primary pl-4">
             <p className="text-sm">
-              <strong className="text-foreground">❌ Vague:</strong> &ldquo;Save
+              <strong className="text-foreground">âŒ Vague:</strong> &ldquo;Save
               money for vacation&rdquo;
             </p>
           </div>
           <div className="border-l-4 border-green-500 pl-4">
             <p className="text-sm">
-              <strong className="text-foreground">✅ SMART:</strong> &ldquo;Save
+              <strong className="text-foreground">âœ… SMART:</strong> &ldquo;Save
               $3,000 for Hawaii trip by June 30, 2026&rdquo;
             </p>
           </div>
@@ -68,7 +68,7 @@ export default function GoalSettingStrategiesGuide() {
           <li>Don&apos;t touch it unless true emergency</li>
         </ul>
         <p className="text-sm text-muted-foreground mt-3">
-          Example: $15,000 emergency fund (6 months × $2,500 monthly expenses)
+          Example: $15,000 emergency fund (6 months Ã— $2,500 monthly expenses)
         </p>
       </GuideStep>
 
@@ -117,7 +117,7 @@ export default function GoalSettingStrategiesGuide() {
         </p>
         <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
           <li>
-            The progress bar turns green and shows &ldquo;🎉 Goal
+            The progress bar turns green and shows &ldquo;ðŸŽ‰ Goal
             Achieved!&rdquo;
           </li>
           <li>Take a moment to celebrate your discipline and success</li>

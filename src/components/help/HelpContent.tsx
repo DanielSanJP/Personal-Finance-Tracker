@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ export default function HelpContent() {
             </h3>
 
             <div className="space-y-4">
-              <div className="border rounded-lg p-4 bg-white">
+              <div className="border rounded-lg p-4 bg-card">
                 <h4 className="font-medium mb-2">
                   How do I add a new account?
                 </h4>
@@ -45,7 +45,7 @@ export default function HelpContent() {
                 </p>
               </div>
 
-              <div className="border rounded-lg p-4 bg-white">
+              <div className="border rounded-lg p-4 bg-card">
                 <h4 className="font-medium mb-2">
                   How do I categorize transactions?
                 </h4>
@@ -55,7 +55,7 @@ export default function HelpContent() {
                 </p>
               </div>
 
-              <div className="border rounded-lg p-4 bg-white">
+              <div className="border rounded-lg p-4 bg-card">
                 <h4 className="font-medium mb-2">
                   Can I export my financial data?
                 </h4>
@@ -65,7 +65,7 @@ export default function HelpContent() {
                 </p>
               </div>
 
-              <div className="border rounded-lg p-4 bg-white">
+              <div className="border rounded-lg p-4 bg-card">
                 <h4 className="font-medium mb-2">How do I set up budgets?</h4>
                 <p className="text-sm text-muted-foreground">
                   Go to the Budgets page to create spending limits for different
@@ -87,7 +87,7 @@ export default function HelpContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <Mail className="h-5 w-5 text-blue-600" />
+                  <Mail className="h-5 w-5 text-primary" />
                   <h4 className="font-medium">Email Support</h4>
                 </div>
                 <p className="text-sm text-muted-foreground mb-3">

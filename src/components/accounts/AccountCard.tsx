@@ -1,8 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+﻿import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, ArrowRightLeft } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { useCurrency } from "@/hooks/useCurrency";
+import { useUserPreferences } from "@/hooks/useUserPreferences";
 import type { Account } from "@/types";
 
 interface AccountCardProps {
@@ -12,10 +13,13 @@ interface AccountCardProps {
 }
 
 export function AccountCard({ account, onEdit, onTransfer }: AccountCardProps) {
+  const { formatCurrency } = useCurrency();
+  const { preferences } = useUserPreferences();
+
   const getAccountTypeColor = (type: string) => {
     switch (type) {
       case "checking":
-        return "bg-blue-100 text-blue-800";
+        return "bg-primary/10 text-primary";
       case "savings":
         return "bg-green-100 text-green-800";
       case "credit":
@@ -23,7 +27,7 @@ export function AccountCard({ account, onEdit, onTransfer }: AccountCardProps) {
       case "investment":
         return "bg-purple-100 text-purple-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted/50 text-muted-foreground";
     }
   };
 
@@ -45,11 +49,11 @@ export function AccountCard({ account, onEdit, onTransfer }: AccountCardProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          <div className="text-2xl font-bold text-gray-900">
+          <div className="text-2xl font-bold text-foreground">
             {formatCurrency(account.balance)}
           </div>
-          {account.accountNumber && (
-            <div className="text-sm text-gray-500">
+          {preferences.show_account_numbers && account.accountNumber && (
+            <div className="text-sm text-muted-foreground">
               Account: {account.accountNumber}
             </div>
           )}
@@ -58,7 +62,7 @@ export function AccountCard({ account, onEdit, onTransfer }: AccountCardProps) {
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                 account.isActive
                   ? "bg-green-100 text-green-800"
-                  : "bg-gray-100 text-gray-800"
+                  : "bg-muted/50 text-muted-foreground"
               }`}
             >
               {account.isActive ? "Active" : "Inactive"}

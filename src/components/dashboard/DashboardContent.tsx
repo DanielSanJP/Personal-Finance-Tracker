@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,7 +16,7 @@ export default function DashboardContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Card>
           <CardContent className="p-8 text-center">
-            <p className="text-gray-600 mb-4">Failed to load dashboard data</p>
+            <p className="text-muted-foreground mb-4">Failed to load dashboard data</p>
             <Button onClick={() => refetch()}>Try Again</Button>
           </CardContent>
         </Card>

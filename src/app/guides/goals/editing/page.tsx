@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function EditingGoalsPage() {
@@ -173,27 +173,27 @@ export default function EditingGoalsPage() {
           </h3>
           <ul className="text-sm text-muted-foreground space-y-1">
             <li>
-              • <strong>Priorities changed</strong> - Shift focus by adjusting
+              â€¢ <strong>Priorities changed</strong> - Shift focus by adjusting
               target amounts or dates
             </li>
             <li>
-              • <strong>Progress is too slow</strong> - Lower the target or
+              â€¢ <strong>Progress is too slow</strong> - Lower the target or
               extend the deadline to stay motivated
             </li>
             <li>
-              • <strong>Costs increased</strong> - Raise your target amount to
+              â€¢ <strong>Costs increased</strong> - Raise your target amount to
               match new prices
             </li>
             <li>
-              • <strong>Goal achieved</strong> - Increase the target if you want
+              â€¢ <strong>Goal achieved</strong> - Increase the target if you want
               to save more for the same purpose
             </li>
           </ul>
         </div>
 
-        <div className="p-6 bg-amber-50 border border-amber-200 rounded-lg">
-          <h3 className="font-semibold text-amber-900 mb-2">Important Note</h3>
-          <p className="text-sm text-amber-800">
+        <div className="p-6 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+          <h3 className="font-semibold text-foreground mb-2">Important Note</h3>
+          <p className="text-sm text-foreground">
             Editing the current amount directly doesn&apos;t affect your account
             balances. If you&apos;re adding money you actually have, use
             &quot;Make Contribution&quot; instead to properly deduct from your

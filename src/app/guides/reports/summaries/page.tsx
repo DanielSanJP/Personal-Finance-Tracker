@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function SummariesGuide() {
@@ -50,7 +50,7 @@ export default function SummariesGuide() {
           All summaries are calculated in real-time from your transaction data:
         </p>
         <div className="space-y-3">
-          <div className="border-l-4 border-blue-500 pl-4">
+          <div className="border-l-4 border-primary pl-4">
             <h4 className="font-semibold text-foreground mb-1">
               Monthly Total
             </h4>
@@ -70,7 +70,7 @@ export default function SummariesGuide() {
               Budget Status
             </h4>
             <p className="text-sm text-muted-foreground">
-              ((Total Spending - Total Budget) / Total Budget) × 100
+              ((Total Spending - Total Budget) / Total Budget) Ã— 100
             </p>
           </div>
         </div>

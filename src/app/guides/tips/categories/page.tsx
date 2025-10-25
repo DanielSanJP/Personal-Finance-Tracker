@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function UsingCategoriesEffectivelyGuide() {
@@ -111,7 +111,7 @@ export default function UsingCategoriesEffectivelyGuide() {
           These categories can overlap - here&apos;s how to decide:
         </p>
         <div className="space-y-3">
-          <div className="border-l-4 border-blue-500 pl-4">
+          <div className="border-l-4 border-primary pl-4">
             <p className="text-sm">
               <strong className="text-foreground">Bills & Utilities:</strong>{" "}
               Recurring services (electricity, water, internet, phone)

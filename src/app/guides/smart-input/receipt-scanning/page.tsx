@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -10,7 +10,7 @@ export default function ReceiptScanningPage() {
     >
       <div className="space-y-6">
         {/* Introduction */}
-        <p className="text-gray-700 leading-relaxed">
+        <p className="text-foreground leading-relaxed">
           Receipt scanning is one of the most convenient ways to add
           transactions to your Personal Finance Tracker. Simply take a photo of
           your receipt, and our AI will automatically extract all the relevant
@@ -19,7 +19,7 @@ export default function ReceiptScanningPage() {
 
         {/* Getting Started */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl font-bold text-foreground mb-6">
             Scanning a Receipt
           </h2>
 
@@ -37,7 +37,7 @@ export default function ReceiptScanningPage() {
               <li>
                 Click the <strong>camera icon</strong> on the transaction form
               </li>
-              <li>Navigate to Transactions → Add → Scan Receipt</li>
+              <li>Navigate to Transactions â†’ Add â†’ Scan Receipt</li>
             </ul>
           </GuideStep>
 
@@ -161,7 +161,7 @@ export default function ReceiptScanningPage() {
 
         {/* Best Practices */}
         <div className="pt-8 border-t">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
             Best Practices
           </h2>
 
@@ -169,35 +169,35 @@ export default function ReceiptScanningPage() {
             <CardContent className="p-6">
               <ul className="space-y-3 text-sm text-green-900">
                 <li className="flex gap-2">
-                  <span>✓</span>
+                  <span>âœ“</span>
                   <span>
                     <strong>Scan immediately:</strong> Capture receipts right
                     after your purchase while they&apos;re still fresh
                   </span>
                 </li>
                 <li className="flex gap-2">
-                  <span>✓</span>
+                  <span>âœ“</span>
                   <span>
                     <strong>Good lighting:</strong> Natural daylight works best
                     for clear images
                   </span>
                 </li>
                 <li className="flex gap-2">
-                  <span>✓</span>
+                  <span>âœ“</span>
                   <span>
                     <strong>Flat surface:</strong> Place receipts on a flat
                     surface for easier scanning
                   </span>
                 </li>
                 <li className="flex gap-2">
-                  <span>✓</span>
+                  <span>âœ“</span>
                   <span>
                     <strong>Review before saving:</strong> Always verify
                     extracted data before saving
                   </span>
                 </li>
                 <li className="flex gap-2">
-                  <span>✓</span>
+                  <span>âœ“</span>
                   <span>
                     <strong>Keep digital copies:</strong> You can discard
                     physical receipts once scanned and saved

@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function DeletingTransactionsPage() {
@@ -27,7 +27,7 @@ export default function DeletingTransactionsPage() {
           image="/guides/transactions/transedit.png"
         >
           <p>
-            Click the <strong>three-dot menu icon</strong> (⋮) in the Actions
+            Click the <strong>three-dot menu icon</strong> (â‹®) in the Actions
             column of the transaction row. This opens a dropdown menu with
             available actions.
           </p>

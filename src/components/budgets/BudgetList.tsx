@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -18,7 +19,7 @@ export function BudgetList({ budgets }: BudgetListProps) {
     const percentage = (spent / budget) * 100;
     if (percentage >= 100) return { status: "over", color: "bg-red-500" };
     if (percentage >= 80) return { status: "warning", color: "bg-orange-500" };
-    return { status: "good", color: "bg-gray-900" };
+    return { status: "good", color: "bg-foreground" };
   };
 
   const getProgressWidth = (spent: number, budget: number) => {
@@ -64,25 +65,23 @@ export function BudgetList({ budgets }: BudgetListProps) {
                 <span className="text-sm sm:text-base font-medium">
                   {budget.category}
                 </span>
-                <span className="text-sm sm:text-base text-gray-600">
+                <span className="text-sm sm:text-base text-muted-foreground">
                   {formatCurrency(budget.spentAmount)} /{" "}
                   {formatCurrency(budget.budgetAmount)}
                 </span>
               </div>
 
-              <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div
-                  className={`h-2 rounded-full transition-all ${
-                    budgetStatus.status === "over" ||
-                    budgetStatus.status === "full"
-                      ? "bg-red-500"
-                      : budgetStatus.status === "warning"
-                      ? "bg-orange-500"
-                      : "bg-gray-900"
-                  }`}
-                  style={{ width: `${progressWidth}%` }}
-                />
-              </div>
+              <Progress
+                value={progressWidth}
+                className={`h-2 ${
+                  budgetStatus.status === "over" ||
+                  budgetStatus.status === "full"
+                    ? "bg-red-100 dark:bg-red-950 [&>div]:bg-red-500 dark:[&>div]:bg-red-600"
+                    : budgetStatus.status === "warning"
+                    ? "bg-orange-100 dark:bg-orange-950 [&>div]:bg-orange-500 dark:[&>div]:bg-orange-600"
+                    : "bg-primary/20 [&>div]:bg-primary"
+                }`}
+              />
 
               {overBudget && (
                 <div className="text-sm text-red-600 font-medium">

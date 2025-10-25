@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+﻿import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -199,7 +199,7 @@ export function TransactionBulkEditModal({
                   <Label className="text-base font-medium">
                     {transaction.description}
                   </Label>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-muted-foreground">
                     {formatDate(transaction.date)}
                   </div>
                 </div>
@@ -224,7 +224,9 @@ export function TransactionBulkEditModal({
                   <div className="grid gap-2">
                     <Label htmlFor={`amount-${transaction.id}`}>
                       Amount{" "}
-                      <span className="text-xs text-gray-500">(locked)</span>
+                      <span className="text-xs text-muted-foreground">
+                        (locked)
+                      </span>
                     </Label>
                     <Input
                       id={`amount-${transaction.id}`}
@@ -232,7 +234,7 @@ export function TransactionBulkEditModal({
                       step="0.01"
                       value={formData.amount || 0}
                       disabled
-                      className="w-full bg-gray-50 cursor-not-allowed"
+                      className="w-full opacity-60 cursor-not-allowed"
                       title="Amount cannot be edited"
                     />
                   </div>
@@ -265,7 +267,7 @@ export function TransactionBulkEditModal({
                           id={`category-${transaction.id}`}
                           value={formData.category}
                           disabled
-                          className="w-full bg-gray-50 cursor-not-allowed"
+                          className="w-full opacity-60 cursor-not-allowed"
                           title={
                             isSpecialCategory
                               ? "Special categories cannot be edited"
@@ -302,7 +304,9 @@ export function TransactionBulkEditModal({
                   <div className="grid gap-2">
                     <Label htmlFor={`type-${transaction.id}`}>
                       Type{" "}
-                      <span className="text-xs text-gray-500">(locked)</span>
+                      <span className="text-xs text-muted-foreground">
+                        (locked)
+                      </span>
                     </Label>
                     <Input
                       id={`type-${transaction.id}`}
@@ -313,7 +317,7 @@ export function TransactionBulkEditModal({
                           : "Expense"
                       }
                       disabled
-                      className="w-full bg-gray-50 cursor-not-allowed"
+                      className="w-full opacity-60 cursor-not-allowed"
                       title="Type cannot be edited"
                     />
                   </div>

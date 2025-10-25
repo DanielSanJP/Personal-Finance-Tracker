@@ -1,7 +1,8 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency, getCurrentMonthName } from "@/lib/utils";
+import { useCurrency } from "@/hooks/useCurrency";
+import { getCurrentMonthName } from "@/lib/utils";
 
 interface DashboardSummary {
   totalBalance: number;
@@ -20,6 +21,7 @@ interface FinancialSummaryCardsProps {
 export default function FinancialSummaryCards({
   summary,
 }: FinancialSummaryCardsProps) {
+  const { formatCurrency } = useCurrency();
   const currentMonth = getCurrentMonthName();
 
   return (

@@ -45,7 +45,9 @@ CREATE TABLE public.goals (
     target_date date,
     category text,
     priority text CHECK (
-        priority = ANY (ARRAY ['low'::text, 'medium'::text, 'high'::text])
+        priority = ANY (
+            ARRAY ['low'::text, 'medium'::text, 'high'::text]
+        )
     ),
     status text DEFAULT 'active'::text CHECK (
         status = ANY (
@@ -97,6 +99,31 @@ CREATE TABLE public.transactions (
     CONSTRAINT transactions_pkey PRIMARY KEY (id),
     CONSTRAINT transactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
     CONSTRAINT transactions_account_id_fkey FOREIGN KEY (account_id) REFERENCES public.accounts(id)
+);
+CREATE TABLE public.user_preferences (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    user_id uuid NOT NULL UNIQUE,
+    currency text DEFAULT 'USD'::text CHECK (
+        currency = ANY (
+            ARRAY ['USD'::text, 'EUR'::text, 'GBP'::text, 'CAD'::text, 'AUD'::text, 'NZD'::text]
+        )
+    ),
+    language text DEFAULT 'English'::text CHECK (
+        language = ANY (
+            ARRAY ['English'::text, 'Español'::text, 'Français'::text, 'Deutsch'::text, 'Italiano'::text]
+        )
+    ),
+    email_notifications boolean DEFAULT true,
+    budget_alerts boolean DEFAULT true,
+    goal_reminders boolean DEFAULT false,
+    weekly_reports boolean DEFAULT true,
+    show_account_numbers boolean DEFAULT false,
+    compact_view boolean DEFAULT false,
+    show_cents boolean DEFAULT true,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT user_preferences_pkey PRIMARY KEY (id),
+    CONSTRAINT user_preferences_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.users (
     id uuid NOT NULL,

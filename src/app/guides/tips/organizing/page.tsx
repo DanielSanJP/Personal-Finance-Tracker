@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function OrganizingTransactionsGuide() {
@@ -14,13 +14,13 @@ export default function OrganizingTransactionsGuide() {
         <div className="space-y-3">
           <div className="border-l-4 border-red-500 pl-4">
             <p className="text-sm">
-              <strong className="text-foreground">❌ Unclear:</strong>{" "}
+              <strong className="text-foreground">âŒ Unclear:</strong>{" "}
               &ldquo;Store&rdquo;, &ldquo;Food&rdquo;, &ldquo;Stuff&rdquo;
             </p>
           </div>
           <div className="border-l-4 border-green-500 pl-4">
             <p className="text-sm">
-              <strong className="text-foreground">✅ Clear:</strong>{" "}
+              <strong className="text-foreground">âœ… Clear:</strong>{" "}
               &ldquo;Safeway groceries&rdquo;, &ldquo;Netflix
               subscription&rdquo;, &ldquo;Gas at Shell&rdquo;
             </p>

@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function FilteringSearchingPage() {
@@ -77,7 +77,7 @@ export default function FilteringSearchingPage() {
               <strong>(+$500.00):</strong> (Money in)
             </li>
             <li>
-              <strong>(→$200.00):</strong> Arrow for transfers
+              <strong>(â†’$200.00):</strong> Arrow for transfers
             </li>
           </ul>
           <p className="mt-2 text-sm text-muted-foreground">

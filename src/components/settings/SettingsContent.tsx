@@ -206,11 +206,11 @@ export default function SettingsContent() {
         <Card>
           <CardContent className="p-8">
             <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              <div className="h-8 bg-muted rounded w-1/3"></div>
+              <div className="h-4 bg-muted rounded w-2/3"></div>
               <div className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-muted rounded w-1/4"></div>
+                <div className="h-10 bg-muted rounded"></div>
               </div>
             </div>
           </CardContent>
@@ -256,7 +256,7 @@ export default function SettingsContent() {
                   type="email"
                   value={emailForm.currentEmail}
                   disabled
-                  className="!h-auto !px-4 !py-3 !border-gray-200 !rounded-lg !bg-gray-50 !text-gray-500 cursor-not-allowed"
+                  className="opacity-60 cursor-not-allowed"
                 />
               </div>
 
@@ -270,7 +270,6 @@ export default function SettingsContent() {
                   onChange={(e) =>
                     setEmailForm({ ...emailForm, newEmail: e.target.value })
                   }
-                  className="!h-auto !px-4 !py-3 !border-gray-300 !rounded-lg !bg-white !text-gray-600 focus:!outline-none focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
                 />
               </div>
 
@@ -315,7 +314,7 @@ export default function SettingsContent() {
                         newPassword: e.target.value,
                       })
                     }
-                    className="!h-auto !px-4 !py-3 !pr-12 !border-gray-300 !rounded-lg !bg-white !text-gray-600 focus:!outline-none focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
+                    className="pr-12"
                   />
                   <Button
                     type="button"
@@ -347,7 +346,7 @@ export default function SettingsContent() {
                         confirmPassword: e.target.value,
                       })
                     }
-                    className="!h-auto !px-4 !py-3 !pr-12 !border-gray-300 !rounded-lg !bg-white !text-gray-600 focus:!outline-none focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
+                    className="pr-12"
                   />
                   <Button
                     type="button"

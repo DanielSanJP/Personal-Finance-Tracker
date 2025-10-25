@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -381,15 +381,15 @@ export function TransactionsList({
                               }}
                               className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
                                 isSelected
-                                  ? "bg-blue-50 border-blue-500 text-blue-700 font-medium"
-                                  : "bg-white border-gray-200 hover:bg-gray-50"
+                                  ? "bg-primary/5 border-primary text-primary font-medium"
+                                  : "bg-card border-border hover:bg-accent"
                               }`}
                             >
                               <div className="flex items-center justify-between">
                                 <span className="text-sm">{party}</span>
                                 {isSelected && (
-                                  <span className="text-blue-600 font-bold">
-                                    ✓
+                                  <span className="text-primary font-bold">
+                                    âœ“
                                   </span>
                                 )}
                               </div>
@@ -485,19 +485,19 @@ export function TransactionsList({
                     {paginatedTransactions.map((transaction) => (
                       <TableRow
                         key={transaction.id}
-                        className="cursor-pointer hover:bg-gray-50"
+                        className="cursor-pointer hover:bg-muted/50"
                         onClick={() => handleTransactionClick(transaction)}
                       >
                         <TableCell className="font-medium">
                           <div>
                             <div
-                              className="font-semibold text-gray-900 truncate max-w-[200px]"
+                              className="font-semibold text-foreground truncate max-w-[200px]"
                               title={transaction.description}
                             >
                               {transaction.description}
                             </div>
                             <div
-                              className="text-sm text-gray-500 truncate max-w-[200px]"
+                              className="text-sm text-muted-foreground truncate max-w-[200px]"
                               title={getDisplayParty(transaction)}
                             >
                               {getDisplayParty(transaction)}

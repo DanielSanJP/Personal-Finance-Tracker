@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import {
   Select,
   SelectContent,
@@ -110,7 +110,7 @@ export function CategorySelect({
                 key={category.id}
                 value={category.name}
                 disabled={isAlreadyAdded}
-                className={isAlreadyAdded ? "text-gray-400" : ""}
+                className={isAlreadyAdded ? "text-muted-foreground" : ""}
               >
                 {formatCategoryDisplay(category)}
               </SelectItem>

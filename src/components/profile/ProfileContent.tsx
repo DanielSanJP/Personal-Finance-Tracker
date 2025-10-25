@@ -120,7 +120,6 @@ export default function ProfileContent() {
                         firstName: e.target.value,
                       })
                     }
-                    className="!h-auto !px-4 !py-3 !border-gray-300 !rounded-lg !bg-white !text-gray-600 focus:!outline-none focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
                   />
                 </div>
 
@@ -136,7 +135,6 @@ export default function ProfileContent() {
                     onChange={(e) =>
                       setFormData({ ...formData, lastName: e.target.value })
                     }
-                    className="!h-auto !px-4 !py-3 !border-gray-300 !rounded-lg !bg-white !text-gray-600 focus:!outline-none focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
                   />
                 </div>
               </div>
@@ -154,7 +152,6 @@ export default function ProfileContent() {
                       displayName: e.target.value,
                     })
                   }
-                  className="!h-auto !px-4 !py-3 !border-gray-300 !rounded-lg !bg-white !text-gray-600 focus:!outline-none focus:!ring-2 focus:!ring-blue-500 focus:!border-blue-500"
                 />
                 <p className="text-xs text-muted-foreground">
                   If left empty, your display name will be your first and last

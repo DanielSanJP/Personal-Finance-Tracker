@@ -169,7 +169,9 @@ export function TransactionEditModal({
             <div className="grid gap-2">
               <Label htmlFor="edit-amount">
                 Amount{" "}
-                <span className="text-xs text-gray-500">(read-only)</span>
+                <span className="text-xs text-muted-foreground">
+                  (read-only)
+                </span>
               </Label>
               <Input
                 id="edit-amount"
@@ -177,13 +179,16 @@ export function TransactionEditModal({
                 step="0.01"
                 value={formData.amount}
                 disabled
-                className="w-full bg-gray-50 cursor-not-allowed"
+                className="w-full opacity-60 cursor-not-allowed"
                 title="Amount cannot be edited. Delete and recreate the transaction if needed."
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-type">
-                Type <span className="text-xs text-gray-500">(read-only)</span>
+                Type{" "}
+                <span className="text-xs text-muted-foreground">
+                  (read-only)
+                </span>
               </Label>
               <Input
                 id="edit-type"
@@ -191,7 +196,7 @@ export function TransactionEditModal({
                   formData.type.charAt(0).toUpperCase() + formData.type.slice(1)
                 }
                 disabled
-                className="w-full bg-gray-50 cursor-not-allowed"
+                className="w-full opacity-60 cursor-not-allowed"
                 title="Type cannot be edited. Delete and recreate the transaction if needed."
               />
             </div>
@@ -223,7 +228,7 @@ export function TransactionEditModal({
                     id="edit-category"
                     value={formData.category}
                     disabled
-                    className="w-full bg-gray-50 cursor-not-allowed"
+                    className="w-full opacity-60 cursor-not-allowed"
                     title={
                       isSpecialCategory
                         ? "Special categories cannot be edited"

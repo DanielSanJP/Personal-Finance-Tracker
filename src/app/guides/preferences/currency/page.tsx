@@ -1,4 +1,4 @@
-import { GuideLayout } from "@/components/guides/GuideLayout";
+﻿import { GuideLayout } from "@/components/guides/GuideLayout";
 import { GuideStep } from "@/components/guides/GuideStep";
 
 export default function CurrencyFormatGuide() {
@@ -20,10 +20,10 @@ export default function CurrencyFormatGuide() {
             Dollar
           </li>
           <li>
-            <strong className="text-foreground">EUR (€)</strong> - Euro
+            <strong className="text-foreground">EUR (â‚¬)</strong> - Euro
           </li>
           <li>
-            <strong className="text-foreground">GBP (£)</strong> - British Pound
+            <strong className="text-foreground">GBP (Â£)</strong> - British Pound
           </li>
           <li>
             <strong className="text-foreground">CAD (C$)</strong> - Canadian
@@ -51,8 +51,8 @@ export default function CurrencyFormatGuide() {
           <li>Exported CSV and PDF files</li>
           <li>Dashboard summary cards</li>
         </ul>
-        <div className="border-l-4 border-amber-500 pl-4 mt-3 bg-amber-50 p-3 rounded">
-          <p className="text-sm text-amber-900">
+        <div className="border-l-4 border-amber-600 pl-4 mt-3 bg-amber-500/10 p-3 rounded">
+          <p className="text-sm text-foreground">
             <strong>Note:</strong> This is a display setting only. It does not
             perform currency conversion. All amounts remain in the same value,
             just with a different symbol.
@@ -72,10 +72,10 @@ export default function CurrencyFormatGuide() {
             language
           </li>
           <li>
-            <strong className="text-foreground">Español</strong> - Spanish
+            <strong className="text-foreground">EspaÃ±ol</strong> - Spanish
           </li>
           <li>
-            <strong className="text-foreground">Français</strong> - French
+            <strong className="text-foreground">FranÃ§ais</strong> - French
           </li>
           <li>
             <strong className="text-foreground">Deutsch</strong> - German
@@ -101,13 +101,13 @@ export default function CurrencyFormatGuide() {
           <div className="border-l-4 border-green-500 pl-4 bg-green-50 p-3 rounded">
             <p className="text-sm text-green-900">
               <strong>Enabled (with cents):</strong> Displays precise amounts
-              like $1,234.56 or €89.99
+              like $1,234.56 or â‚¬89.99
             </p>
           </div>
-          <div className="border-l-4 border-blue-500 pl-4 bg-blue-50 p-3 rounded">
-            <p className="text-sm text-blue-900">
+          <div className="border-l-4 border-primary pl-4 bg-primary/5 p-3 rounded">
+            <p className="text-sm text-foreground">
               <strong>Disabled (whole numbers):</strong> Displays rounded
-              amounts like $1,235 or €90
+              amounts like $1,235 or â‚¬90
             </p>
           </div>
         </div>
@@ -132,10 +132,10 @@ export default function CurrencyFormatGuide() {
           </div>
           <div className="text-sm">
             <strong className="text-foreground">EUR + Show Cents:</strong>{" "}
-            €1,234.56
+            â‚¬1,234.56
           </div>
           <div className="text-sm">
-            <strong className="text-foreground">GBP + No Cents:</strong> £1,235
+            <strong className="text-foreground">GBP + No Cents:</strong> Â£1,235
           </div>
         </div>
         <p className="text-sm text-muted-foreground mt-3">

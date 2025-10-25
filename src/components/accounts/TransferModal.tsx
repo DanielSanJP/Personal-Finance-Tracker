@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, FormEvent, useEffect } from "react";
 import { toast } from "sonner";
@@ -202,7 +202,7 @@ export function TransferModal({
                   <SelectItem key={account.id} value={account.id}>
                     <div className="flex justify-between items-center w-full">
                       <span>{account.name}</span>
-                      <span className="text-sm text-gray-500 ml-4">
+                      <span className="text-sm text-muted-foreground ml-4">
                         {formatCurrency(account.balance)}
                       </span>
                     </div>
@@ -211,7 +211,7 @@ export function TransferModal({
               </SelectContent>
             </Select>
             {fromAccount && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Available: {formatCurrency(fromAccount.balance)}
               </p>
             )}
@@ -236,7 +236,7 @@ export function TransferModal({
                     <SelectItem key={account.id} value={account.id}>
                       <div className="flex justify-between items-center w-full">
                         <span>{account.name}</span>
-                        <span className="text-sm text-gray-500 ml-4">
+                        <span className="text-sm text-muted-foreground ml-4">
                           {formatCurrency(account.balance)}
                         </span>
                       </div>
@@ -286,22 +286,22 @@ export function TransferModal({
               className={`p-4 rounded-lg space-y-2 ${
                 amountNum > fromAccount.balance
                   ? "bg-red-50 border border-red-200"
-                  : "bg-gray-50"
+                  : "bg-muted"
               }`}
             >
               <h4 className="font-semibold text-sm">Transfer Summary</h4>
               <div className="text-sm space-y-1">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">From:</span>
+                  <span className="text-muted-foreground">From:</span>
                   <span className="font-medium">{fromAccount.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">To:</span>
+                  <span className="text-muted-foreground">To:</span>
                   <span className="font-medium">{toAccount.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Amount:</span>
-                  <span className="font-semibold text-blue-600">
+                  <span className="text-muted-foreground">Amount:</span>
+                  <span className="font-semibold text-primary">
                     {formatCurrency(amountNum)}
                   </span>
                 </div>
@@ -329,7 +329,7 @@ export function TransferModal({
               {amountNum > fromAccount.balance && (
                 <div className="bg-red-100 border border-red-300 rounded-md p-3 mt-2">
                   <p className="text-sm font-semibold text-red-800">
-                    ⚠️ Insufficient Funds
+                    âš ï¸ Insufficient Funds
                   </p>
                   <p className="text-xs text-red-700 mt-1">
                     The transfer amount exceeds the available balance by{" "}

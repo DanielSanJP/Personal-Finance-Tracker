@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useAuth } from "@/hooks/queries/useAuth";
 import { useRouter } from "next/navigation";
@@ -21,7 +21,7 @@ export default function Home() {
       <div className="min-h-screen">
         <div className="font-sans flex items-center justify-center min-h-[calc(100vh-4rem)] p-8">
           <div className="flex flex-col items-center gap-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground"></div>
             <p className="text-lg text-center">Loading...</p>
           </div>
         </div>

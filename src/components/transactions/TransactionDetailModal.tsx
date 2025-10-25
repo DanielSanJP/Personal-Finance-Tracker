@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+﻿import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -68,7 +68,7 @@ export function TransactionDetailModal({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label className="text-sm font-medium text-gray-600">
+            <Label className="text-sm font-medium text-muted-foreground">
               Description
             </Label>
             <p className="text-base font-semibold">{transaction.description}</p>
@@ -76,7 +76,7 @@ export function TransactionDetailModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label className="text-sm font-medium text-gray-600">
+              <Label className="text-sm font-medium text-muted-foreground">
                 Amount
               </Label>
               <p
@@ -89,7 +89,7 @@ export function TransactionDetailModal({
               </p>
             </div>
             <div className="grid gap-2">
-              <Label className="text-sm font-medium text-gray-600">Type</Label>
+              <Label className="text-sm font-medium text-muted-foreground">Type</Label>
               <p className="text-base">
                 {formatTransactionType(transaction.type)}
               </p>
@@ -98,13 +98,13 @@ export function TransactionDetailModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label className="text-sm font-medium text-gray-600">
+              <Label className="text-sm font-medium text-muted-foreground">
                 Category
               </Label>
               <p className="text-base">{transaction.category}</p>
             </div>
             <div className="grid gap-2">
-              <Label className="text-sm font-medium text-gray-600">
+              <Label className="text-sm font-medium text-muted-foreground">
                 Status
               </Label>
               <p className="text-base capitalize">{transaction.status}</p>
@@ -113,11 +113,11 @@ export function TransactionDetailModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label className="text-sm font-medium text-gray-600">From</Label>
+              <Label className="text-sm font-medium text-muted-foreground">From</Label>
               <p className="text-base">{transaction.from_party}</p>
             </div>
             <div className="grid gap-2">
-              <Label className="text-sm font-medium text-gray-600">To</Label>
+              <Label className="text-sm font-medium text-muted-foreground">To</Label>
               <p className="text-base">
                 {transaction.type === "transfer" &&
                 getGoalName(transaction.destination_account_id)
@@ -128,7 +128,7 @@ export function TransactionDetailModal({
           </div>
 
           <div className="grid gap-2">
-            <Label className="text-sm font-medium text-gray-600">
+            <Label className="text-sm font-medium text-muted-foreground">
               Date & Time
             </Label>
             <p className="text-base font-medium">
@@ -137,10 +137,10 @@ export function TransactionDetailModal({
           </div>
 
           <div className="grid gap-2">
-            <Label className="text-sm font-medium text-gray-600">
+            <Label className="text-sm font-medium text-muted-foreground">
               Transaction ID
             </Label>
-            <p className="text-sm text-gray-500 font-mono">{transaction.id}</p>
+            <p className="text-sm text-muted-foreground font-mono">{transaction.id}</p>
           </div>
         </div>
         <DialogFooter>

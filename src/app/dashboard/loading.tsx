@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function DashboardLoading() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto p-4 py-8">
         {/* Quick Actions Skeleton */}
         <div className="flex flex-wrap gap-4 justify-center mb-8">
