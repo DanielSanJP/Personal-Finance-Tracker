@@ -9,6 +9,9 @@ import {
 import { formatCurrency } from "@/lib/utils";
 import { useState } from "react";
 import TransactionsLoading from "./loading";
+import { useAccountCheck } from "@/hooks/useAccountCheck";
+import { AccountRequiredModal } from "@/components/account-required-modal";
+import { useAuth } from "@/hooks/queries/useAuth";
 
 export default function TransactionsPage() {
   // Filter states - Start with "This Month" to show current month transactions by default
@@ -16,6 +19,10 @@ export default function TransactionsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState("This Month");
   const [selectedParty, setSelectedParty] = useState("All Parties");
   const [selectedType, setSelectedType] = useState("All Types");
+
+  // Check if user has accounts
+  const { hasAccounts, isLoading: accountsLoading } = useAccountCheck();
+  const { isAuthenticated } = useAuth();
 
   // Build filters object WITHOUT party filter first (to get all parties from filtered transactions)
   const preFilters: TransactionFilters = {
@@ -40,7 +47,7 @@ export default function TransactionsPage() {
   } = useTransactionFilterOptions();
 
   // Combined loading state - show loading if either query is loading
-  const isLoading = transactionsLoading || optionsLoading;
+  const isLoading = transactionsLoading || optionsLoading || accountsLoading;
   const error = transactionsError || optionsError;
 
   // Extract filter options with defaults
@@ -143,6 +150,7 @@ export default function TransactionsPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <AccountRequiredModal visible={isAuthenticated && !hasAccounts} />
       <TransactionsList
         transactions={filteredTransactions}
         filterOptions={{ categories, parties, types, periods }}

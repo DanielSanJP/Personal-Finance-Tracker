@@ -265,9 +265,9 @@ export const ReceiptScanModal = ({
               <p>
                 <strong>Tips:</strong>
               </p>
-              <p>â€¢ Ensure receipt is well-lit and flat</p>
-              <p>â€¢ Include the total amount in the image</p>
-              <p>â€¢ Works best with printed receipts</p>
+              <p>• Ensure receipt is well-lit and flat</p>
+              <p>• Include the total amount in the image</p>
+              <p>• Works best with printed receipts</p>
             </div>
           </div>
         </DialogContent>

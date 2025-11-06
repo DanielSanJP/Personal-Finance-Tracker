@@ -114,19 +114,19 @@ export default function EditingBudgetsPage() {
           </h3>
           <ul className="text-sm text-muted-foreground space-y-1">
             <li>
-              â€¢ <strong>You consistently go over</strong> - Increase the budget
+              • <strong>You consistently go over</strong> - Increase the budget
               amount to a more realistic level
             </li>
             <li>
-              â€¢ <strong>You have money left over every month</strong> - Decrease
+              • <strong>You have money left over every month</strong> - Decrease
               the budget and reallocate to savings or other categories
             </li>
             <li>
-              â€¢ <strong>Your spending patterns change</strong> - Adjust
+              • <strong>Your spending patterns change</strong> - Adjust
               categories or amounts to match your current lifestyle
             </li>
             <li>
-              â€¢ <strong>You want to try a different time period</strong> -
+              • <strong>You want to try a different time period</strong> -
               Switch from monthly to weekly or yearly tracking
             </li>
           </ul>

@@ -173,19 +173,19 @@ export default function EditingGoalsPage() {
           </h3>
           <ul className="text-sm text-muted-foreground space-y-1">
             <li>
-              â€¢ <strong>Priorities changed</strong> - Shift focus by adjusting
+              • <strong>Priorities changed</strong> - Shift focus by adjusting
               target amounts or dates
             </li>
             <li>
-              â€¢ <strong>Progress is too slow</strong> - Lower the target or
+              • <strong>Progress is too slow</strong> - Lower the target or
               extend the deadline to stay motivated
             </li>
             <li>
-              â€¢ <strong>Costs increased</strong> - Raise your target amount to
+              • <strong>Costs increased</strong> - Raise your target amount to
               match new prices
             </li>
             <li>
-              â€¢ <strong>Goal achieved</strong> - Increase the target if you want
+              • <strong>Goal achieved</strong> - Increase the target if you want
               to save more for the same purpose
             </li>
           </ul>

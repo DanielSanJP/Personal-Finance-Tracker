@@ -16,6 +16,10 @@ import {
 import { toast } from "sonner";
 import { useCreateAccount } from "@/hooks/mutations";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
+import {
+  parseCurrencyInput,
+  getCurrencyValidationError,
+} from "@/lib/currency-utils";
 
 export default function AccountForm() {
   const router = useRouter();
@@ -50,7 +54,21 @@ export default function AccountForm() {
     const balanceValue =
       formData.balance.trim() === "" ? "0" : formData.balance;
 
-    if (isNaN(Number(balanceValue))) {
+    // Validate balance using currency validation utilities
+    // Allow 0 balance for new accounts, but validate format
+    const balanceError = getCurrencyValidationError(balanceValue);
+    if (balanceError && balanceValue !== "0") {
+      toast.error("Invalid balance amount", {
+        description: balanceError,
+      });
+      return;
+    }
+
+    // Parse the balance - this handles various formats like "1,000.50"
+    const parsedBalance = parseCurrencyInput(balanceValue);
+
+    // Additional check for zero balance (which is valid)
+    if (isNaN(parsedBalance)) {
       toast.error("Invalid balance amount", {
         description: "Please enter a valid number for the balance.",
       });
@@ -61,7 +79,7 @@ export default function AccountForm() {
       await createAccountMutation.mutateAsync({
         name: formData.name,
         type: formData.type,
-        balance: Number(balanceValue),
+        balance: parsedBalance,
         accountNumber: formData.accountNumber || undefined,
       });
 

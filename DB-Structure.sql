@@ -45,9 +45,7 @@ CREATE TABLE public.goals (
     target_date date,
     category text,
     priority text CHECK (
-        priority = ANY (
-            ARRAY ['low'::text, 'medium'::text, 'high'::text]
-        )
+        priority = ANY (ARRAY ['low'::text, 'medium'::text, 'high'::text])
     ),
     status text DEFAULT 'active'::text CHECK (
         status = ANY (

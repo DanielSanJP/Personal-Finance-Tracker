@@ -201,15 +201,15 @@ export const VoiceInputModal = ({
             </p>
             {type === "income" ? (
               <>
-                <p>â€¢ &quot;50 dollars for salary&quot;</p>
-                <p>â€¢ &quot;1500 freelance payment&quot;</p>
-                <p>â€¢ &quot;200 gift from family&quot;</p>
+                <p>• &quot;50 dollars for salary&quot;</p>
+                <p>• &quot;1500 freelance payment&quot;</p>
+                <p>• &quot;200 gift from family&quot;</p>
               </>
             ) : (
               <>
-                <p>â€¢ &quot;25 dollars for lunch at Chipotle&quot;</p>
-                <p>â€¢ &quot;50 dollars petrol at BP&quot;</p>
-                <p>â€¢ &quot;15 coffee&quot;</p>
+                <p>• &quot;25 dollars for lunch at Chipotle&quot;</p>
+                <p>• &quot;50 dollars petrol at BP&quot;</p>
+                <p>• &quot;15 coffee&quot;</p>
               </>
             )}
           </div>

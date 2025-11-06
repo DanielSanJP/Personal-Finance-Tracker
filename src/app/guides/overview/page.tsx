@@ -142,7 +142,7 @@ export default function OverviewPage() {
               </p>
               <ul className="space-y-2 text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <span className="font-bold">â€¢</span>
+                  <span className="font-bold">•</span>
                   <span>
                     <strong className="text-foreground">
                       Step-by-step instructions
@@ -151,21 +151,21 @@ export default function OverviewPage() {
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-bold">â€¢</span>
+                  <span className="font-bold">•</span>
                   <span>
                     <strong className="text-foreground">Screenshots</strong>{" "}
                     showing exactly what to do
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-bold">â€¢</span>
+                  <span className="font-bold">•</span>
                   <span>
                     <strong className="text-foreground">Tips</strong> for
                     getting the most out of each feature
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-bold">â€¢</span>
+                  <span className="font-bold">•</span>
                   <span>
                     <strong className="text-foreground">Warnings</strong> about
                     common pitfalls to avoid

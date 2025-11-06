@@ -23,6 +23,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { checkGuestAndWarn } from "@/lib/guest-protection";
 import { VoiceInputModal } from "@/components/voice-input-modal";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
+import {
+  parseCurrencyInput,
+  getCurrencyValidationError,
+} from "@/lib/currency-utils";
 
 export default function IncomeForm() {
   const router = useRouter();
@@ -168,16 +172,21 @@ export default function IncomeForm() {
       return;
     }
 
-    if (isNaN(Number(formData.amount)) || Number(formData.amount) <= 0) {
+    // Validate amount using currency validation utilities
+    const amountError = getCurrencyValidationError(formData.amount);
+    if (amountError) {
       toast.error("Invalid amount", {
-        description: "Please enter a valid positive amount.",
+        description: amountError,
       });
       return;
     }
 
+    // Parse the amount - this handles various formats like "1,000.50"
+    const parsedAmount = parseCurrencyInput(formData.amount);
+
     try {
       await createIncomeMutation.mutateAsync({
-        amount: Number(formData.amount),
+        amount: parsedAmount,
         description: formData.description,
         category:
           formData.category === "__select_category__"

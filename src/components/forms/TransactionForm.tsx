@@ -24,6 +24,10 @@ import { VoiceInputModal } from "@/components/voice-input-modal";
 import { ReceiptScanModal } from "@/components/receipt-scan-modal";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
 import { useReceiptScan } from "@/hooks/useReceiptScan";
+import {
+  parseCurrencyInput,
+  getCurrencyValidationError,
+} from "@/lib/currency-utils";
 
 export default function TransactionForm() {
   const router = useRouter();
@@ -95,16 +99,21 @@ export default function TransactionForm() {
       return;
     }
 
-    if (isNaN(Number(formData.amount)) || Number(formData.amount) <= 0) {
+    // Validate amount using currency validation utilities
+    const amountError = getCurrencyValidationError(formData.amount);
+    if (amountError) {
       toast.error("Invalid amount", {
-        description: "Please enter a valid positive number for the amount.",
+        description: amountError,
       });
       return;
     }
 
+    // Parse the amount - this handles various formats like "1,000.50"
+    const parsedAmount = parseCurrencyInput(formData.amount);
+
     try {
       await createExpenseMutation.mutateAsync({
-        amount: Number(formData.amount),
+        amount: parsedAmount,
         description: formData.description,
         category:
           formData.category === "__select_category__"
